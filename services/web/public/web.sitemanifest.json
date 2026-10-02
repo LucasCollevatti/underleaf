@@ -1,8 +1,8 @@
 {
-  "name": "Overleaf",
+  "name": "Underleaf",
   "icons": [
     {
-      "src": "/overleaf-logo.svg",
+      "src": "/underleaf-logo.svg",
       "type": "image/svg+xml",
       "sizes": "any"
     }

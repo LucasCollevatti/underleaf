@@ -374,7 +374,7 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
       appName: Settings.appName,
       adminEmail: Settings.adminEmail,
       dropboxAppName:
-        Settings.apis.thirdPartyDataStore?.dropboxAppName || 'Overleaf',
+        Settings.apis.thirdPartyDataStore?.dropboxAppName || 'Underleaf',
       ieeeBrandId: IEEE_BRAND_ID,
       hasSamlBeta: req.session.samlBeta,
       hasAffiliationsFeature: Features.hasFeature('affiliations'),

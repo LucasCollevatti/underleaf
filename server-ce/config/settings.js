@@ -193,8 +193,9 @@ const settings = {
   maintenanceMessage: process.env.OVERLEAF_MAINTENANCE_MESSAGE,
   maintenanceMessageHTML: process.env.OVERLEAF_MAINTENANCE_MESSAGE_HTML,
 
-  // The name this is used to describe your Overleaf Community Edition Installation
-  appName: process.env.OVERLEAF_APP_NAME || 'Overleaf Community Edition',
+  // The name used to describe this Underleaf installation.
+  appName: process.env.OVERLEAF_APP_NAME || 'Underleaf',
+  underleaf: true,
 
   restrictInvitesToExistingAccounts:
     process.env.OVERLEAF_RESTRICT_INVITES_TO_EXISTING_ACCOUNTS === 'true',
@@ -203,7 +204,7 @@ const settings = {
     title:
       process.env.OVERLEAF_NAV_TITLE ||
       process.env.OVERLEAF_APP_NAME ||
-      'Overleaf Community Edition',
+      'Underleaf',
   },
 
   // The email address which users will be directed to as the main point of

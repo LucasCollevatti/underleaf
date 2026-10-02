@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" role="img" aria-labelledby="title">
+  <title id="title">Underleaf</title>
+  <rect width="320" height="72" rx="12" fill="#176b45"/>
+  <path d="M24 18h8v20c0 8 4 12 12 12s12-4 12-12V18h8v20c0 13-7 20-20 20S24 51 24 38V18Z" fill="#fff"/>
+  <path d="M74 48c13-20 28-27 48-28-9 6-15 12-19 19 8-2 15 1 18 7 4 8-2 17-12 18-11 1-24-5-35-16Z" fill="#a9e6b9"/>
+  <text x="153" y="47" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="700">Underleaf</text>
+</svg>
