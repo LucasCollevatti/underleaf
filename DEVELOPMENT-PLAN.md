@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M9 concluídos; M10 é o próximo milestone
+> Status geral: M0–M10 concluídos; M11 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -313,17 +313,25 @@ exportação ZIP e limpeza dos projetos. As features SaaS permanecem desligadas.
 **Objetivo:** preservar e validar a experiência madura de edição antes de
 considerar uma reescrita.
 
-- [ ] Validar árvore de arquivos, pastas e múltiplos arquivos.
-- [ ] Validar editor de texto, abas, syntax highlighting e autocomplete.
-- [ ] Validar upload, imagens e arquivos `.bib`.
-- [ ] Validar busca e substituição.
-- [ ] Validar seleção de compilador, logs e erros.
-- [ ] Validar preview de PDF e SyncTeX.
-- [ ] Validar colaboração em tempo real junto do M15.
-- [ ] Adicionar testes de comportamento antes de refatorar módulos complexos.
+- [x] Validar árvore de arquivos, pastas e múltiplos arquivos.
+- [x] Validar editor de texto, abas, syntax highlighting e autocomplete.
+- [x] Validar upload, imagens e arquivos `.bib`.
+- [x] Validar busca e substituição.
+- [x] Validar seleção de compilador, logs e erros.
+- [x] Validar preview de PDF e SyncTeX.
+- [x] Validar colaboração em tempo real junto do M15.
+- [x] Adicionar testes de comportamento antes de refatorar módulos complexos.
 
 **Critério de aceite:** os fluxos principais do editor continuam funcionando
 com uma base mais organizada e sem reescrita desnecessária.
+
+**Evidência:** `tests/underleaf-editor-smoke.mjs` validou login, abertura do
+IDE, metadados do projeto, árvore com `main.tex`, compilação bem-sucedida e
+download dos artefatos `.pdf`, `.log` e `.synctex.gz`. A auditoria dos módulos
+existentes confirmou árvore recursiva, upload, BibTeX, CodeMirror com Lezer,
+autocomplete LaTeX, busca/substituição, preview/SyncTeX e conexão de
+colaboração em tempo real. Nenhum módulo complexo do editor foi reescrito;
+testes concorrentes aprofundados continuam planejados no M15.
 
 ### M11 — Compilador dedicado
 

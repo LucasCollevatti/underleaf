@@ -12,3 +12,13 @@ UNDERLEAF_USERNAME=m7admin \
 UNDERLEAF_PASSWORD='sua-senha' \
 node tests/underleaf-project-dashboard-smoke.mjs
 ```
+
+O smoke test do editor valida a página do IDE, a árvore de entidades, a
+compilação e os artefatos PDF, log e SyncTeX:
+
+```bash
+UNDERLEAF_BASE_URL=http://localhost:18080 \
+UNDERLEAF_USERNAME=m7admin \
+UNDERLEAF_PASSWORD='sua-senha' \
+node tests/underleaf-editor-smoke.mjs
+```
