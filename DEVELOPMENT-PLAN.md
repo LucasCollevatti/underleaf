@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M10 concluídos; M11 é o próximo milestone
+> Status geral: M0–M11 concluídos; M12 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -338,14 +338,20 @@ testes concorrentes aprofundados continuam planejados no M15.
 **Objetivo:** dar ao compilador uma fronteira clara dentro da arquitetura do
 Underleaf.
 
-- [ ] Criar o componente `apps/compiler` ou equivalente.
-- [ ] Definir uma interface interna explícita entre aplicação e compilador.
-- [ ] Mover gradualmente a responsabilidade de compilação para esse componente.
-- [ ] Manter logs, artefatos, erros e PDF acessíveis pela aplicação.
-- [ ] Evitar expor a API do compilador diretamente ao host.
+- [x] Criar o componente `apps/compiler` ou equivalente.
+- [x] Definir uma interface interna explícita entre aplicação e compilador.
+- [x] Mover gradualmente a responsabilidade de compilação para esse componente.
+- [x] Manter logs, artefatos, erros e PDF acessíveis pela aplicação.
+- [x] Evitar expor a API do compilador diretamente ao host.
 
 **Critério de aceite:** a aplicação solicita uma compilação por uma interface
 documentada e recebe resultado, logs e artefatos de forma previsível.
+
+**Evidência:** `UnderleafCompilerGateway` é usado pelo endpoint web de
+compilação e encapsula a implementação atual do CLSI. A interface e o destino
+da migração estão documentados em `apps/compiler/README.md` e
+`docs/ARCHITECTURE.md`; o Compose continua publicando somente a aplicação,
+MongoDB e Redis.
 
 ### M12 — Ambiente LaTeX completo
 

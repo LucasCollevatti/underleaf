@@ -21,6 +21,7 @@ import Features from '../../infrastructure/Features.mjs'
 import ClsiCacheController from './ClsiCacheController.mjs'
 import { prepareZipAttachment } from '../../infrastructure/Response.mjs'
 import ClsiCacheHandler from './ClsiCacheHandler.mjs'
+import UnderleafCompilerGateway from './UnderleafCompilerGateway.mjs'
 import {
   getFilePath,
   getOutputFileURL,
@@ -481,8 +482,11 @@ const _CompileController = {
       buildId,
       clsiCacheShard,
       instanceType,
-    } = await CompileManager.promises
-      .compile(projectId, userId, options)
+    } = await UnderleafCompilerGateway.compile({
+      projectId,
+      userId,
+      options,
+    })
       .catch(error => {
         Metrics.inc('compile-error')
         throw error
