@@ -1,0 +1,38 @@
+extends ../layout-marketing
+
+block content
+	#main-content.content.content-alt
+		.container
+			.page-header
+				h1 Underleaf administration
+				p Manage the local installation and its user accounts.
+
+			.row
+				.col-md-3
+					.card
+						.card-body
+							p.text-muted Users
+							h2= userCount
+				.col-md-3
+					.card
+						.card-body
+							p.text-muted Active users
+							h2= activeUsers
+				.col-md-3
+					.card
+						.card-body
+							p.text-muted Administrators
+							h2= adminUsers
+				.col-md-3
+					.card
+						.card-body
+							p.text-muted Active projects
+							h2= projectCount
+
+			.card.mt-4
+				.card-body
+					h2 User management
+					p Review accounts, roles, status and owned projects.
+					a.btn.btn-primary(href='/admin/users') Manage users
+					a.btn.btn-link(href='/status') Application status
+

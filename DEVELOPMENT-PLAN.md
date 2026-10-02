@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M7 concluídos; M8 é o próximo milestone
+> Status geral: M0–M8 concluídos; M9 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -264,19 +264,26 @@ O fluxo está documentado em `docs/DEPLOYMENT.md`.
 **Objetivo:** oferecer a administração mínima necessária para um ambiente
 self-hosted.
 
-- [ ] Criar `/admin` e `/admin/users`.
-- [ ] Listar usuários, papéis, status e quantidade de projetos.
-- [ ] Criar usuários.
-- [ ] Alterar username e redefinir senha.
-- [ ] Habilitar e desabilitar usuários.
-- [ ] Promover e remover privilégios de administrador.
-- [ ] Excluir usuários com confirmação explícita.
-- [ ] Definir se os projetos serão transferidos, excluídos ou se a operação será
+- [x] Criar `/admin` e `/admin/users`.
+- [x] Listar usuários, papéis, status e quantidade de projetos.
+- [x] Criar usuários.
+- [x] Alterar username e redefinir senha.
+- [x] Habilitar e desabilitar usuários.
+- [x] Promover e remover privilégios de administrador.
+- [x] Excluir usuários com confirmação explícita.
+- [x] Definir se os projetos serão transferidos, excluídos ou se a operação será
   cancelada ao excluir um usuário.
-- [ ] Exibir informações básicas de saúde do sistema quando disponíveis.
+- [x] Exibir informações básicas de saúde do sistema quando disponíveis.
 
 **Critério de aceite:** nenhuma ação administrativa destrói projetos sem uma
 decisão explícita e todas as rotas exigem autorização de administrador.
+
+**Evidência:** `/admin` exibe contadores de usuários, administradores e
+projetos, enquanto `/admin/users` permite criar, editar, redefinir senha,
+desabilitar, promover e excluir contas. A exclusão exige `DELETE` e uma escolha
+explícita entre cancelar ou excluir os projetos próprios; não há transferência
+automática. As rotas usam a autorização de administrador existente, protegem
+formulários com CSRF e preservam sempre um administrador ativo.
 
 ### M9 — Dashboard de projetos
 

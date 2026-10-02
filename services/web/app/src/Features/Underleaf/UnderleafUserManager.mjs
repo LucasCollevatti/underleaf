@@ -148,6 +148,8 @@ async function updateUser(userId, changes) {
   const user = await findById(userId)
   if (!user) throw new UnderleafUserError('not_found', 'User not found.')
 
+  await ensureActiveAdminRemains(user, changes)
+
   const update = { $set: { updatedAt: new Date() } }
   if (changes.username != null) {
     const username = validateUsername(changes.username)
@@ -249,6 +251,7 @@ async function listUsers() {
         username: 1,
         displayName: 1,
         role: 1,
+        isAdmin: 1,
         status: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -264,9 +267,38 @@ async function countOwnedProjects(userId) {
   return await db.projects.countDocuments({ owner_ref: userId, active: true })
 }
 
+function isActiveAdmin(user) {
+  return (
+    user.status !== 'disabled' && (user.role === 'admin' || user.isAdmin)
+  )
+}
+
+async function countActiveAdmins() {
+  return await User.countDocuments({
+    status: { $ne: 'disabled' },
+    $or: [{ role: 'admin' }, { isAdmin: true }],
+  }).exec()
+}
+
+async function ensureActiveAdminRemains(user, changes) {
+  if (!isActiveAdmin(user)) return
+
+  const willLoseAdminAccess =
+    changes.role === 'user' || changes.status === 'disabled'
+  if (!willLoseAdminAccess) return
+
+  if ((await countActiveAdmins()) <= 1) {
+    throw new UnderleafUserError(
+      'last_admin',
+      'The last active administrator cannot be disabled or demoted.'
+    )
+  }
+}
+
 async function deleteUser(userId, { deleterUser, ipAddress, deleteProjects }) {
   const user = await findById(userId)
   if (!user) throw new UnderleafUserError('not_found', 'User not found.')
+  await ensureActiveAdminRemains(user, { status: 'disabled' })
   const projectCount = await countOwnedProjects(user._id)
   if (projectCount > 0 && !deleteProjects) {
     throw new UnderleafUserError(

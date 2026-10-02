@@ -1,0 +1,75 @@
+extends ../layout-marketing
+
+block content
+	#main-content.content.content-alt
+		.container
+			.page-header
+				h1 Underleaf users
+				a(href='/admin') Back to administration
+
+			if getReqQueryParam('notice')
+				.alert.alert-success(role='alert')= getReqQueryParam('notice')
+			if getReqQueryParam('error')
+				.alert.alert-danger(role='alert')= getReqQueryParam('error')
+
+			.card.mb-4
+				.card-body
+					h2 Create user
+					form(method='post' action='/admin/users')
+						input(name='_csrf' type='hidden' value=csrfToken)
+						.row
+							.col-md-3
+								label.form-label(for='new-username') Username
+								input#new-username.form-control(name='username' required autocomplete='off')
+							.col-md-3
+								label.form-label(for='new-display-name') Display name
+								input#new-display-name.form-control(name='displayName' autocomplete='name')
+							.col-md-3
+								label.form-label(for='new-password') Password
+								input#new-password.form-control(name='password' type='password' required autocomplete='new-password')
+							.col-md-2
+								label.form-label(for='new-role') Role
+								select#new-role.form-select(name='role')
+									option(value='user') User
+									option(value='admin') Admin
+							.col-md-1.d-flex.align-items-end
+								button.btn.btn-primary(type='submit') Create
+
+			h2 Existing users
+			table.table.table-striped.align-middle
+				thead
+					tr
+						th Username
+						th Display name
+						th Role
+						th Status
+						th Projects
+						th Actions
+				tbody
+					each user in users
+						tr
+							td
+								input.form-control(name='username' value=user.username required form='update-' + user._id)
+							td
+								input.form-control(name='displayName' value=user.displayName required form='update-' + user._id)
+								td
+									select.form-select(name='role' form='update-' + user._id)
+										option(value='user' selected=user.role !== 'admin') User
+										option(value='admin' selected=user.role === 'admin') Admin
+								td
+									select.form-select(name='status' form='update-' + user._id)
+										option(value='active' selected=user.status !== 'disabled') Active
+										option(value='disabled' selected=user.status === 'disabled') Disabled
+							td= user.projectCount
+							td
+								form(id='update-' + user._id method='post' action='/admin/users/' + user._id)
+									input(name='_csrf' type='hidden' value=csrfToken)
+									input.form-control.mb-2(name='password' type='password' placeholder='New password' autocomplete='new-password')
+									button.btn.btn-sm.btn-primary(type='submit') Save
+								form.mt-2(method='post' action='/admin/users/' + user._id + '/delete')
+									input(name='_csrf' type='hidden' value=csrfToken)
+									input.form-control.form-control-sm.mb-2(name='confirm' placeholder='Type DELETE' required)
+									select.form-select.form-select-sm.mb-2(name='projectAction')
+										option(value='cancel') Cancel if projects exist
+										option(value='delete') Delete owned projects
+									button.btn.btn-sm.btn-outline-danger(type='submit') Delete user

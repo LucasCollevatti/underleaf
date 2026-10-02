@@ -65,6 +65,7 @@ import { plainTextResponse } from './infrastructure/Response.mjs'
 import SocketDiagnostics from './Features/SocketDiagnostics/SocketDiagnostics.mjs'
 import ClsiCacheController from './Features/Compile/ClsiCacheController.mjs'
 import AsyncLocalStorage from './infrastructure/AsyncLocalStorage.mjs'
+import UnderleafAdminController from './Features/Underleaf/UnderleafAdminController.mjs'
 import {
   getRawReqInput,
   parseReq,
@@ -1132,8 +1133,31 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   webRouter.get(
     '/admin',
     AuthorizationMiddleware.ensureUserIsSiteAdmin,
-    AdminController.index
+    Settings.underleaf ? UnderleafAdminController.index : AdminController.index
   )
+
+  if (Settings.underleaf) {
+    webRouter.get(
+      '/admin/users',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.users
+    )
+    webRouter.post(
+      '/admin/users',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.createUser
+    )
+    webRouter.post(
+      '/admin/users/:userId',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.updateUser
+    )
+    webRouter.post(
+      '/admin/users/:userId/delete',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.deleteUser
+    )
+  }
 
   if (!Features.hasFeature('saas')) {
     webRouter.post(
