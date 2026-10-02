@@ -20,6 +20,7 @@ declare module 'express' {
     userRestrictions?: Set
     oauth_user?: OAuth2Server.User
     logger: RequestLogger
+    requestId?: string
     // Set by a body-parser `verify` callback on routes that check a webhook
     // signature, which needs the bytes exactly as received.
     rawBody?: Buffer | string

@@ -81,6 +81,14 @@ services:
       - compiler_net
     volumes:
       - compiler_work:/var/lib/underleaf/compiler
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pdflatex --version >/dev/null 2>&1 && test -w /tmp
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   mongo:
     image: mongo:7.0

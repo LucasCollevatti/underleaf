@@ -11,6 +11,7 @@ describe('http.monitor', function () {
       url: '/project/1234/cleanup',
       headers: {
         'content-length': '123',
+        'x-request-id': 'test-request-id',
       },
       route: {
         path: '/project/:id/cleanup',
@@ -56,7 +57,12 @@ describe('http.monitor', function () {
       it('logs the request at the DEBUG level', function () {
         sinon.assert.calledWith(
           this.logger.debug,
-          { req: this.req, res: this.res, responseTimeMs: 500 },
+          {
+            req: this.req,
+            res: this.res,
+            responseTimeMs: 500,
+            requestId: 'test-request-id',
+          },
           '%s %s',
           this.req.method,
           this.req.url
@@ -88,7 +94,14 @@ describe('http.monitor', function () {
       it('logs the request with the custom log fields', function () {
         sinon.assert.calledWith(
           this.logger.debug,
-          { req: this.req, res: this.res, responseTimeMs: 500, a: 1, b: 2 },
+          {
+            req: this.req,
+            res: this.res,
+            responseTimeMs: 500,
+            requestId: 'test-request-id',
+            a: 1,
+            b: 2,
+          },
           '%s %s',
           this.req.method,
           this.req.url
@@ -106,7 +119,12 @@ describe('http.monitor', function () {
       it('logs the request at the custom level', function () {
         sinon.assert.calledWith(
           this.logger.warn,
-          { req: this.req, res: this.res, responseTimeMs: 500 },
+          {
+            req: this.req,
+            res: this.res,
+            responseTimeMs: 500,
+            requestId: 'test-request-id',
+          },
           '%s %s',
           this.req.method,
           this.req.url
@@ -125,7 +143,12 @@ describe('http.monitor', function () {
     it('logs the request at that level', function () {
       sinon.assert.calledWith(
         this.logger.info,
-        { req: this.req, res: this.res, responseTimeMs: 500 },
+        {
+          req: this.req,
+          res: this.res,
+          responseTimeMs: 500,
+          requestId: 'test-request-id',
+        },
         '%s %s',
         this.req.method,
         this.req.url

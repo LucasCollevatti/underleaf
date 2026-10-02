@@ -2,7 +2,7 @@ COMPOSE ?= docker compose
 DOCKER ?= docker
 ENV_FILE ?= .env
 
-.PHONY: config build-base build up down logs backup restore
+.PHONY: config build-base build up down logs health backup restore
 
 config:
 	$(COMPOSE) --env-file $(ENV_FILE) config --quiet
@@ -21,6 +21,9 @@ down:
 
 logs:
 	$(COMPOSE) --env-file $(ENV_FILE) logs -f app
+
+health:
+	ENV_FILE="$(ENV_FILE)" ./scripts/underleaf-health.sh
 
 backup:
 	ENV_FILE="$(ENV_FILE)" ./scripts/underleaf-backup.sh

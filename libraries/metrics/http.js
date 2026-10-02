@@ -1,9 +1,14 @@
 const Metrics = require('./index')
+const crypto = require('node:crypto')
+
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9._-]{1,128}$/
 
 function monitor(logger, level = 'debug') {
   return function (req, res, next) {
     const startTime = Date.now()
+    req.requestId = requestIdFrom(req)
     req.logger = new RequestLogger(logger, level)
+    req.logger.addFields({ requestId: req.requestId })
     const { end } = res
     res.end = function (...args) {
       end.apply(this, args)
@@ -30,6 +35,17 @@ function monitor(logger, level = 'debug') {
     }
     next()
   }
+}
+
+function requestIdFrom(req) {
+  const incomingRequestId = req.headers?.['x-request-id']
+  if (
+    typeof incomingRequestId === 'string' &&
+    REQUEST_ID_PATTERN.test(incomingRequestId)
+  ) {
+    return incomingRequestId
+  }
+  return crypto.randomUUID()
 }
 
 function getRoutePath(req) {

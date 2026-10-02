@@ -516,17 +516,23 @@ histórico.
 
 **Objetivo:** tornar o estado da instalação visível para administradores.
 
-- [ ] Implementar healthchecks ou endpoints de saúde.
-- [ ] Exibir saúde da aplicação, compilador, MongoDB e Redis.
-- [ ] Adicionar logs estruturados com timestamp, nível, serviço e request ID.
-- [ ] Incluir user ID e project ID somente quando necessário e permitido.
-- [ ] Não registrar senha, hash, session token, secrets ou conteúdo de
+- [x] Implementar healthchecks ou endpoints de saúde.
+- [x] Exibir saúde da aplicação, compilador, MongoDB e Redis.
+- [x] Adicionar logs estruturados com timestamp, nível, serviço e request ID.
+- [x] Incluir user ID e project ID somente quando necessário e permitido.
+- [x] Não registrar senha, hash, session token, secrets ou conteúdo de
   documentos.
-- [ ] Exibir métricas úteis, como disco, compilações ativas e fila, quando
+- [x] Exibir métricas úteis, como disco, compilações ativas e fila, quando
   possível.
 
 **Critério de aceite:** um administrador consegue distinguir falha de
 aplicação, banco, cache e compilador sem expor dados sensíveis.
+
+**Evidência:** `make health` retorna JSON com estado do app, MongoDB, Redis,
+project-history, real-time, CLSI e compiler, além de disco disponível e fila de
+histórico. O healthcheck do perfil `compiler` valida `pdflatex` e `/tmp`;
+`libraries/metrics/http.js` adiciona request IDs aos logs estruturados, sem
+alterar os serializers que filtram credenciais e conteúdo de documentos.
 
 ### M20 — Docker de produção
 
