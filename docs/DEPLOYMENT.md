@@ -61,6 +61,9 @@ underleaf_redis_data
 Recreating containers does not remove these volumes. Removing persistent data
 is an explicit operational action and is not part of `make down`.
 
+See [`PERSISTENCE.md`](PERSISTENCE.md) for the complete volume map, ownership,
+retention guidance and the recreation smoke test.
+
 ## Operations
 
 ```bash

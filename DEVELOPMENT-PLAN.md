@@ -474,14 +474,20 @@ antes do restore.
 **Objetivo:** tornar explícito onde cada dado persistente vive e como ele é
 protegido.
 
-- [ ] Mapear banco, Redis, projetos, histórico, cache de compilação e backups.
-- [ ] Preferir volumes Docker nomeados em produção.
-- [ ] Documentar o layout de dados e suas responsabilidades.
-- [ ] Garantir que recriar containers não apague projetos nem histórico.
-- [ ] Definir permissões de filesystem e política de retenção.
+- [x] Mapear banco, Redis, projetos, histórico, cache de compilação e backups.
+- [x] Preferir volumes Docker nomeados em produção.
+- [x] Documentar o layout de dados e suas responsabilidades.
+- [x] Garantir que recriar containers não apague projetos nem histórico.
+- [x] Definir permissões de filesystem e política de retenção.
 
 **Critério de aceite:** os dados importantes sobrevivem ao ciclo de vida dos
 containers e o operador sabe como localizá-los e protegê-los.
+
+**Evidência:** `compose.yaml` usa volumes nomeados estáveis para MongoDB,
+Redis, dados gerais da aplicação, saídas, histórico, templates e trabalho do
+compilador. `docs/PERSISTENCE.md` define a responsabilidade, permissões e
+retenção de cada volume; `underleaf-persistence-smoke.sh` recria o container
+`app` e valida a preservação do volume de histórico.
 
 ### M18 — Backup e restore
 

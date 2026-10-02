@@ -60,3 +60,10 @@ docker exec -w /overleaf/services/real-time \
   -e UNDERLEAF_PASSWORD='sua-senha' \
   underleaf-app node test/acceptance/underleaf-history-smoke.mjs
 ```
+
+O smoke test de persistência recria o container da aplicação e confirma que o
+volume de histórico mantém seus dados:
+
+```bash
+./tests/underleaf-persistence-smoke.sh
+```
