@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M11 concluídos; M12 é o próximo milestone
+> Status geral: M0–M12 concluídos; M13 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -357,17 +357,23 @@ MongoDB e Redis.
 
 **Objetivo:** oferecer um ambiente confiável para documentos reais.
 
-- [ ] Criar uma imagem dedicada de compilação.
-- [ ] Disponibilizar pdfLaTeX, XeLaTeX e LuaLaTeX.
-- [ ] Disponibilizar latexmk, BibTeX, Biber e makeindex.
-- [ ] Disponibilizar TeX Live Full ou uma distribuição equivalente documentada.
-- [ ] Validar pacotes como TikZ, PGFPlots, Circuitikz, Minted, Fontspec,
+- [x] Criar uma imagem dedicada de compilação.
+- [x] Disponibilizar pdfLaTeX, XeLaTeX e LuaLaTeX.
+- [x] Disponibilizar latexmk, BibTeX, Biber e makeindex.
+- [x] Disponibilizar TeX Live Full ou uma distribuição equivalente documentada.
+- [x] Validar pacotes como TikZ, PGFPlots, Circuitikz, Minted, Fontspec,
   BibLaTeX e Chemfig.
-- [ ] Manter a atualização do ambiente LaTeX separada da atualização da
+- [x] Manter a atualização do ambiente LaTeX separada da atualização da
   aplicação.
 
 **Critério de aceite:** documentos representativos compilam com os engines e
 pacotes suportados, com testes reproduzíveis.
+
+**Evidência:** `server-ce/Dockerfile-compiler` e o serviço Compose com perfil
+`compiler` criam uma imagem independente da aplicação. O build valida os três
+engines, ferramentas de bibliografia/índice e os pacotes representativos; o
+fluxo está documentado em `docs/DEPLOYMENT.md` e pode ser repetido por
+`scripts/build-compiler.sh`.
 
 ### M13 — Isolamento e limites de compilação
 

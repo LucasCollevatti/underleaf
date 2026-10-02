@@ -51,6 +51,18 @@ services:
       retries: 10
       start_period: 90s
 
+  compiler:
+    profiles: [compiler]
+    image: underleaf/compiler:local
+    build:
+      context: .
+      dockerfile: server-ce/Dockerfile-compiler
+      args:
+        UNDERLEAF_COMPILER_BASE_IMAGE: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
+        TEXLIVE_MIRROR: ${UNDERLEAF_TEXLIVE_MIRROR:-https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet}
+    volumes:
+      - compiler_work:/var/lib/underleaf/compiler
+
   mongo:
     image: mongo:7.0
     container_name: underleaf-mongo
@@ -96,6 +108,8 @@ volumes:
     name: underleaf_app_cache
   app_templates:
     name: underleaf_app_templates
+  compiler_work:
+    name: underleaf_compiler_work
   mongo_data:
     name: underleaf_mongo_data
   redis_data:

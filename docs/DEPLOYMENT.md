@@ -85,6 +85,22 @@ ShareLaTeX-era base image.
 Compose command directly, build the base image first and set
 `UNDERLEAF_BASE_IMAGE=underleaf/base:local` in `.env`.
 
+## Compiler image
+
+The application image and the LaTeX compiler image are built separately. The
+compiler image contains a curated, explicitly declared TeX Live package set
+and the supported tools without publishing a compiler port:
+
+```bash
+./scripts/build-compiler.sh
+```
+
+The image validates pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, Biber,
+makeindex, TikZ, PGFPlots, Circuitikz, Minted, Fontspec, BibLaTeX and Chemfig
+during its build. Add packages to the compiler Dockerfile when the supported
+document set grows; update the TeX Live mirror separately from application
+releases with `UNDERLEAF_TEXLIVE_MIRROR` when required.
+
 ## First administrator
 
 The first account must be created explicitly from the application container.

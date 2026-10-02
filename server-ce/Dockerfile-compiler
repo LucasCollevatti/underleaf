@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+
+ARG UNDERLEAF_COMPILER_BASE_IMAGE=underleaf/base:local
+FROM ${UNDERLEAF_COMPILER_BASE_IMAGE}
+
+ARG TEXLIVE_MIRROR=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
+
+ENV TEXMFVAR=/var/lib/underleaf/compiler/texmf-var
+
+# Keep the compiler environment independent from the web image.
+RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
+  && tlmgr install \
+    bibtex \
+    biber \
+    biblatex \
+    chemfig \
+    circuitikz \
+    fontspec \
+    latexmk \
+    luatex \
+    minted \
+    pgf \
+    pgfplots \
+    texcount \
+    xetex \
+  && tlmgr path add \
+  && mkdir -p "${TEXMFVAR}" \
+  && command -v pdflatex \
+  && command -v xelatex \
+  && command -v lualatex \
+  && command -v latexmk \
+  && command -v bibtex \
+  && command -v biber \
+  && command -v makeindex \
+  && for package in tikz.sty pgfplots.sty circuitikz.sty minted.sty fontspec.sty biblatex.sty chemfig.sty; do \
+    kpsewhich "${package}" >/dev/null; \
+  done
+
+WORKDIR /var/lib/underleaf/compiler
