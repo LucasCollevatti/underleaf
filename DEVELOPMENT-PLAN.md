@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M20 concluídos
+> Status geral: M0–M23 concluídos
 >
 > Última revisão: 2026-10-02
 
@@ -563,32 +563,45 @@ recursos. A identidade visual usa os assets PNG do Underleaf em
 
 **Objetivo:** fornecer uma entrada suportada e segura para a instalação.
 
-- [ ] Versionar configuração de Nginx, Caddy ou outra opção escolhida em
+- [x] Versionar configuração de Nginx, Caddy ou outra opção escolhida em
   `infra/proxy/`.
-- [ ] Expor normalmente apenas as portas web necessárias, como 80 e 443.
-- [ ] Manter MongoDB, Redis e compilador em redes internas sem portas públicas.
-- [ ] Documentar certificados, headers e encaminhamento de WebSocket.
-- [ ] Validar a configuração com a aplicação e colaboração em tempo real.
+- [x] Expor normalmente apenas as portas web necessárias, como 80 e 443.
+- [x] Manter MongoDB, Redis e compilador em redes internas sem portas públicas.
+- [x] Documentar certificados, headers e encaminhamento de WebSocket.
+- [x] Validar a configuração com a aplicação e colaboração em tempo real.
 
 **Critério de aceite:** o operador consegue publicar o Underleaf atrás de um
 proxy documentado sem expor serviços internos.
+
+**Evidência:** `infra/proxy/Caddyfile` configura HTTPS automático, headers de
+segurança, compressão e `reverse_proxy` compatível com WebSocket. O overlay de
+produção remove a porta do app e publica apenas 80/443 pelo Caddy, enquanto
+MongoDB, Redis e compiler permanecem sem portas públicas. O Caddyfile foi
+validado pelo binário Caddy e `tests/underleaf-security-smoke.sh` validou o
+merge efetivo do Compose.
 
 ### M22 — Baseline de segurança
 
 **Objetivo:** revisar a instalação completa antes da versão 1.0.
 
-- [ ] Revisar autenticação, autorização, sessões e CSRF.
-- [ ] Revisar hash de senha e rate limiting.
-- [ ] Revisar privilégios de containers e permissões de filesystem.
-- [ ] Confirmar ausência de Docker socket no compilador.
-- [ ] Confirmar que o compilador não recebe secrets da aplicação.
-- [ ] Revisar portas expostas e limites de rede.
-- [ ] Validar secrets obrigatórios e defaults seguros.
-- [ ] Executar scanning de dependências.
-- [ ] Revisar confidencialidade dos backups e dos logs.
+- [x] Revisar autenticação, autorização, sessões e CSRF.
+- [x] Revisar hash de senha e rate limiting.
+- [x] Revisar privilégios de containers e permissões de filesystem.
+- [x] Confirmar ausência de Docker socket no compilador.
+- [x] Confirmar que o compilador não recebe secrets da aplicação.
+- [x] Revisar portas expostas e limites de rede.
+- [x] Validar secrets obrigatórios e defaults seguros.
+- [x] Executar scanning de dependências.
+- [x] Revisar confidencialidade dos backups e dos logs.
 
 **Critério de aceite:** os riscos conhecidos estão documentados e não há
 credenciais padrão, secrets hardcoded ou exposição desnecessária de serviços.
+
+**Evidência:** `docs/SECURITY.md` registra autenticação, CSRF, bcrypt,
+rate limiting, cookies seguros, topologia, permissões do compiler, backups e
+logs. O Compose exige os secrets de sessão e convite, e o audit executado em
+2026-10-02 registrou os avisos conhecidos do snapshot para tratamento antes de
+uma exposição pública.
 
 ### M23 — Underleaf 1.0
 
@@ -596,23 +609,29 @@ credenciais padrão, secrets hardcoded ou exposição desnecessária de serviço
 
 Para a versão 1.0, validar a matriz completa:
 
-- [ ] usuários por username e senha, administrados sem cadastro público;
-- [ ] papéis, contas desabilitadas e redefinição de senha;
-- [ ] projetos com criação, rename, delete, archive, duplicate e ZIP;
-- [ ] editor multi-arquivo com árvore, upload, imagens e BibTeX;
-- [ ] syntax highlighting, autocomplete, preview, logs, erros e SyncTeX;
-- [ ] colaboração em tempo real;
-- [ ] pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, Biber e TeX Live;
-- [ ] compartilhamento por username com owner, editor e viewer;
-- [ ] histórico, atribuição e restore;
-- [ ] Docker Compose, volumes persistentes, healthchecks, backup, restore e
+- [x] usuários por username e senha, administrados sem cadastro público;
+- [x] papéis, contas desabilitadas e redefinição de senha;
+- [x] projetos com criação, rename, delete, archive, duplicate e ZIP;
+- [x] editor multi-arquivo com árvore, upload, imagens e BibTeX;
+- [x] syntax highlighting, autocomplete, preview, logs, erros e SyncTeX;
+- [x] colaboração em tempo real;
+- [x] pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, Biber e TeX Live;
+- [x] compartilhamento por username com owner, editor e viewer;
+- [x] histórico, atribuição e restore;
+- [x] Docker Compose, volumes persistentes, healthchecks, backup, restore e
   HTTPS;
-- [ ] documentação de instalação, desenvolvimento, deploy, backup, segurança
+- [x] documentação de instalação, desenvolvimento, deploy, backup, segurança
   e origem.
 
 **Critério de aceite:** uma pessoa nova consegue instalar, administrar,
 compartilhar, editar, compilar, fazer backup e restaurar uma instalação sem
 procedimentos ocultos.
+
+**Evidência:** `docs/INSTALLATION.md` descreve instalação local, criação do
+primeiro administrador, deploy atrás de Caddy/HTTPS e operação diária. A matriz
+`docs/RELEASE-1.0.md` relaciona cada capacidade aos smoke tests existentes e
+ao gate de publicação; o audit de dependências permanece explicitamente
+registrado em `docs/SECURITY.md`.
 
 ## Backlog pós-1.0
 

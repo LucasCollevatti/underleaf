@@ -67,3 +67,10 @@ volume de histórico mantém seus dados:
 ```bash
 ./tests/underleaf-persistence-smoke.sh
 ```
+
+O smoke test de segurança valida a topologia do Compose de produção, as portas
+publicadas e o isolamento do compiler:
+
+```bash
+./tests/underleaf-security-smoke.sh
+```

@@ -38,6 +38,8 @@ make restore BACKUP=/path/to/backup
 A instalação de produção usa o overlay em
 `infra/compose/compose.production.yaml`; a configuração e as limitações estão
 em [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+O passo a passo completo para instalar no PC está em
+[`docs/INSTALLATION.md`](docs/INSTALLATION.md), incluindo HTTPS com Caddy.
 
 ## Estrutura atual
 
@@ -48,8 +50,10 @@ em [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
   reorganização incremental;
 - [`DEVELOPMENT-PLAN.md`](DEVELOPMENT-PLAN.md): plano operacional em Markdown.
 
-A compilação ainda ocorre dentro do container da aplicação nesta fase. O
-isolamento do compilador será tratado em milestones posteriores.
+A compilação suportada usa o perfil `compiler`, isolado em um container sem
+Docker socket, com filesystem somente leitura e limites de recursos. A
+instalação base continua compatível com o runtime herdado para facilitar a
+migração incremental.
 
 ## Desenvolvimento
 

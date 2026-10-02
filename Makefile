@@ -30,11 +30,11 @@ logs:
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) logs -f app
 
 health:
-	ENV_FILE="$(ENV_FILE)" ./scripts/underleaf-health.sh
+	ENV_FILE="$(ENV_FILE)" UNDERLEAF_COMPOSE_FILES="$(COMPOSE_FILES)" ./scripts/underleaf-health.sh
 
 backup:
-	ENV_FILE="$(ENV_FILE)" ./scripts/underleaf-backup.sh
+	ENV_FILE="$(ENV_FILE)" UNDERLEAF_COMPOSE_FILES="$(COMPOSE_FILES)" $(if $(BACKUP_DIR),BACKUP_DIR="$(BACKUP_DIR)") ./scripts/underleaf-backup.sh
 
 restore:
 	@test -n "$(BACKUP)" || (echo "Use make restore BACKUP=/path/to/backup" >&2; exit 2)
-	ENV_FILE="$(ENV_FILE)" ./scripts/underleaf-restore.sh "$(BACKUP)" --yes
+	ENV_FILE="$(ENV_FILE)" UNDERLEAF_COMPOSE_FILES="$(COMPOSE_FILES)" ./scripts/underleaf-restore.sh "$(BACKUP)" --yes

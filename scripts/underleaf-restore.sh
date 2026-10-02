@@ -2,7 +2,6 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-compose_file="${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}"
 env_file="${ENV_FILE:-$repo_root/.env}"
 backup_dir="${BACKUP:-}"
 confirmed=false
@@ -48,7 +47,11 @@ if ! grep -q '"format_version": 1' "$backup_dir/manifest.json"; then
 fi
 (cd "$backup_dir" && sha256sum --check checksums.sha256)
 
-compose_args=(-f "$compose_file")
+if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
+  read -r -a compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
+else
+  compose_args=(-f "${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}")
+fi
 if [[ -f "$env_file" ]]; then
   compose_args+=(--env-file "$env_file")
 fi

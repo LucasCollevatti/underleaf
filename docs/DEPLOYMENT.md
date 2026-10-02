@@ -39,6 +39,14 @@ docker compose -f compose.yaml -f infra/compose/compose.production.yaml \
   --env-file .env up -d
 ```
 
+The production overlay removes the app host port and publishes only the Caddy
+ports configured by `UNDERLEAF_PROXY_HTTP_PORT` and
+`UNDERLEAF_PROXY_HTTPS_PORT`. Set `UNDERLEAF_SITE_DOMAIN` and
+`UNDERLEAF_SITE_URL=https://...` before starting it. Caddy obtains and renews
+public certificates automatically and forwards HTTP, HTTPS and WebSocket
+traffic to the app. See [`INSTALLATION.md`](INSTALLATION.md) for the complete
+DNS and first-admin procedure.
+
 ## Services and persistence
 
 The initial baseline contains:
@@ -64,6 +72,8 @@ underleaf_app_cache
 underleaf_app_templates
 underleaf_mongo_data
 underleaf_redis_data
+underleaf_proxy_data
+underleaf_proxy_config
 ```
 
 Recreating containers does not remove these volumes. Removing persistent data
@@ -89,9 +99,10 @@ docker compose ps
 docker compose logs app
 ```
 
-The app, MongoDB and Redis services have healthchecks. The current baseline
-keeps compilation inside the imported app container; compiler isolation and a
-dedicated compiler service are planned for M11 and M13.
+The app, MongoDB and Redis services have healthchecks. The supported compiler
+profile runs as a dedicated, internal-only service with no Docker socket, no
+application secrets and explicit resource limits. The application image still
+contains the imported runtime services required by the current migration stage.
 
 ## Local base image
 
@@ -147,3 +158,9 @@ Enter the username, password and password confirmation when prompted. Password
 input is hidden in an interactive terminal and is never stored in plaintext.
 After the account is created, sign in at `/login` and use `/admin/users` to
 manage the remaining accounts.
+
+## Security
+
+Read [`SECURITY.md`](SECURITY.md) before publishing the service. It records the
+authentication, session, network, container, backup and dependency-audit
+baseline.

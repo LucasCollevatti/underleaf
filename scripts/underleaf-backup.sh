@@ -2,7 +2,6 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-compose_file="${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}"
 env_file="${ENV_FILE:-$repo_root/.env}"
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 backup_dir="${BACKUP_DIR:-$repo_root/backups/underleaf-$timestamp}"
@@ -13,7 +12,11 @@ if [[ -e "$backup_dir" ]] && [[ -n "$(find "$backup_dir" -mindepth 1 -maxdepth 1
 fi
 mkdir -p "$backup_dir"
 
-compose_args=(-f "$compose_file")
+if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
+  read -r -a compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
+else
+  compose_args=(-f "${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}")
+fi
 if [[ -f "$env_file" ]]; then
   compose_args+=(--env-file "$env_file")
 fi
