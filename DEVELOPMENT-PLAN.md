@@ -493,17 +493,24 @@ retenção de cada volume; `underleaf-persistence-smoke.sh` recria o container
 
 **Objetivo:** recuperar uma instalação completa, não apenas criar um arquivo.
 
-- [ ] Implementar `make backup` ou comando equivalente.
-- [ ] Incluir banco, projetos, histórico e metadata necessária.
-- [ ] Implementar `make restore BACKUP=...` ou comando equivalente.
-- [ ] Gerar manifest com versão, data e conteúdo do backup.
-- [ ] Documentar formato, compatibilidade e limitações.
-- [ ] Testar criação de usuário, projeto, edição e compilação antes do backup.
-- [ ] Destruir os dados persistentes de teste e restaurar o backup.
-- [ ] Verificar usuário, projeto, histórico e nova compilação após o restore.
+- [x] Implementar `make backup` ou comando equivalente.
+- [x] Incluir banco, projetos, histórico e metadata necessária.
+- [x] Implementar `make restore BACKUP=...` ou comando equivalente.
+- [x] Gerar manifest com versão, data e conteúdo do backup.
+- [x] Documentar formato, compatibilidade e limitações.
+- [x] Testar criação de usuário, projeto, edição e compilação antes do backup.
+- [x] Destruir os dados persistentes de teste e restaurar o backup.
+- [x] Verificar usuário, projeto, histórico e nova compilação após o restore.
 
 **Critério de aceite:** um restore real recupera uma instalação utilizável e
 permite compilar novamente o projeto restaurado.
+
+**Evidência:** `make backup` produz `manifest.json`, hashes, dump MongoDB e
+arquivo dos volumes da aplicação; `make restore BACKUP=...` verifica o formato,
+para o app, restaura o banco e os dados de projetos/histórico e sobe o serviço
+novamente. `docs/BACKUP.md` registra o formato, a limitação do Redis e o
+procedimento de round-trip usando os smoke tests de dashboard, editor e
+histórico.
 
 ### M19 — Observabilidade
 
