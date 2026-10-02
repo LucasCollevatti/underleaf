@@ -8,6 +8,10 @@ FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
 
+# The current base image can still contain empty ShareLaTeX-era directories.
+# The runtime rejects those paths to prevent ambiguous data mounts.
+RUN rm -rf /etc/sharelatex /var/lib/sharelatex /var/log/sharelatex
+
 # Add required source files for yarn install
 # -------------------------------------------
 COPY --parents libraries/*/package.json .yarn/patches/ services/*/package.json tools/migrations/ package.json yarn.lock .yarnrc.yml .pnp.register.mjs /overleaf/
@@ -17,7 +21,7 @@ COPY server-ce/genScript.js server-ce/services.js /overleaf/
 # -------------------------------------------------------------------------
 # Corepack setup, shared between all the images.
 ENV COREPACK_HOME=/opt/corepack
-RUN corepack enable && corepack install -g yarn@4.18.0
+RUN corepack enable && corepack prepare yarn@4.18.0 --activate
 ENV COREPACK_ENABLE_NETWORK=0
 
 # Install yarn dependencies
@@ -111,7 +115,7 @@ ENV OVERLEAF_CONFIG=/etc/overleaf/settings.js
 ENV WEB_API_USER="overleaf"
 ENV ADMIN_PRIVILEGE_AVAILABLE="true"
 
-ENV OVERLEAF_APP_NAME="Overleaf Community Edition"
+ENV OVERLEAF_APP_NAME="Underleaf"
 
 ENV OPTIMISE_PDF="true"
 

@@ -1,0 +1,102 @@
+name: underleaf
+
+services:
+  app:
+    image: underleaf/app:local
+    build:
+      context: .
+      dockerfile: server-ce/Dockerfile
+      args:
+        OVERLEAF_BASE_TAG: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
+    container_name: underleaf-app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${UNDERLEAF_HTTP_PORT:-8080}:80"
+    stop_grace_period: 60s
+    volumes:
+      - app_data:/var/lib/overleaf
+      - app_compiles:/var/lib/overleaf/data/compiles
+      - app_output:/var/lib/overleaf/data/output
+      - app_history:/var/lib/overleaf/data/history
+      - app_cache:/var/lib/overleaf/data/cache
+      - app_templates:/var/lib/overleaf/data/template_files
+    environment:
+      OVERLEAF_APP_NAME: Underleaf
+      OVERLEAF_NAV_TITLE: Underleaf
+      OVERLEAF_HEADER_IMAGE_URL: /underleaf-logo.svg
+      NAV_HIDE_POWERED_BY: "true"
+      OVERLEAF_SITE_URL: ${UNDERLEAF_SITE_URL:-http://localhost:8080}
+      OVERLEAF_MONGO_URL: mongodb://mongo/sharelatex
+      OVERLEAF_REDIS_HOST: redis
+      REDIS_HOST: redis
+      OVERLEAF_INVITE_TOKEN_SECRET: ${UNDERLEAF_INVITE_TOKEN_SECRET:?Set UNDERLEAF_INVITE_TOKEN_SECRET in .env}
+      OVERLEAF_SESSION_SECRET: ${UNDERLEAF_SESSION_SECRET:?Set UNDERLEAF_SESSION_SECRET in .env}
+      SESSION_SECRET: ${UNDERLEAF_SESSION_SECRET:?Set UNDERLEAF_SESSION_SECRET in .env}
+      CRYPTO_RANDOM: ${UNDERLEAF_SESSION_SECRET:?Set UNDERLEAF_SESSION_SECRET in .env}
+      ENABLED_LINKED_FILE_TYPES: project_file,project_output_file
+      ENABLE_CONVERSIONS: "true"
+      EMAIL_CONFIRMATION_DISABLED: "true"
+      UNDERLEAF_ALLOW_MONGO_7: "true"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl --fail --silent http://127.0.0.1:3000/status >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  mongo:
+    image: mongo:7.0
+    container_name: underleaf-mongo
+    restart: unless-stopped
+    command: ["--replSet", "overleaf", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+      - ./bin/shared/mongodb-init-replica-set.js:/docker-entrypoint-initdb.d/mongodb-init-replica-set.js:ro
+    environment:
+      MONGO_INITDB_DATABASE: sharelatex
+    extra_hosts:
+      - mongo:127.0.0.1
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" | grep 1'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  redis:
+    image: redis:6.2
+    container_name: underleaf-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  app_data:
+    name: underleaf_app_data
+  app_compiles:
+    name: underleaf_app_compiles
+  app_output:
+    name: underleaf_app_output
+  app_history:
+    name: underleaf_app_history
+  app_cache:
+    name: underleaf_app_cache
+  app_templates:
+    name: underleaf_app_templates
+  mongo_data:
+    name: underleaf_mongo_data
+  redis_data:
+    name: underleaf_redis_data

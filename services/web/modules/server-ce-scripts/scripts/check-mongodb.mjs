@@ -6,7 +6,11 @@ import {
 
 const { ObjectId } = mongodb
 
-const MIN_MONGO_VERSION = [8, 0]
+// MongoDB 8 cannot start on Linux 6.19 because of SERVER-121912. The local
+// Underleaf Compose profile uses MongoDB 7 until that host incompatibility is
+// resolved; other deployments retain the upstream minimum of MongoDB 8.
+const MIN_MONGO_VERSION =
+  process.env.UNDERLEAF_ALLOW_MONGO_7 === 'true' ? [7, 0] : [8, 0]
 const MIN_MONGO_FEATURE_COMPATIBILITY_VERSION = [7, 0]
 
 // Allow ignoring admin check failures via an environment variable
