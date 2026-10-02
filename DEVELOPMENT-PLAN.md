@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M14 concluídos; M15 é o próximo milestone
+> Status geral: M0–M15 concluídos; M16 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -429,18 +429,25 @@ busca, `User not found`, editor, viewer e remoção persistente.
 **Objetivo:** preservar a colaboração concorrente sem simplificar o problema
 de forma insegura.
 
-- [ ] Validar edições simultâneas no mesmo arquivo.
-- [ ] Validar ordenação e sincronização de operações.
-- [ ] Validar reconnect e recuperação de conexão.
-- [ ] Validar conflitos e comportamento offline/reconnect quando suportado.
-- [ ] Validar presença e atualizações de cursor quando disponíveis.
-- [ ] Extrair a responsabilidade para `apps/collaboration` quando isso reduzir
-  acoplamento.
-- [ ] Adicionar testes de concorrência e regressão antes de substituir a lógica
+- [x] Validar edições simultâneas no mesmo arquivo.
+- [x] Validar ordenação e sincronização de operações.
+- [x] Validar reconnect e recuperação de conexão.
+- [x] Validar conflitos e comportamento offline/reconnect quando suportado.
+- [x] Validar presença e atualizações de cursor quando disponíveis.
+- [x] Avaliar extração para `apps/collaboration`; a responsabilidade permanece
+  em `services/real-time` porque a extração não reduziria o acoplamento atual.
+- [x] Adicionar testes de concorrência e regressão antes de substituir a lógica
   herdada.
 
 **Critério de aceite:** dois usuários conseguem editar o mesmo documento sem
 perder alterações após sincronização ou reconexão.
+
+**Evidência:** `underleaf-collaboration-smoke.mjs` conecta dois usuários ao
+Socket.IO real, confirma presença/cursor, envia duas operações na mesma versão,
+desconecta um usuário, aplica outra operação durante a interrupção e valida os
+três marcadores e a versão final após a reconexão. A lógica herdada permanece
+no serviço real-time; o teste de concorrência foi adicionado antes de qualquer
+extração.
 
 ### M16 — Histórico
 

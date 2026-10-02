@@ -33,3 +33,17 @@ UNDERLEAF_PASSWORD='sua-senha' \
 UNDERLEAF_TARGET_USERNAME=outro-usuario \
 node tests/underleaf-sharing-smoke.mjs
 ```
+
+O smoke test de colaboração executa dentro do container web porque usa o
+`socket.io-client` do serviço real-time. Ele valida edição concorrente,
+ordenação, presença, reconexão e recuperação do documento:
+
+```bash
+docker exec -w /overleaf/services/real-time \
+  -e UNDERLEAF_WEB_URL=http://127.0.0.1:4000 \
+  -e UNDERLEAF_REALTIME_URL=http://127.0.0.1:3026 \
+  -e UNDERLEAF_USERNAME=m7admin \
+  -e UNDERLEAF_PASSWORD='sua-senha' \
+  -e UNDERLEAF_TARGET_USERNAME=outro-usuario \
+  underleaf-app node test/acceptance/underleaf-collaboration-smoke.mjs
+```
