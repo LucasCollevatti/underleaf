@@ -31,6 +31,7 @@ import { expressify, promisify } from '@overleaf/promise-utils'
 import { handleAuthenticateErrors } from './AuthenticationErrors.mjs'
 import EmailHelper from '../Helpers/EmailHelper.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
+import UnderleafUserManager from '../Underleaf/UnderleafUserManager.mjs'
 
 const { hasAdminAccess } = AdminAuthorizationHelper
 
@@ -102,16 +103,20 @@ function _classifyOauthError(err) {
 // TODO: Finish making these methods async
 const AuthenticationController = {
   serializeUser(user, callback) {
-    if (!user._id || !user.email) {
+    if (!user._id || (!user.email && !user.username)) {
       const err = new Error('serializeUser called with non-user object')
       logger.warn({ user }, err.message)
       return callback(err)
     }
     const lightUser = {
       _id: user._id,
+      username: user.username,
+      displayName: user.displayName,
+      role: user.role,
+      status: user.status,
       first_name: user.first_name,
-      last_name: user.last_name,
-      email: user.email,
+      last_name: user.last_name || '',
+      email: user.email || '',
       referal_id: user.referal_id,
       session_created: new Date().toISOString(),
       ip_address: user._login_req_ip,
@@ -266,6 +271,39 @@ const AuthenticationController = {
    * @returns {Promise<{ user: any, info: any}>}
    */
   async _doPassportLogin(req, username, password) {
+    if (Settings.underleaf) {
+      const { user, reason } =
+        await UnderleafUserManager.authenticate(username, password)
+      if (user) {
+        AuthenticationController.setAuditInfo(req, {
+          method: 'Username password login',
+        })
+        return { user, info: undefined }
+      }
+
+      if (reason === 'disabled') {
+        return {
+          user: false,
+          info: {
+            type: 'error',
+            text: 'This account is disabled.',
+            status: 403,
+          },
+        }
+      }
+
+      Metrics.inc('login_failure_reason', 1, { status: 'password_invalid' })
+      AuthenticationController._recordFailedLogin()
+      return {
+        user: false,
+        info: {
+          type: 'error',
+          text: 'Invalid username or password.',
+          status: 401,
+        },
+      }
+    }
+
     const email = EmailHelper.parseEmail(username)
     if (!email) {
       Metrics.inc('login_failure_reason', 1, { status: 'invalid_email' })
@@ -565,6 +603,9 @@ const AuthenticationController = {
 
   _redirectToLoginOrRegisterPage(req, res) {
     const { query } = parseReq(req, zipUrlQuerySchema, { logOnly: true })
+    if (Settings.underleaf) {
+      return AuthenticationController._redirectToLoginPage(req, res)
+    }
     if (
       query.zipUrl != null ||
       req.session.sharedProjectData ||

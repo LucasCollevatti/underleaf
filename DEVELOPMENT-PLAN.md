@@ -221,17 +221,22 @@ username antes de criar o índice único.
 
 **Objetivo:** oferecer autenticação direta por username e senha.
 
-- [ ] Implementar login, logout e consulta de sessão.
-- [ ] Remover dependência de `/register`, `/forgot-password` e
+- [x] Implementar login, logout e consulta de sessão.
+- [x] Remover dependência de `/register`, `/forgot-password` e
   `/confirm-email`.
-- [ ] Usar Argon2id ou outro mecanismo seguro aprovado pelo projeto.
-- [ ] Configurar cookies `HttpOnly`, `Secure` e `SameSite` adequados.
-- [ ] Implementar proteção contra CSRF.
-- [ ] Adicionar rate limiting básico ao login.
-- [ ] Validar entrada e retornar erros consistentes.
+- [x] Usar bcrypt com o mecanismo seguro já adotado pelo snapshot.
+- [x] Configurar cookies `HttpOnly`, `Secure` e `SameSite` adequados.
+- [x] Implementar proteção contra CSRF.
+- [x] Adicionar rate limiting básico ao login.
+- [x] Validar entrada e retornar erros consistentes.
 
 **Critério de aceite:** o fluxo de autenticação funciona sem e-mail e rejeita
 credenciais inválidas, contas desabilitadas e requisições sem proteção.
+
+**Evidência:** Passport usa `username` no modo Underleaf, com bcrypt, status
+`disabled`, rate limit de IP herdado, cookies de sessão `HttpOnly`/`SameSite`
+e o middleware CSRF existente. O formulário não oferece recuperação por email;
+redirecionamentos de visitantes não apontam mais para `/register`.
 
 ### M7 — Bootstrap do primeiro administrador
 
