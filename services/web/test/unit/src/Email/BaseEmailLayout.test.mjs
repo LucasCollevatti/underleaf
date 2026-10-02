@@ -32,12 +32,12 @@ describe('BaseEmailLayout branding', function () {
       const dom = load(html)
       const logoImg = dom('img[alt="TestApp"]')
       expect(logoImg.length).to.equal(1)
-      expect(logoImg.attr('src')).to.contain('email-logo@2x.png')
+      expect(logoImg.attr('src')).to.contain('underleaf-logo.png')
     })
 
-    it('should show the tagline image', async function () {
+    it('should not show the legacy Overleaf tagline', async function () {
       const html = await buildLayoutWithEnv('saas')
-      expect(html).to.contain('email-footer-tagline@2x.png')
+      expect(html).to.not.contain('email-footer-tagline@2x.png')
     })
   })
 
@@ -48,7 +48,7 @@ describe('BaseEmailLayout branding', function () {
       const logoImg = dom('img[alt="TestApp"]')
       expect(logoImg.length).to.equal(0)
       expect(html).to.contain('TestApp')
-      expect(html).to.not.contain('email-logo@2x.png')
+      expect(html).to.not.contain('underleaf-logo.png')
     })
 
     it('should not show the tagline image', async function () {
@@ -64,7 +64,7 @@ describe('BaseEmailLayout branding', function () {
       const logoImg = dom('img[alt="TestApp"]')
       expect(logoImg.length).to.equal(0)
       expect(html).to.contain('TestApp')
-      expect(html).to.not.contain('email-logo@2x.png')
+      expect(html).to.not.contain('underleaf-logo.png')
     })
 
     it('should not show the tagline image', async function () {

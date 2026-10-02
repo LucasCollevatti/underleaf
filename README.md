@@ -27,6 +27,18 @@ Acesse <http://localhost:8080>. Para parar os containers, use `make down`.
 Volumes nomeados preservam projetos, histórico, cache, banco e saídas entre
 reinicializações.
 
+Operações úteis:
+
+```bash
+make health
+make backup
+make restore BACKUP=/path/to/backup
+```
+
+A instalação de produção usa o overlay em
+`infra/compose/compose.production.yaml`; a configuração e as limitações estão
+em [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 ## Estrutura atual
 
 - `compose.yaml`: stack local do Underleaf;

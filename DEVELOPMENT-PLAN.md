@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M15 concluídos; M16 é o próximo milestone
+> Status geral: M0–M20 concluídos
 >
 > Última revisão: 2026-10-02
 
@@ -17,10 +17,10 @@ com checkboxes atualizados conforme cada entrega for validada.
 - [x] Infraestrutura Compose, documentação operacional e identidade Underleaf
   aplicadas.
 
-O repositório contém o snapshot funcional importado e as primeiras camadas de
-infraestrutura, documentação, organização, identidade, autenticação e
-administração do Underleaf. O dashboard e a estabilização do editor permanecem
-para os milestones seguintes.
+O repositório contém o snapshot funcional importado e as camadas operacionais
+de infraestrutura, documentação, identidade, autenticação, administração,
+histórico, persistência, backup, observabilidade e produção do Underleaf. Os
+milestones seguintes continuam a evolução do produto sobre essa base.
 
 ## Direção do produto
 
@@ -171,7 +171,7 @@ internos herdados não foram renomeados sem necessidade.
   API interna `200`, compilação `200` com status `success` e download do PDF
   `200` com assinatura `%PDF-`.
 - Identidade: a página de login retornou o título `Login - Underleaf, Online
-  LaTeX Editor`, com `/underleaf-logo.svg` e `/underleaf-favicon.svg`.
+  LaTeX Editor`, com `/underleaf-logo.png` e `/underleaf-favicon.png`.
 
 ### M4 — Remoção de funcionalidades desnecessárias
 
@@ -457,7 +457,7 @@ extração.
 - [x] Exibir histórico de documento ou projeto de forma compreensível.
 - [x] Permitir restaurar uma revisão anterior.
 - [x] Definir armazenamento e retenção do histórico.
-- [ ] Incluir histórico nos fluxos de backup e restore.
+- [x] Incluir histórico nos fluxos de backup e restore.
 
 **Critério de aceite:** uma revisão anterior pode ser identificada, restaurada
 e validada sem apagar silenciosamente o estado atual.
@@ -467,7 +467,9 @@ e validada sem apagar silenciosamente o estado atual.
 usuário responsável. A rota `/project/:id/revert-project` restaura uma versão
 anterior como uma nova revisão; `underleaf-history-smoke.mjs` valida o fluxo
 com uma edição real via Socket.IO, incluindo a preservação da revisão anterior
-antes do restore.
+antes do restore. O arquivo `app-data.tar.gz` produzido pelos scripts de
+backup inclui o volume de histórico, e o restore foi validado com esse
+conteúdo.
 
 ### M17 — Persistência organizada
 
@@ -538,16 +540,24 @@ alterar os serializers que filtram credenciais e conteúdo de documentos.
 
 **Objetivo:** fechar o caminho de operação em desenvolvimento e produção.
 
-- [ ] Manter configuração Compose base na raiz.
-- [ ] Adicionar overlays para desenvolvimento e produção em `infra/compose/`.
-- [ ] Documentar `make dev`, `make build`, `make test`, `make up`, `make down`,
+- [x] Manter configuração Compose base na raiz.
+- [x] Adicionar overlays para desenvolvimento e produção em `infra/compose/`.
+- [x] Documentar `make dev`, `make build`, `make test`, `make up`, `make down`,
   `make logs`, `make backup` e `make restore` quando existirem.
-- [ ] Adicionar redes internas, volumes persistentes e restart policies.
-- [ ] Validar configuração obrigatória na inicialização.
-- [ ] Configurar limites de recursos sem transformá-los em planos comerciais.
+- [x] Adicionar redes internas, volumes persistentes e restart policies.
+- [x] Validar configuração obrigatória na inicialização.
+- [x] Configurar limites de recursos sem transformá-los em planos comerciais.
 
 **Critério de aceite:** os caminhos documentados de desenvolvimento e
 produção funcionam sem passos ocultos.
+
+**Evidência:** `compose.yaml` é a base única; os overlays em
+`infra/compose/` separam desenvolvimento e produção. O Makefile expõe os
+fluxos operacionais, a configuração falha sem os secrets obrigatórios,
+`underleaf_app_backend` isola app, MongoDB e Redis sem portas internas
+publicadas, e o production overlay aplica restart, logging e limites de
+recursos. A identidade visual usa os assets PNG do Underleaf em
+`services/web/public`, incluindo logo, favicon e ícone para dispositivos Apple.
 
 ### M21 — Reverse proxy e HTTPS
 

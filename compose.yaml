@@ -25,10 +25,13 @@ services:
       - app_history:/var/lib/overleaf/data/history
       - app_cache:/var/lib/overleaf/data/cache
       - app_templates:/var/lib/overleaf/data/template_files
+    networks:
+      - default
+      - app_backend
     environment:
       OVERLEAF_APP_NAME: Underleaf
       OVERLEAF_NAV_TITLE: Underleaf
-      OVERLEAF_HEADER_IMAGE_URL: /underleaf-logo.svg
+      OVERLEAF_HEADER_IMAGE_URL: /underleaf-logo.png
       NAV_HIDE_POWERED_BY: "true"
       OVERLEAF_SITE_URL: ${UNDERLEAF_SITE_URL:-http://localhost:8080}
       OVERLEAF_MONGO_URL: mongodb://mongo/sharelatex
@@ -102,6 +105,8 @@ services:
       MONGO_INITDB_DATABASE: sharelatex
     extra_hosts:
       - mongo:127.0.0.1
+    networks:
+      - app_backend
     healthcheck:
       test:
         - CMD-SHELL
@@ -116,6 +121,8 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - app_backend
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -143,6 +150,9 @@ volumes:
     name: underleaf_redis_data
 
 networks:
+  app_backend:
+    name: underleaf_app_backend
+    internal: true
   compiler_net:
     name: underleaf_compiler_net
     internal: true

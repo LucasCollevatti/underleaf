@@ -78,7 +78,7 @@ describe('useStatusFavicon', function () {
   it('updates favicon to reflect status: UNCOMPILED', function () {
     setCompilation({ uncompiled: true, compiling: false, error: false })
     renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/favicon.svg')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
   })
 
   it('updates favicon to reflect status: COMPILING', function () {
@@ -108,7 +108,7 @@ describe('useStatusFavicon', function () {
     clock.tick(4500)
     expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
     clock.tick(1000)
-    expect(getCurrentFaviconHref()).to.include('/favicon.svg')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
   })
 
   it('keeps the COMPILED favicon forever when the window is hidden', function () {
@@ -126,7 +126,7 @@ describe('useStatusFavicon', function () {
     setCompilation({ uncompiled: true, compiling: false, error: false })
     const { rerender } = renderHook(() => useStatusFavicon())
     expect(getFaviconElements()).to.have.length(1)
-    expect(getCurrentFaviconHref()).to.include('/favicon.svg')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
 
     setCompilation({ uncompiled: false, compiling: true, error: false })
     rerender()

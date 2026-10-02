@@ -20,7 +20,7 @@ function Invite({ projectName, email, submitHandler, isLoading }: InviteProps) {
       <OLRow>
         <OLCol lg={{ span: 6, offset: 3 }}>
           <div className="project-join-container">
-            <img src="/underleaf-logo.svg" alt={appName} />
+            <img src="/underleaf-logo.png" alt={appName} />
             <h1 className="h4 mb-2">
               {t('youre_joining_x_as_y', { projectName, email })}
             </h1>

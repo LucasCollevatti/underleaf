@@ -31,6 +31,14 @@ docker compose ps
 By default, the application is available at
 `http://localhost:8080`. The port and public URL can be changed in `.env`.
 
+For production, validate and apply the production overlay:
+
+```bash
+COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" make config
+docker compose -f compose.yaml -f infra/compose/compose.production.yaml \
+  --env-file .env up -d
+```
+
 ## Services and persistence
 
 The initial baseline contains:
@@ -64,9 +72,17 @@ is an explicit operational action and is not part of `make down`.
 See [`PERSISTENCE.md`](PERSISTENCE.md) for the complete volume map, ownership,
 retention guidance and the recreation smoke test.
 
+Use `make health` for a JSON health report and `make backup`/`make restore
+BACKUP=/path/to/backup` for the documented recovery flow. The complete backup
+format is in [`BACKUP.md`](BACKUP.md); observability details are in
+[`OBSERVABILITY.md`](OBSERVABILITY.md).
+
 ## Operations
 
 ```bash
+make dev
+make build
+make test
 make logs
 make down
 docker compose ps

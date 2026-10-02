@@ -1,0 +1,11 @@
+services:
+  app:
+    restart: "no"
+    environment:
+      LOG_LEVEL: debug
+
+  mongo:
+    restart: "no"
+
+  redis:
+    restart: "no"

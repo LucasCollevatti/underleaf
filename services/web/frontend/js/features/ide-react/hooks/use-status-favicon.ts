@@ -9,7 +9,7 @@ const COMPILE_ICONS = {
   ERROR: 'favicon-error.svg',
   COMPILING: 'favicon-compiling.svg',
   COMPILED: 'favicon-compiled.svg',
-  UNCOMPILED: 'favicon.svg',
+  UNCOMPILED: 'underleaf-favicon.png',
 } as const
 
 type CompileStatus = keyof typeof COMPILE_ICONS
@@ -23,12 +23,9 @@ const useCompileStatus = (): CompileStatus => {
 }
 
 const removeFavicon = () => {
-  const existingFavicons = document.head.querySelectorAll(
-    "link[rel='icon']"
-  ) as NodeListOf<HTMLLinkElement>
-  existingFavicons.forEach(favicon => {
-    if (favicon.href.endsWith('.svg')) favicon.parentNode?.removeChild(favicon)
-  })
+  document.head
+    .querySelectorAll("link[rel='icon']")
+    .forEach(favicon => favicon.parentNode?.removeChild(favicon))
 }
 
 const updateFavicon = (status: CompileStatus = 'UNCOMPILED') => {
@@ -36,7 +33,9 @@ const updateFavicon = (status: CompileStatus = 'UNCOMPILED') => {
   const linkElement = document.createElement('link')
   linkElement.rel = 'icon'
   linkElement.href = getMeta('ol-baseAssetPath') + COMPILE_ICONS[status]
-  linkElement.type = 'image/svg+xml'
+  linkElement.type = COMPILE_ICONS[status].endsWith('.svg')
+    ? 'image/svg+xml'
+    : 'image/png'
   linkElement.setAttribute('data-compile-status', 'true')
   document.head.appendChild(linkElement)
 }

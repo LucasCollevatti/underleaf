@@ -21,8 +21,6 @@ import DefaultNavbar from '@/shared/components/navbar/default-navbar'
 import Footer from '@/shared/components/footer/footer'
 import SidebarDsNav from '@/features/project-list/components/sidebar/sidebar-ds-nav'
 import SystemMessages from '@/shared/components/system-messages'
-import overleafLogo from '@/shared/svgs/overleaf-a-ds-solution-mallard.svg'
-import overleafLogoDark from '@/shared/svgs/overleaf-a-ds-solution-mallard-dark.svg'
 import CookieBanner from '@/shared/components/cookie-banner'
 import NoProjects from '@/features/project-list/components/no-projects'
 import { useActiveOverallTheme } from '@/shared/hooks/use-active-overall-theme'
@@ -83,9 +81,7 @@ export function ProjectListDsNav() {
             ? navbarProps.customLogoDark
             : navbarProps.customLogo
         }
-        overleafLogo={
-          activeOverallTheme === 'dark' ? overleafLogoDark : overleafLogo
-        }
+        overleafLogo="/underleaf-logo.png"
         showCloseIcon
       />
       <div className="project-list-wrapper">

@@ -2,9 +2,9 @@
   "name": "Underleaf",
   "icons": [
     {
-      "src": "/underleaf-logo.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/underleaf-logo.png",
+      "type": "image/png",
+      "sizes": "1254x1254"
     }
   ],
   "theme_color": "#1b222c",

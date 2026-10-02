@@ -7,10 +7,10 @@ export function DsNavOverleafLogo() {
     <div className="ds-nav-page-switcher-logo">
       <a href="/" aria-label={appName}>
         <img
-          src="/underleaf-logo.svg"
+          src="/underleaf-logo.png"
           alt="Underleaf"
           height="59"
-          width="130"
+          width="59"
         />
       </a>
     </div>

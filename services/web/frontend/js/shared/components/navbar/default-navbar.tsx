@@ -13,8 +13,6 @@ import MaterialIcon from '@/shared/components/material-icon'
 import { useContactUsModal } from '@/shared/hooks/use-contact-us-modal'
 import { UserProvider } from '@/shared/context/user-context'
 import { X } from '@phosphor-icons/react'
-import overleafWhiteLogo from '@/shared/svgs/overleaf-white.svg'
-import overleafGreenLogo from '@/shared/svgs/overleaf-green.svg'
 import type { CSSPropertiesWithVariables } from '../../../../../types/css-properties-with-variables'
 
 function DefaultNavbar(
@@ -58,8 +56,8 @@ function DefaultNavbar(
         onToggle={expanded => setExpanded(expanded)}
         style={
           {
-            '--navbar-brand-image-default-url': `url("${overleafWhiteLogo}")`,
-            '--navbar-brand-image-redesign-url': `url("${overleafGreenLogo}")`,
+            '--navbar-brand-image-default-url': 'url("/underleaf-logo.png")',
+            '--navbar-brand-image-redesign-url': 'url("/underleaf-logo.png")',
           } as CSSPropertiesWithVariables
         }
         aria-label={t('primary')}

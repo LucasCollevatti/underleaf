@@ -39,12 +39,12 @@ else if metadata && metadata.image_src
 	meta(name='image' content=metadata.image_src)
 else if settings.overleaf
 	//- the default image for Overleaf
-	meta(itemprop='image' content=buildImgPath('ol-brand/overleaf_og_logo.png'))
-	meta(name='image' content=buildImgPath('ol-brand/overleaf_og_logo.png'))
+	meta(itemprop='image' content=buildBaseAssetPath() + 'underleaf-logo.png')
+	meta(name='image' content=buildBaseAssetPath() + 'underleaf-logo.png')
 else
 	//- the default image for Overleaf Community Edition/Server Pro
-	meta(itemprop='image' content=buildBaseAssetPath() + 'apple-touch-icon.png')
-	meta(name='image' content=buildBaseAssetPath() + 'apple-touch-icon.png')
+	meta(itemprop='image' content=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png')
+	meta(name='image' content=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png')
 
 //- Keywords
 if metadata && metadata.keywords
@@ -75,13 +75,13 @@ else if settings.overleaf
 	//- the default image for Overleaf
 	meta(
 		name='twitter:image'
-		content=buildImgPath('ol-brand/overleaf_og_logo.png')
+		content=buildBaseAssetPath() + 'underleaf-logo.png'
 	)
 else
 	//- the default image for Overleaf Community Edition/Server Pro
 	meta(
 		name='twitter:image'
-		content=buildBaseAssetPath() + 'apple-touch-icon.png'
+		content=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png'
 	)
 
 //- Open Graph
@@ -101,13 +101,13 @@ else if settings.overleaf
 	//- the default image for Overleaf
 	meta(
 		property='og:image'
-		content=buildImgPath('ol-brand/overleaf_og_logo.png')
+		content=buildBaseAssetPath() + 'underleaf-logo.png'
 	)
 else
 	//- the default image for Overleaf Community Edition/Server Pro
 	meta(
 		property='og:image'
-		content=buildBaseAssetPath() + 'apple-touch-icon.png'
+		content=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png'
 	)
 
 if metadata && metadata.openGraphType
@@ -131,13 +131,8 @@ if settings.robotsNoindex
 	meta(name='robots' content='noindex')
 
 //- Icons
-link(rel='icon' href='/underleaf-favicon.svg' type='image/svg+xml')
-link(rel='apple-touch-icon' href=buildBaseAssetPath() + 'apple-touch-icon.png')
-link(
-	rel='mask-icon'
-	href=buildBaseAssetPath() + 'mask-favicon.svg'
-	color='#176b45'
-)
+link(rel='icon' href='/underleaf-favicon.png' type='image/png')
+link(rel='apple-touch-icon' href=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png')
 
 //- Canonical Tag for SEO
 if metadata && metadata.canonicalURL
