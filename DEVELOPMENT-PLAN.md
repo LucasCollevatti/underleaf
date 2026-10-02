@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M8 concluídos; M9 é o próximo milestone
+> Status geral: M0–M9 concluídos; M10 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -290,15 +290,23 @@ formulários com CSRF e preservam sempre um administrador ativo.
 **Objetivo:** tornar a página inicial autenticada simples e centrada nos
 projetos.
 
-- [ ] Listar projetos próprios e compartilhados.
-- [ ] Criar, abrir, renomear, arquivar, duplicar e excluir projetos.
-- [ ] Importar e exportar projetos em ZIP.
-- [ ] Adicionar busca por projeto.
-- [ ] Adicionar filtros úteis, como todos, próprios, compartilhados e arquivados.
-- [ ] Remover elementos de dashboard voltados para SaaS.
+- [x] Listar projetos próprios e compartilhados.
+- [x] Criar, abrir, renomear, arquivar, duplicar e excluir projetos.
+- [x] Importar e exportar projetos em ZIP.
+- [x] Adicionar busca por projeto.
+- [x] Adicionar filtros úteis, como todos, próprios, compartilhados e arquivados.
+- [x] Remover elementos de dashboard voltados para SaaS.
 
 **Critério de aceite:** após o login, o usuário consegue encontrar e gerenciar
 seus projetos sem navegar por páginas de produto irrelevantes.
+
+**Evidência:** o dashboard React maduro continua sendo renderizado por
+`ProjectListController` e `project/list-react`, com filtros `all`, `owned`,
+`shared`, `archived` e `trashed`, busca local, criação, importação, duplicação,
+rename, archive, delete e exportação ZIP. O teste
+`tests/underleaf-project-dashboard-smoke.mjs` validou login, dashboard, criação,
+listagem, abertura, rename, archive, filtro de arquivados, duplicação,
+exportação ZIP e limpeza dos projetos. As features SaaS permanecem desligadas.
 
 ### M10 — Estabilização do editor
 
