@@ -177,16 +177,22 @@ internos herdados não foram renomeados sem necessidade.
 
 **Objetivo:** retirar do produto o que não faz parte do cenário self-hosted.
 
-- [ ] Remover cadastro público.
-- [ ] Remover confirmação e recuperação de senha por e-mail.
-- [ ] Remover billing, subscriptions, plans e pricing.
-- [ ] Remover fluxos de marketing e integrações cloud não utilizadas.
-- [ ] Remover OAuth, SAML e outros provedores de identidade que não tenham
+- [x] Remover cadastro público.
+- [x] Remover confirmação e recuperação de senha por e-mail.
+- [x] Remover billing, subscriptions, plans e pricing.
+- [x] Remover fluxos de marketing e integrações cloud não utilizadas.
+- [x] Remover OAuth, SAML e outros provedores de identidade que não tenham
   requisito no produto.
-- [ ] Remover rotas e serviços órfãos depois de verificar suas dependências.
+- [x] Remover rotas e serviços órfãos depois de verificar suas dependências.
 
 **Critério de aceite:** as funcionalidades removidas não podem ser acessadas
 por rotas, jobs, APIs ou componentes ainda ativos.
+
+**Evidência:** o modo Underleaf desliga as features de registro, SaaS, OAuth e
+SAML; remove o router de recuperação de senha e bloqueia as rotas de cadastro,
+confirmação e preferências de e-mail. `plans` fica vazio e subscriptions
+continua desabilitado. O Compose foi reconstruído e a aplicação permaneceu
+saudável.
 
 ### M5 — Modelo de usuários por username
 

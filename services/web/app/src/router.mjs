@@ -303,11 +303,27 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthenticationController.addEndpointToLoginWhitelist('/register')
   }
 
+  if (Settings.underleaf) {
+    webRouter.use(
+      [
+        '/register',
+        '/user/password/reset',
+        '/user/password/set',
+        '/user/reconfirm',
+        '/user/emails',
+        '/user/email-preferences',
+      ],
+      (req, res) => res.sendStatus(404)
+    )
+  }
+
   EditorRouter.apply(webRouter, privateApiRouter)
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
   SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
   UploadsRouter.apply(webRouter, privateApiRouter)
-  PasswordResetRouter.apply(webRouter, privateApiRouter)
+  if (!Settings.underleaf) {
+    PasswordResetRouter.apply(webRouter, privateApiRouter)
+  }
   StaticPagesRouter.apply(webRouter, privateApiRouter)
   ContactRouter.apply(webRouter, privateApiRouter)
   AnalyticsRouter.apply(webRouter, privateApiRouter, publicApiRouter)

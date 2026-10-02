@@ -79,6 +79,7 @@ const safeCompilers = ['xelatex', 'pdflatex', 'latex', 'lualatex']
 
 module.exports = {
   env: 'server-ce',
+  underleaf: true,
 
   limits: {
     httpGlobalAgentMaxSockets: 300,
@@ -434,14 +435,7 @@ module.exports = {
     sizes: [],
     usages: [],
   },
-  plans: [
-    {
-      planCode: 'personal',
-      name: 'Personal',
-      price_in_cents: 0,
-      features: defaultFeatures,
-    },
-  ],
+  plans: [],
 
   disableChat: process.env.OVERLEAF_DISABLE_CHAT === 'true',
   disableLinkSharing: process.env.OVERLEAF_DISABLE_LINK_SHARING === 'true',

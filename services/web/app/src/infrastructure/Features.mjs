@@ -47,16 +47,17 @@ const Features = {
   hasFeature(feature) {
     switch (feature) {
       case 'saas':
-        return Boolean(Settings.overleaf)
+        return !Settings.underleaf && Boolean(Settings.overleaf)
       case 'homepage':
         return Boolean(Settings.enableHomepage)
       case 'registration-page':
+        if (Settings.underleaf) return false
         return (
           !Features.externalAuthenticationSystemUsed() ||
           Boolean(Settings.overleaf)
         )
       case 'registration':
-        return Boolean(Settings.overleaf)
+        return !Settings.underleaf && Boolean(Settings.overleaf)
       case 'chat':
         return Boolean(Settings.disableChat) === false
       case 'link-sharing':
@@ -66,14 +67,14 @@ const Features = {
       case 'git-bridge':
         return Boolean(Settings.enableGitBridge)
       case 'oauth':
-        return Boolean(Settings.oauth)
+        return !Settings.underleaf && Boolean(Settings.oauth)
       case 'templates-server-pro':
         return Boolean(Settings.templates?.user_id)
       case 'affiliations':
       case 'analytics':
         return Boolean(_.get(Settings, ['apis', 'v1', 'url']))
       case 'saml':
-        return Boolean(Settings.enableSaml)
+        return !Settings.underleaf && Boolean(Settings.enableSaml)
       case 'linked-project-file':
         return Boolean(Settings.enabledLinkedFileTypes.includes('project_file'))
       case 'linked-project-output-file':
