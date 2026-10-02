@@ -22,3 +22,14 @@ UNDERLEAF_USERNAME=m7admin \
 UNDERLEAF_PASSWORD='sua-senha' \
 node tests/underleaf-editor-smoke.mjs
 ```
+
+O smoke test de compartilhamento valida busca autenticada por username,
+permissões editor/viewer, remoção e erros de usuário inexistente:
+
+```bash
+UNDERLEAF_BASE_URL=http://localhost:18080 \
+UNDERLEAF_USERNAME=m7admin \
+UNDERLEAF_PASSWORD='sua-senha' \
+UNDERLEAF_TARGET_USERNAME=outro-usuario \
+node tests/underleaf-sharing-smoke.mjs
+```

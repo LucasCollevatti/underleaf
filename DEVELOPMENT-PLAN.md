@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M12 concluídos; M13 é o próximo milestone
+> Status geral: M0–M14 concluídos; M15 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -408,16 +408,21 @@ testes unitários verificam a configuração e a terminação previsível.
 
 **Objetivo:** compartilhar projetos diretamente com usuários existentes.
 
-- [ ] Permitir busca de usuários por username.
-- [ ] Criar associação de projeto com usuário e permissão.
-- [ ] Suportar `owner`, `editor` e `viewer`.
-- [ ] Conceder acesso diretamente quando o usuário existir.
-- [ ] Retornar `User not found` ou erro equivalente quando não existir.
-- [ ] Não exigir convite, e-mail, magic link ou confirmação pendente.
-- [ ] Validar autorização em todas as operações do projeto.
+- [x] Permitir busca de usuários por username.
+- [x] Criar associação de projeto com usuário e permissão.
+- [x] Suportar `owner`, `editor` e `viewer`.
+- [x] Conceder acesso diretamente quando o usuário existir.
+- [x] Retornar `User not found` ou erro equivalente quando não existir.
+- [x] Não exigir convite, e-mail, magic link ou confirmação pendente.
+- [x] Validar autorização em todas as operações do projeto.
 
 **Critério de aceite:** o proprietário consegue adicionar e remover um usuário
 existente por username e as permissões são aplicadas consistentemente.
+
+**Evidência:** `UnderleafSharingRouter` expõe busca autenticada e associação
+direta `editor`/`viewer` sem criar convite. A autorização de administração do
+projeto é aplicada antes de adicionar, alterar ou remover; o smoke test cobre
+busca, `User not found`, editor, viewer e remoção persistente.
 
 ### M15 — Colaboração em tempo real
 

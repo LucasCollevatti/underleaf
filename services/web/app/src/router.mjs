@@ -66,6 +66,7 @@ import SocketDiagnostics from './Features/SocketDiagnostics/SocketDiagnostics.mj
 import ClsiCacheController from './Features/Compile/ClsiCacheController.mjs'
 import AsyncLocalStorage from './infrastructure/AsyncLocalStorage.mjs'
 import UnderleafAdminController from './Features/Underleaf/UnderleafAdminController.mjs'
+import UnderleafSharingRouter from './Features/Underleaf/UnderleafSharingRouter.mjs'
 import {
   getRawReqInput,
   parseReq,
@@ -319,6 +320,9 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   }
 
   EditorRouter.apply(webRouter, privateApiRouter)
+  if (Settings.underleaf) {
+    UnderleafSharingRouter.apply(webRouter)
+  }
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
   SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
   UploadsRouter.apply(webRouter, privateApiRouter)
