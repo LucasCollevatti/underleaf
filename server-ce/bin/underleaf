@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+case "${1:-}" in
+  create-admin)
+    cd /overleaf/services/web
+    exec /usr/bin/node /overleaf/services/web/app/src/Features/Underleaf/underleaf-cli.mjs create-admin
+    ;;
+  *)
+    echo "Usage: underleaf create-admin" >&2
+    exit 2
+    ;;
+esac

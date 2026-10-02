@@ -92,6 +92,11 @@ COPY server-ce/config/custom-environment-variables.json /overleaf/services/histo
 ADD server-ce/bin/grunt /usr/local/bin/grunt
 RUN chmod +x /usr/local/bin/grunt
 
+# Add the Underleaf administration CLI.
+# -------------------------------------
+ADD server-ce/bin/underleaf /usr/local/bin/underleaf
+RUN chmod +x /usr/local/bin/underleaf
+
 # Copy history helper scripts
 # ---------------------------
 ADD server-ce/bin/flush-history-queues /overleaf/bin/flush-history-queues

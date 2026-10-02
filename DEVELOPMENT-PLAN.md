@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M3 concluídos; M4 é o próximo milestone
+> Status geral: M0–M7 concluídos; M8 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -18,9 +18,9 @@ com checkboxes atualizados conforme cada entrega for validada.
   aplicadas.
 
 O repositório contém o snapshot funcional importado e as primeiras camadas de
-infraestrutura, documentação, organização e identidade do Underleaf. A
-remoção de funcionalidades e a autenticação por username permanecem para os
-milestones seguintes.
+infraestrutura, documentação, organização, identidade, autenticação e
+administração do Underleaf. O dashboard e a estabilização do editor permanecem
+para os milestones seguintes.
 
 ## Direção do produto
 
@@ -243,15 +243,21 @@ redirecionamentos de visitantes não apontam mais para `/register`.
 **Objetivo:** permitir a criação segura do primeiro administrador sem cadastro
 público nem credenciais previsíveis.
 
-- [ ] Implementar `underleaf create-admin` ou `scripts/create-admin.sh`.
-- [ ] Solicitar username, senha e confirmação de senha de forma segura.
-- [ ] Impedir criação de credenciais padrão.
-- [ ] Tornar a operação idempotente ou retornar um erro claro quando já houver
+- [x] Implementar `underleaf create-admin` ou `scripts/create-admin.sh`.
+- [x] Solicitar username, senha e confirmação de senha de forma segura.
+- [x] Impedir criação de credenciais padrão.
+- [x] Tornar a operação idempotente ou retornar um erro claro quando já houver
   administrador.
-- [ ] Documentar o fluxo de instalação.
+- [x] Documentar o fluxo de instalação.
 
 **Critério de aceite:** uma instalação nova consegue criar o primeiro admin
 somente por uma operação administrativa explícita.
+
+**Evidência:** `underleaf create-admin` e `scripts/create-admin.sh` executam o
+bootstrap dentro do container. O CLI valida que ainda não existe administrador,
+solicita username, senha e confirmação, oculta a senha em terminal interativo,
+grava apenas o hash e retorna erro claro quando o bootstrap já foi realizado.
+O fluxo está documentado em `docs/DEPLOYMENT.md`.
 
 ### M8 — Painel administrativo
 

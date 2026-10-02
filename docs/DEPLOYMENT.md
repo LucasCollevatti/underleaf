@@ -84,3 +84,17 @@ ShareLaTeX-era base image.
 `make build` runs both the base-image and application-image builds. To run the
 Compose command directly, build the base image first and set
 `UNDERLEAF_BASE_IMAGE=underleaf/base:local` in `.env`.
+
+## First administrator
+
+The first account must be created explicitly from the application container.
+The command refuses to create another administrator after one exists:
+
+```bash
+./scripts/create-admin.sh
+```
+
+Enter the username, password and password confirmation when prompted. Password
+input is hidden in an interactive terminal and is never stored in plaintext.
+After the account is created, sign in at `/login` and use `/admin/users` to
+manage the remaining accounts.
