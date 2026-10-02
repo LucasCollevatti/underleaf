@@ -5,7 +5,8 @@ Os arquivos deste diretório são overlays explícitos:
 
 - `compose.development.yaml`: desliga restart automático e ativa logs `debug`;
 - `compose.production.yaml`: aplica restart policies, limites de CPU/memória,
-  `init`, rotação de logs e mantém o compiler como serviço sob demanda.
+  `init`, rotação de logs, cookies seguros e adiciona o Caddy como única porta
+  pública, mantendo o compiler como serviço sob demanda.
 
 ## Desenvolvimento
 
@@ -42,7 +43,9 @@ docker compose -f compose.yaml \
   --env-file .env up -d
 ```
 
+O Caddy publica somente 80 e 443 e encaminha também WebSocket para o app.
 MongoDB e Redis não publicam portas; ambos compartilham apenas a rede interna
 `underleaf_app_backend` com o app. Os dados ficam em volumes Docker nomeados e
 as políticas de restart e limites do production overlay não alteram o produto
-em planos comerciais.
+em planos comerciais. A revisão de segurança está em
+[`../../docs/SECURITY.md`](../../docs/SECURITY.md).

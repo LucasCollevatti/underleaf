@@ -17,6 +17,8 @@ ser uma operação explícita e precedida por backup.
 | Cache da aplicação | `app` | `underleaf_app_cache` | `/var/lib/overleaf/data/cache` | Cache derivado; não é fonte de verdade e pode ser limpo conforme a política operacional. |
 | Templates | `app` | `underleaf_app_templates` | `/var/lib/overleaf/data/template_files` | Arquivos de template usados pela aplicação. |
 | Área de trabalho do compilador | `compiler` | `underleaf_compiler_work` | `/var/lib/underleaf/compiler` | Trabalho temporário do compilador isolado; não contém a fonte canônica do projeto. |
+| Estado e certificados do proxy | `proxy` | `underleaf_proxy_data` | `/data` | Certificados ACME, autoridade local e estado operacional do Caddy. |
+| Configuração persistida do proxy | `proxy` | `underleaf_proxy_config` | `/config` | Configuração automática persistida pelo Caddy; não substitui o Caddyfile versionado. |
 
 Os volumes `app_data` e seus volumes filhos são montados juntos de propósito:
 o volume filho prevalece no subcaminho correspondente sem esconder o restante
@@ -30,6 +32,8 @@ atualizar o backup e o restore.
 - O app precisa escrever nos volumes `app_*`; o host não deve expor esses
   diretórios diretamente sem preservar proprietário e modo dos arquivos.
 - MongoDB e Redis devem permanecer sem portas publicadas no host em produção.
+- `underleaf_proxy_data` e `underleaf_proxy_config` devem ser preservados para
+  evitar perda de certificados e estado do Caddy.
 - O backup deve incluir MongoDB, `app_data`, `app_output`, `app_history`,
   `app_templates` e o manifest. `app_compiles`, `app_cache` e
   `compiler_work` são derivados e podem ser excluídos ou recriados conforme o
