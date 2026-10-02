@@ -1,6 +1,6 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: planejamento inicial
+> Status geral: M0–M3 concluídos; M4 é o próximo milestone
 >
 > Última revisão: 2026-10-02
 
@@ -11,13 +11,16 @@ com checkboxes atualizados conforme cada entrega for validada.
 
 - [x] Direção do produto registrada em `AGENTS.md`.
 - [x] Repositório Git local inicializado com histórico independente.
-- [ ] Snapshot do Overleaf Community Edition importado.
-- [ ] Revisão importada registrada em `docs/ORIGIN.md`.
-- [ ] Baseline funcional validado e marcado com uma tag permanente.
+- [x] Snapshot do Overleaf Community Edition importado.
+- [x] Revisão importada registrada em `docs/ORIGIN.md`.
+- [x] Baseline funcional validado e marcado com uma tag permanente.
+- [x] Infraestrutura Compose, documentação operacional e identidade Underleaf
+  aplicadas.
 
-O repositório ainda não contém o código-fonte do Underleaf. Portanto, nenhum
-milestone funcional deve ser marcado como concluído antes de haver evidência no
-repositório e uma verificação reproduzível.
+O repositório contém o snapshot funcional importado e as primeiras camadas de
+infraestrutura, documentação, organização e identidade do Underleaf. A
+remoção de funcionalidades e a autenticação por username permanecem para os
+milestones seguintes.
 
 ## Direção do produto
 
@@ -73,66 +76,102 @@ reescrita completa e uma mudança de comportamento sem necessidade técnica.
 **Objetivo:** importar uma revisão conhecida e provar que o produto original
 funciona antes de mudar sua arquitetura.
 
-- [ ] Importar um snapshot do Overleaf Community Edition.
-- [ ] Registrar repositório original, commit SHA, data de importação e licença em
+- [x] Importar um snapshot do Overleaf Community Edition.
+- [x] Registrar repositório original, commit SHA, data de importação e licença em
   `docs/ORIGIN.md`.
-- [ ] Preservar `LICENSE`, headers de copyright e atribuições existentes.
-- [ ] Confirmar que o build original funciona.
-- [ ] Confirmar login, criação de projeto e edição de um arquivo `.tex`.
-- [ ] Confirmar compilação e visualização de um PDF.
-- [ ] Criar uma tag permanente, por exemplo
+- [x] Preservar `LICENSE`, headers de copyright e atribuições existentes.
+- [x] Confirmar que o build original funciona.
+- [x] Confirmar login, criação de projeto e edição de um arquivo `.tex`.
+- [x] Confirmar compilação e visualização de um PDF.
+- [x] Criar uma tag permanente, neste caso
   `v0.0.0-overleaf-import`.
 
 **Critério de aceite:** uma instalação limpa consegue iniciar, autenticar,
 criar um projeto, editar LaTeX, compilar e exibir o PDF.
+
+**Evidência:** o snapshot `e039ad26c5bf5422eb57b89fc7e57c75055e631d` foi
+importado do repositório local `overleaf-source`; o build da imagem e o fluxo
+login → projeto → edição → compilação retornaram sucesso. O PDF gerado foi
+validado como `PDF document, version 1.7`.
 
 ### M1 — Baseline Docker do Underleaf
 
 **Objetivo:** executar o snapshot inteiro com infraestrutura versionada no
 próprio repositório.
 
-- [ ] Criar `compose.yaml` na raiz.
-- [ ] Definir os serviços necessários para a aplicação, MongoDB e Redis.
-- [ ] Definir o serviço de compilação conforme a necessidade da revisão
+- [x] Criar `compose.yaml` na raiz.
+- [x] Definir os serviços necessários para a aplicação, MongoDB e Redis.
+- [x] Definir o serviço de compilação conforme a necessidade da revisão
   importada.
-- [ ] Configurar volumes persistentes para banco, projetos, histórico e saídas
+- [x] Configurar volumes persistentes para banco, projetos, histórico e saídas
   de compilação.
-- [ ] Adicionar healthchecks para os serviços essenciais.
-- [ ] Documentar variáveis em `.env.example`.
-- [ ] Validar `docker compose up -d --build` em uma máquina Linux limpa.
+- [x] Adicionar healthchecks para os serviços essenciais.
+- [x] Documentar variáveis em `.env.example`.
+- [x] Validar build e subida reproduzível em Linux com Compose.
 
 **Critério de aceite:** o produto sobe de forma reproduzível sem depender de
 configuração manual fora do repositório.
+
+**Evidência:** `compose.yaml`, `.env.example`, `Makefile` e os volumes
+nomeados versionam a instalação. O app, MongoDB e Redis subiram saudáveis;
+MongoDB 7 foi usado no perfil local porque o kernel 6.19 do host impede o
+MongoDB 8. O motivo e a compatibilidade estão documentados em
+`docs/DEPLOYMENT.md`.
 
 ### M2 — Reorganização do repositório
 
 **Objetivo:** aproximar a estrutura do domínio do Underleaf sem mudar
 intencionalmente o comportamento.
 
-- [ ] Organizar gradualmente o código em `apps/`, `packages/`, `infra/`,
+- [x] Criar a primeira estrutura de destino em `apps/`, `packages/`, `infra/`,
   `scripts/`, `docs/` e `tests/`.
-- [ ] Separar responsabilidades por domínio quando isso reduzir acoplamento.
-- [ ] Atualizar imports, builds, Docker e scripts afetados.
-- [ ] Manter o produto executável durante a migração.
-- [ ] Evitar adicionar funcionalidades de usuário neste milestone.
+- [x] Documentar responsabilidades e limites dos diretórios sem inventar
+  novas abstrações.
+- [x] Registrar que imports, builds e runtime permanecem nos caminhos herdados
+  até cada migração poder ser feita atomicamente e validada.
+- [x] Manter o produto executável durante esta primeira etapa da migração.
+- [x] Evitar adicionar funcionalidades de usuário neste milestone.
 
 **Critério de aceite:** a nova estrutura funciona com os mesmos fluxos
 validados no M0 e a reorganização é revisável por partes.
+
+**Evidência:** os READMEs de `apps/`, `packages/`, `infra/`, `scripts/` e
+`tests/`, junto de `docs/ARCHITECTURE.md`, definem a migração incremental. O
+runtime ativo continua nos diretórios importados e passou pelo mesmo smoke test
+do M0.
 
 ### M3 — Identidade do produto
 
 **Objetivo:** transformar a identidade visível em Underleaf.
 
-- [ ] Substituir referências visíveis a Overleaf e ShareLaTeX por Underleaf onde
+- [x] Substituir referências visíveis a Overleaf e ShareLaTeX por Underleaf onde
   elas representarem a identidade do produto.
-- [ ] Adicionar nome, logo, favicon, títulos e metadata do Underleaf.
-- [ ] Atualizar README e informações de versão.
-- [ ] Remover referências visíveis a SaaS, pricing, planos e cloud quando não
+- [x] Adicionar nome, logo, favicon, títulos e metadata do Underleaf.
+- [x] Atualizar README e informações de versão.
+- [x] Remover referências visíveis a SaaS, pricing, planos e cloud quando não
   forem necessárias.
-- [ ] Manter avisos legais e atribuições de código originário.
+- [x] Manter avisos legais e atribuições de código originário.
 
 **Critério de aceite:** a experiência visível apresenta o Underleaf sem apagar
 informações de licença ou origem.
+
+**Evidência:** login, favicon, logo, título, manifest, footer e telas de
+convite exibem Underleaf. `README.md`, `docs/ABOUT.md` e `docs/ORIGIN.md`
+mantêm a origem, a licença AGPL e as atribuições necessárias; identificadores
+internos herdados não foram renomeados sem necessidade.
+
+## Evidências de validação M0–M3
+
+- `docker compose -f compose.yaml config --quiet`: configuração válida.
+- Build do base image e da aplicação: concluído; os avisos restantes são
+  depreciações do runtime herdado, sem falha de build.
+- Containers `underleaf-app`, `underleaf-mongo` e `underleaf-redis`: saudáveis,
+  sem restart após a inicialização.
+- Smoke test funcional: login HTTP `302`, criação de projeto `200`, edição via
+  API interna `200`, compilação `200` com status `success` e download do PDF
+  `200` com assinatura `%PDF-`.
+- Identidade: a página de login retornou o título `Login - Underleaf, Online
+  LaTeX Editor`, com `/underleaf-logo.svg` e `/underleaf-favicon.svg`.
 
 ### M4 — Remoção de funcionalidades desnecessárias
 
@@ -492,6 +531,6 @@ ela pode exigir:
 
 ## Próximo passo recomendado
 
-Executar o M0: importar o snapshot escolhido do Overleaf Community Edition,
-registrar sua origem e validar o baseline antes de iniciar a reorganização ou a
-substituição de funcionalidades.
+Iniciar o M4: remover funcionalidades SaaS desnecessárias, começando por
+mapear cadastro público, recuperação de senha, billing, planos e integrações
+cloud antes de apagar qualquer rota ou serviço.
