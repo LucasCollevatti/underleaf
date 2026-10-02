@@ -453,14 +453,21 @@ extração.
 
 **Objetivo:** manter versões recuperáveis dos projetos.
 
-- [ ] Registrar timestamp e usuário responsável por cada revisão.
-- [ ] Exibir histórico de documento ou projeto de forma compreensível.
-- [ ] Permitir restaurar uma revisão anterior.
-- [ ] Definir armazenamento e retenção do histórico.
+- [x] Registrar timestamp e usuário responsável por cada revisão.
+- [x] Exibir histórico de documento ou projeto de forma compreensível.
+- [x] Permitir restaurar uma revisão anterior.
+- [x] Definir armazenamento e retenção do histórico.
 - [ ] Incluir histórico nos fluxos de backup e restore.
 
 **Critério de aceite:** uma revisão anterior pode ser identificada, restaurada
 e validada sem apagar silenciosamente o estado atual.
+
+**Evidência:** as rotas autenticadas `/project/:id/updates` e
+`/project/:id/latest/history` expõem revisões com intervalo de timestamp e
+usuário responsável. A rota `/project/:id/revert-project` restaura uma versão
+anterior como uma nova revisão; `underleaf-history-smoke.mjs` valida o fluxo
+com uma edição real via Socket.IO, incluindo a preservação da revisão anterior
+antes do restore.
 
 ### M17 — Persistência organizada
 

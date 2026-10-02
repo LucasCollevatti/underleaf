@@ -47,3 +47,16 @@ docker exec -w /overleaf/services/real-time \
   -e UNDERLEAF_TARGET_USERNAME=outro-usuario \
   underleaf-app node test/acceptance/underleaf-collaboration-smoke.mjs
 ```
+
+O smoke test de histórico também executa dentro do container web. Ele cria
+uma revisão, verifica timestamp e usuário responsável, restaura a versão
+inicial e confirma que a restauração cria uma nova revisão:
+
+```bash
+docker exec -w /overleaf/services/real-time \
+  -e UNDERLEAF_WEB_URL=http://127.0.0.1:4000 \
+  -e UNDERLEAF_REALTIME_URL=http://127.0.0.1:3026 \
+  -e UNDERLEAF_USERNAME=m7admin \
+  -e UNDERLEAF_PASSWORD='sua-senha' \
+  underleaf-app node test/acceptance/underleaf-history-smoke.mjs
+```
