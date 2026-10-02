@@ -101,6 +101,20 @@ during its build. Add packages to the compiler Dockerfile when the supported
 document set grows; update the TeX Live mirror separately from application
 releases with `UNDERLEAF_TEXLIVE_MIRROR` when required.
 
+## Compiler safeguards
+
+The `compiler` profile runs as `www-data` with a read-only root filesystem,
+all Linux capabilities dropped, `no-new-privileges`, controlled temporary
+filesystems, configurable CPU/memory limits and an internal-only network. It
+does not mount the Docker socket and receives no application secrets.
+
+`UNDERLEAF_COMPILE_TIMEOUT` controls the maximum compile timeout, while
+`UNDERLEAF_COMPILE_CPUS` and `UNDERLEAF_COMPILE_MEMORY` configure infrastructure
+resources. `UNDERLEAF_MAX_PROJECT_SIZE=0` keeps the product-level project-size
+cap disabled; container, request-body and filesystem limits remain independent
+infrastructure safeguards. These values protect the installation and are not
+commercial plans or feature tiers.
+
 ## First administrator
 
 The first account must be created explicitly from the application container.

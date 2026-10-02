@@ -34,6 +34,9 @@ RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
   && command -v makeindex \
   && for package in tikz.sty pgfplots.sty circuitikz.sty minted.sty fontspec.sty biblatex.sty chemfig.sty; do \
     kpsewhich "${package}" >/dev/null; \
-  done
+  done \
+  && mkdir -p "${TEXMFVAR}" /var/lib/underleaf/compiler/work \
+  && chown -R www-data:www-data /var/lib/underleaf/compiler
 
+USER www-data
 WORKDIR /var/lib/underleaf/compiler

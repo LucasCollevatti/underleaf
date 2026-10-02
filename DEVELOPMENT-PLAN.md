@@ -380,22 +380,29 @@ fluxo está documentado em `docs/DEPLOYMENT.md` e pode ser repetido por
 **Objetivo:** impedir que a compilação receba privilégios ou recursos da
 aplicação sem necessidade.
 
-- [ ] Executar o compilador como usuário não-root quando possível.
-- [ ] Não montar Docker socket no compilador.
-- [ ] Não disponibilizar secrets da aplicação ao processo LaTeX.
-- [ ] Usar diretório temporário e filesystem de compilação controlado.
-- [ ] Manter a rede interna e limitar acessos externos.
-- [ ] Tornar timeout configurável, por exemplo
+- [x] Executar o compilador como usuário não-root quando possível.
+- [x] Não montar Docker socket no compilador.
+- [x] Não disponibilizar secrets da aplicação ao processo LaTeX.
+- [x] Usar diretório temporário e filesystem de compilação controlado.
+- [x] Manter a rede interna e limitar acessos externos.
+- [x] Tornar timeout configurável, por exemplo
   `UNDERLEAF_COMPILE_TIMEOUT=3600`.
-- [ ] Tornar CPU e memória configuráveis, por exemplo
+- [x] Tornar CPU e memória configuráveis, por exemplo
   `UNDERLEAF_COMPILE_CPUS=4` e `UNDERLEAF_COMPILE_MEMORY=8G`.
-- [ ] Permitir `UNDERLEAF_MAX_PROJECT_SIZE=0` quando não houver limite
+- [x] Permitir `UNDERLEAF_MAX_PROJECT_SIZE=0` quando não houver limite
   artificial de produto.
-- [ ] Documentar que esses limites são salvaguardas de infraestrutura, não
+- [x] Documentar que esses limites são salvaguardas de infraestrutura, não
   planos comerciais.
 
 **Critério de aceite:** uma compilação não consegue acessar secrets da
 aplicação e é interrompida de forma previsível ao exceder os limites.
+
+**Evidência:** `compose.yaml` aplica usuário não-root, filesystem read-only,
+capabilities removidas, `no-new-privileges`, tmpfs, limites de CPU/memória e
+rede interna ao perfil `compiler`, sem socket ou secrets. O
+`LocalCommandRunner` usa uma allowlist de ambiente, timeout de parede e limite
+de memória/CPU por processo; `tests/underleaf-compiler-sandbox-smoke.sh` e os
+testes unitários verificam a configuração e a terminação previsível.
 
 ### M14 — Compartilhamento por username
 

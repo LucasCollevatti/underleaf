@@ -4,9 +4,24 @@ const fs = require('node:fs')
 
 const isSpotInstance = process.env.PREEMPTIBLE === 'TRUE'
 const CLSI_SERVER_ID = os.hostname().replace('-ctr', '')
+const configuredMaxProjectSize = parseInt(
+  process.env.UNDERLEAF_MAX_PROJECT_SIZE || '0',
+  10
+)
+const configuredCompileTimeout = parseInt(
+  process.env.UNDERLEAF_COMPILE_TIMEOUT || '600',
+  10
+)
 
 module.exports = {
-  compileSizeLimit: process.env.COMPILE_SIZE_LIMIT || '7mb',
+  compileSizeLimit:
+    configuredMaxProjectSize > 0
+      ? `${configuredMaxProjectSize}b`
+      : process.env.COMPILE_SIZE_LIMIT || '7mb',
+  maxCompileTimeout:
+    Number.isFinite(configuredCompileTimeout) && configuredCompileTimeout > 0
+      ? configuredCompileTimeout
+      : 600,
 
   processLifespanLimitMs:
     parseInt(process.env.PROCESS_LIFE_SPAN_LIMIT_MS) || 60 * 60 * 24 * 1000 * 2,

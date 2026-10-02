@@ -76,6 +76,10 @@ const httpPermissionsPolicy = {
 }
 
 const safeCompilers = ['xelatex', 'pdflatex', 'latex', 'lualatex']
+const underleafMaxProjectSize = parseInt(
+  process.env.UNDERLEAF_MAX_PROJECT_SIZE || '0',
+  10
+)
 
 module.exports = {
   env: 'server-ce',
@@ -391,7 +395,7 @@ module.exports = {
     github: true,
     gitBridge: true,
     versioning: true,
-    compileTimeout: 180,
+    compileTimeout: intFromEnv('UNDERLEAF_COMPILE_TIMEOUT', 180),
     compileGroup: 'standard',
     references: true,
     trackChanges: true,
@@ -850,7 +854,10 @@ module.exports = {
     enabled: false,
   },
 
-  compileBodySizeLimitMb: process.env.COMPILE_BODY_SIZE_LIMIT_MB || 7,
+  compileBodySizeLimitMb:
+    underleafMaxProjectSize > 0
+      ? Math.ceil(underleafMaxProjectSize / 1000 / 1000)
+      : process.env.COMPILE_BODY_SIZE_LIMIT_MB || 7,
 
   // The defaults come from overleaf-editor-core so that every service that
   // classifies a file as a doc or as a binary file works from the same list.
