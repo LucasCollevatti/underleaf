@@ -199,17 +199,23 @@ saudável.
 **Objetivo:** tornar o username o identificador canônico de login e
 compartilhamento.
 
-- [ ] Definir usuário com `id`, `username`, `passwordHash`, `displayName`,
+- [x] Definir usuário com `id`, `username`, `passwordHash`, `displayName`,
   `role`, `status`, `createdAt`, `updatedAt` e `lastLoginAt` quando aplicável.
-- [ ] Garantir username único e normalizado.
-- [ ] Permitir inicialmente os papéis `admin` e `user`.
-- [ ] Permitir os estados `active` e `disabled`.
-- [ ] Não exigir e-mail para criar uma conta.
-- [ ] Definir migração para usuários de desenvolvimento ou dados importados.
-- [ ] Nunca armazenar senhas em texto puro.
+- [x] Garantir username único e normalizado.
+- [x] Permitir inicialmente os papéis `admin` e `user`.
+- [x] Permitir os estados `active` e `disabled`.
+- [x] Não exigir e-mail para criar uma conta.
+- [x] Definir migração para usuários de desenvolvimento ou dados importados.
+- [x] Nunca armazenar senhas em texto puro.
 
 **Critério de aceite:** duas variações normalizadas do mesmo username não
 podem criar contas distintas e a persistência mantém apenas hashes seguros.
+
+**Evidência:** `UserSchema` possui os campos canônicos, índice único sparse e
+os papéis/estados permitidos. `UnderleafUserManager` normaliza usernames,
+valida duplicidade e grava somente hashes bcrypt. A migration
+`20261002100000_underleaf_username_accounts` preenche contas importadas sem
+username antes de criar o índice único.
 
 ### M6 — Autenticação simples
 

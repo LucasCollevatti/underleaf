@@ -23,6 +23,36 @@ const refProviderSettingsSchema = {
 
 export const UserSchema = new Schema(
   {
+    username: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      maxlength: 32,
+    },
+    passwordHash: String,
+    displayName: {
+      type: String,
+      default: '',
+      maxlength: MAX_NAME_LENGTH,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'disabled'],
+      default: 'active',
+    },
+    createdAt: {
+      type: Date,
+      default() {
+        return new Date()
+      },
+    },
+    updatedAt: {
+      type: Date,
+      default() {
+        return new Date()
+      },
+    },
+    lastLoginAt: { type: Date },
     email: { type: String, default: '', maxlength: MAX_EMAIL_LENGTH },
     emails: [
       {
@@ -270,5 +300,7 @@ function formatSplitTestsSchema(next) {
   next()
 }
 UserSchema.pre('save', formatSplitTestsSchema)
+
+UserSchema.index({ username: 1 }, { unique: true, sparse: true })
 
 export const User = mongoose.model('User', UserSchema)
