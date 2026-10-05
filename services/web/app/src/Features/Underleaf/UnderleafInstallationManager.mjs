@@ -1,60 +1,12 @@
-import Mongoose from '../../infrastructure/Mongoose.mjs'
+import {
+  INSTALLATION_ID,
+  readInstallationState,
+  withInstallationLock,
+} from './UnderleafInstallationLock.mjs'
 import { User } from '../../models/User.mjs'
 import UnderleafUserManager, {
   UnderleafUserError,
 } from './UnderleafUserManager.mjs'
-
-const INSTALLATION_ID = 'installation'
-const TRANSACTION_OPTIONS = {
-  readConcern: { level: 'snapshot' },
-  writeConcern: { w: 'majority' },
-  readPreference: 'primary',
-}
-
-async function getCollection() {
-  await Mongoose.connectionPromise
-  // The state and User model MUST use the same MongoClient for transactions.
-  return Mongoose.connection.db.collection('underleafInstallations')
-}
-
-async function ensureState(collection) {
-  const state = await collection.findOne({ _id: INSTALLATION_ID })
-  if (state) return state
-  try {
-    await collection.updateOne(
-      { _id: INSTALLATION_ID },
-      { $setOnInsert: { initialized: false, version: 1, revision: 0 } },
-      { upsert: true }
-    )
-  } catch (error) {
-    if (error.code !== 11000) throw error // another request created the singleton
-  }
-  return await collection.findOne({ _id: INSTALLATION_ID })
-}
-
-async function withInstallationLock(callback) {
-  const collection = await getCollection()
-  await ensureState(collection)
-  const session = await Mongoose.connection.startSession()
-  try {
-    return await session.withTransaction(async () => {
-      // All bootstrap writers acquire this singleton before reading users.
-      // MongoDB retries conflicting transactions against the committed state.
-      await collection.updateOne(
-        { _id: INSTALLATION_ID },
-        { $inc: { revision: 1 } },
-        { session }
-      )
-      const state = await collection.findOne(
-        { _id: INSTALLATION_ID },
-        { session }
-      )
-      return await callback(collection, state, session)
-    }, TRANSACTION_OPTIONS)
-  } finally {
-    await session.endSession()
-  }
-}
 
 async function markInitialized(collection, userId, source, session) {
   await collection.updateOne(
@@ -72,8 +24,7 @@ async function markInitialized(collection, userId, source, session) {
 }
 
 async function getState() {
-  const collection = await getCollection()
-  const state = await ensureState(collection)
+  const state = await readInstallationState()
   if (state.initialized) return { initialized: true }
 
   return await withInstallationLock(async (collection, state, session) => {

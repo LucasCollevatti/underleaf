@@ -148,7 +148,7 @@ function createUser() {
   })
   cy.wait('@createUser').then(({ request, response }) => {
     expect(request.body).not.to.have.property('email')
-    expect(response.statusCode).to.equal(200)
+    expect(response.statusCode).to.equal(201)
     assertPublicIdentity(response.body.user)
     expect(response.body.user).to.include({
       username: credentials.user.username,

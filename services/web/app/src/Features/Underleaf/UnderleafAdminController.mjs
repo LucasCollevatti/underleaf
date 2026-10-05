@@ -96,6 +96,7 @@ function handleUserError(req, res, error) {
               'last_admin',
               'own_admin',
               'own_account',
+              'deletion_pending',
             ].includes(error.code)
           ? 409
           : 400

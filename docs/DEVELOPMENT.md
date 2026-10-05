@@ -112,6 +112,23 @@ em `tests/` e o harness de acceptance continuam responsáveis por suas camadas.
 
 ## Estado da validação em 2026-10-05
 
+A revisão de fechamento corrige a criação de usuário no E2E para esperar
+`201 Created`, conforme a API. A proteção do último administrador usa a mesma
+transação e o mesmo lock persistente do bootstrap, serializando mudanças de
+papel, status e reservas de exclusão. Os cenários concorrentes estão em
+`services/web/test/acceptance/src/UnderleafAdminSafetyTests.mjs`.
+
+Antes de limpar projetos e sessões, a exclusão reserva a conta em MongoDB,
+desabilita seu acesso e invalida a identidade anterior. O campo interno opcional
+`deletionPending` bloqueia alterações e reativação, inclusive pela CLI, durante
+a limpeza. Contas existentes sem esse campo continuam funcionando; não há
+migração de dados obrigatória. Se a limpeza falhar, a conta permanece
+desabilitada e pendente: corrija o serviço que falhou e repita explicitamente
+a exclusão em Users. A limpeza externa fica fora da transação para não repetir
+efeitos em Redis, projetos ou arquivos durante retries do MongoDB.
+
+Essas regressões foram adicionadas às fontes, sem execução nesta sessão.
+
 O commit 7 entrega fontes de cobertura e documentação revisadas. Por instrução
 do responsável, testes, lint, typecheck, build e execução Docker/browser não
 foram realizados nesta sessão. Resultados históricos do baseline não

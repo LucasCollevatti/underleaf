@@ -23,6 +23,7 @@ com checkboxes atualizados conforme cada entrega for validada.
 - [x] Escrever o fluxo E2E com serviços reais, instalação vazia e credenciais aleatórias.
 - [x] Cobrir shell, temas, identidade pública, administração, compartilhamento e telas de sistema.
 - [x] Atualizar as regras permanentes em `AGENTS.md` e os procedimentos operacionais.
+- [x] Corrigir o status `201` do E2E e serializar a proteção do último administrador, incluindo exclusão e recuperação de limpeza pendente.
 - [ ] Executar a cobertura unitária, frontend, acceptance e E2E desta revisão.
 - [ ] Executar build e validar reinstalação, reinicialização e upgrade com dados persistentes.
 

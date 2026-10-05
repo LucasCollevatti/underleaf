@@ -5,6 +5,7 @@ import UserDeleter from '../User/UserDeleter.mjs'
 import { User } from '../../models/User.mjs'
 import { db } from '../../infrastructure/mongodb.mjs'
 import { sanitizeControlCharacters } from '../../infrastructure/Sanitize.mjs'
+import { withInstallationLock } from './UnderleafInstallationLock.mjs'
 
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$/
 const MIN_USERNAME_LENGTH = 3
@@ -84,8 +85,8 @@ function rethrowIdentityWriteError(error) {
   throw error
 }
 
-async function findById(userId) {
-  return await User.findById(userId).exec()
+async function findById(userId, session = null) {
+  return await User.findById(userId).session(session).exec()
 }
 
 async function createUser(
@@ -190,10 +191,25 @@ async function authenticate(username, password) {
 }
 
 async function updateUser(userId, changes) {
-  const user = await findById(userId)
-  if (!user) throw new UnderleafUserError('not_found', 'User not found.')
+  if (changes.role != null || changes.status != null) {
+    return await withInstallationLock((_collection, _state, session) =>
+      applyUserUpdate(userId, changes, session)
+    )
+  }
+  return await applyUserUpdate(userId, changes)
+}
 
-  await ensureActiveAdminRemains(user, changes)
+async function applyUserUpdate(userId, changes, session = null) {
+  const user = await findById(userId, session)
+  if (!user) throw new UnderleafUserError('not_found', 'User not found.')
+  if (user.deletionPending) {
+    throw new UnderleafUserError(
+      'deletion_pending',
+      'Account deletion is pending. Retry deletion before making account changes.'
+    )
+  }
+
+  await ensureActiveAdminRemains(user, changes, session)
 
   const update = { $set: { updatedAt: new Date() } }
   if (changes.username != null) {
@@ -202,6 +218,7 @@ async function updateUser(userId, changes) {
       username,
       _id: { $ne: user._id },
     })
+      .session(session)
       .select({ _id: 1 })
       .lean()
     if (duplicate) {
@@ -256,10 +273,15 @@ async function updateUser(userId, changes) {
   }
   try {
     const result = await User.updateOne(
-      { _id: user._id, identityVersion: user.identityVersion },
+      {
+        _id: user._id,
+        identityVersion: user.identityVersion,
+        deletionPending: { $ne: true },
+      },
       update,
       {
         runValidators: true,
+        session,
       }
     ).exec()
     if (result.matchedCount !== 1) {
@@ -271,7 +293,7 @@ async function updateUser(userId, changes) {
   } catch (error) {
     rethrowIdentityWriteError(error)
   }
-  return await findById(user._id)
+  return await findById(user._id, session)
 }
 
 async function listUsers() {
@@ -328,25 +350,27 @@ function isActiveAdmin(user) {
   return user.status === 'active' && !user.suspended && user.role === 'admin'
 }
 
-async function countActiveAdmins() {
+async function countActiveAdmins(session) {
   return await User.countDocuments({
     status: 'active',
     suspended: { $ne: true },
     role: 'admin',
-  }).exec()
+  })
+    .session(session)
+    .exec()
 }
 
-async function ensureActiveAdminRemains(user, changes) {
+async function ensureActiveAdminRemains(user, changes, session) {
   if (!isActiveAdmin(user)) return
 
   const willLoseAdminAccess =
     changes.role === 'user' || changes.status === 'disabled'
   if (!willLoseAdminAccess) return
 
-  if ((await countActiveAdmins()) <= 1) {
+  if ((await countActiveAdmins(session)) <= 1) {
     throw new UnderleafUserError(
       'last_admin',
-      'The last active administrator cannot be disabled or demoted.'
+      'The last active administrator cannot be removed, disabled or demoted.'
     )
   }
 }
@@ -354,7 +378,6 @@ async function ensureActiveAdminRemains(user, changes) {
 async function deleteUser(userId, { deleterUser, ipAddress, deleteProjects }) {
   const user = await findById(userId)
   if (!user) throw new UnderleafUserError('not_found', 'User not found.')
-  await ensureActiveAdminRemains(user, { status: 'disabled' })
   const projectCount = await countOwnedProjects(user._id)
   if (projectCount > 0 && !deleteProjects) {
     throw new UnderleafUserError(
@@ -362,6 +385,34 @@ async function deleteUser(userId, { deleterUser, ipAddress, deleteProjects }) {
       'User owns projects. Choose an explicit project deletion action.'
     )
   }
+  await withInstallationLock(async (_collection, _state, session) => {
+    const current = await findById(userId, session)
+    if (!current) throw new UnderleafUserError('not_found', 'User not found.')
+    if (current.deletionPending) return // Resume a failed cleanup.
+    await ensureActiveAdminRemains(current, { status: 'disabled' }, session)
+    const result = await User.updateOne(
+      { _id: current._id, identityVersion: current.identityVersion },
+      {
+        $set: {
+          deletionPending: true,
+          status: 'disabled',
+          suspended: true,
+          updatedAt: new Date(),
+        },
+        $inc: { identityVersion: 1 },
+      },
+      { session, runValidators: true }
+    ).exec()
+    if (result.matchedCount !== 1) {
+      throw new UnderleafUserError(
+        'concurrent_update',
+        'Account changed while reserving deletion. Reload and try again.'
+      )
+    }
+  })
+  // Cleanup includes Redis, filesystem and project services. Run it only after
+  // the reservation commits, outside MongoDB's retryable transaction. Failure
+  // leaves the account disabled and pending so it cannot be reactivated mid-delete.
   await UserDeleter.promises.deleteUser(user._id, {
     deleterUser: deleterUser || user,
     ipAddress: ipAddress || '127.0.0.1',

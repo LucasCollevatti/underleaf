@@ -55,6 +55,7 @@ export const UserSchema = new Schema(
     },
     lastLoginAt: { type: Date },
     identityVersion: { type: Number, default: 1 },
+    deletionPending: Boolean,
     first_name: {
       type: String,
       default: '',
