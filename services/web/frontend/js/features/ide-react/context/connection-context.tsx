@@ -19,6 +19,7 @@ import {
 import { Socket } from '@/features/ide-react/connection/types/socket'
 import { secondsUntil } from '@/features/ide-react/connection/utils'
 import { useLocation } from '@/shared/hooks/use-location'
+import getMeta from '@/utils/meta'
 
 type ConnectionContextValue = {
   socket: Socket
@@ -93,6 +94,11 @@ export const ConnectionProvider: FC<React.PropsWithChildren> = ({
   useEffect(() => {
     if (
       connectionState.forceDisconnected &&
+      // An expired Underleaf session must not reload over unsaved edits.
+      !(
+        getMeta('ol-ExposedSettings').underleaf &&
+        connectionState.error === 'not-logged-in'
+      ) &&
       // keep editor open when out of sync
       connectionState.error !== 'out-of-sync'
     ) {

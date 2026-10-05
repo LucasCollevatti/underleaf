@@ -14,6 +14,7 @@ import { FetchError, postJSON } from '@/infrastructure/fetch-json'
 type Step = 'welcome' | 'administrator' | 'ready'
 type Props = {
   page: 'welcome' | 'login'
+  sessionExpired?: boolean
   navigate?: (path: string) => void
 }
 
@@ -39,7 +40,11 @@ export default function UnderleafAuthPage(props: Props) {
   )
 }
 
-function AuthContent({ page, navigate = defaultNavigate }: Props) {
+function AuthContent({
+  page,
+  sessionExpired,
+  navigate = defaultNavigate,
+}: Props) {
   const { t } = useTranslation()
   const [step, setStep] = useState<Step>('welcome')
   const [busy, setBusy] = useState(false)
@@ -163,6 +168,11 @@ function AuthContent({ page, navigate = defaultNavigate }: Props) {
           ) : (
             <>
               {setup && <p>{t('underleaf_administrator_intro')}</p>}
+              {!setup && sessionExpired && (
+                <p className="alert alert-info" role="status">
+                  {t('underleaf_login_session_expired')}
+                </p>
+              )}
               {error && (
                 <div className="alert alert-danger" role="alert">
                   {error}

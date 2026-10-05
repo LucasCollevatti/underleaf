@@ -4,6 +4,7 @@ import getMeta from '@/utils/meta'
 import { resources } from '@/i18n-resources/writefull'
 
 const LANG = getMeta('ol-i18n').currentLangCode
+const isUnderleaf = getMeta('ol-ExposedSettings').underleaf
 
 // Since we are rendering React from Angular, the initialisation is
 // synchronous on page load (but hidden behind the loading screen). This
@@ -12,6 +13,7 @@ const LANG = getMeta('ol-i18n').currentLangCode
 
 i18n.use(initReactI18next).init({
   lng: LANG,
+  fallbackLng: isUnderleaf ? 'en' : 'dev',
 
   // still using the v3 plural suffixes
   compatibilityJSON: 'v3',
@@ -56,13 +58,21 @@ i18n.use(initReactI18next).init({
 // for details
 const localesPromise = import(
   /* webpackChunkName: "[request]" */ `../../locales/${LANG}.json`
-).then(lang => {
+).then(async lang => {
   i18n.addResourceBundle(LANG, 'translation', lang)
   i18n.addResourceBundle(
     LANG,
     'writefull',
     LANG === 'es' ? resources.es.writefull : resources.en.writefull
   )
+  // Underleaf-specific surfaces currently have English and Portuguese copy.
+  // Keep them readable when an account uses another supported editor language.
+  if (isUnderleaf && LANG !== 'en') {
+    const english = await import(
+      /* webpackChunkName: "en-json" */ '../../locales/en.json'
+    )
+    i18n.addResourceBundle('en', 'translation', english)
+  }
 })
 
 export default localesPromise

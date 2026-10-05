@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <style>.mark-stroke{stroke:#138a45}.mark-fill{fill:#138a45}@media(prefers-color-scheme:dark){.mark-stroke{stroke:#7de2a3}.mark-fill{fill:#7de2a3}}</style>
+  <path class="mark-stroke" d="M7 10v17c0 8 5 13 13 13s13-5 13-13v-9" fill="none" stroke-width="7" stroke-linecap="round"/>
+  <path class="mark-fill" d="M22 15C22 5 29 1 39 2c1 10-5 17-15 17l-2-4Z"/>
+  <circle cx="36" cy="36" r="11" fill="#138a45"/><path d="m30 36 4 4 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

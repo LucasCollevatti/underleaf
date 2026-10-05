@@ -1,5 +1,7 @@
 import AuthorizationManager from './AuthorizationManager.mjs'
 import logger from '@overleaf/logger'
+import Settings from '@overleaf/settings'
+import { renderErrorPage } from '../Underleaf/UnderleafSystemPage.mjs'
 
 import HttpErrorHandler from '../Errors/HttpErrorHandler.mjs'
 import AuthenticationController from '../Authentication/AuthenticationController.mjs'
@@ -319,6 +321,10 @@ function _redirectToRestricted(req, res, next) {
 
 function restricted(req, res, next) {
   if (SessionManager.isUserLoggedIn(req.session)) {
+    if (Settings.underleaf) {
+      res.status(403)
+      return renderErrorPage(req, res, 403)
+    }
     return res.render('user/restricted', { title: 'restricted' })
   }
   const { from } = parseReq(req, restrictedQuerySchema, {

@@ -1,4 +1,9 @@
 import { fromZodError } from 'zod-validation-error'
+import Settings from '@overleaf/settings'
+import {
+  renderErrorPage,
+  renderSessionExpired,
+} from '../Underleaf/UnderleafSystemPage.mjs'
 import {
   InvalidRequestError,
   InvalidParamsError,
@@ -17,16 +22,19 @@ const TOO_MANY_FILES_ERROR_CODE = 'project_has_too_many_files'
 
 function notFound(req, res) {
   res.status(404)
+  if (Settings.underleaf) return renderErrorPage(req, res, 404)
   res.render('general/404', { title: 'page_not_found' })
 }
 
 function forbidden(req, res) {
   res.status(403)
+  if (Settings.underleaf) return renderErrorPage(req, res, 403)
   res.render('user/restricted')
 }
 
 function serverError(req, res) {
   res.status(500)
+  if (Settings.underleaf) return renderErrorPage(req, res, 500)
   res.render('general/500', { title: 'Server Error' })
 }
 
@@ -43,7 +51,10 @@ async function handleError(error, req, res, next) {
     req.logger.addFields({ user })
     req.logger.setLevel('warn')
     if (shouldSendErrorResponse) {
-      res.sendStatus(403)
+      if (Settings.underleaf && req.accepts(['html', 'json']) === 'html') {
+        res.status(403)
+        renderSessionExpired(req, res)
+      } else res.sendStatus(403)
     }
   } else if (error instanceof Errors.NotFoundError) {
     req.logger.setLevel('warn')
@@ -65,7 +76,8 @@ async function handleError(error, req, res, next) {
     req.logger.setLevel('warn')
     if (shouldSendErrorResponse) {
       res.status(400)
-      res.render('general/500', { title: 'Invalid Error' })
+      if (Settings.underleaf) renderErrorPage(req, res, 400)
+      else res.render('general/500', { title: 'Invalid Error' })
     }
   } else if (error instanceof Errors.ForbiddenError) {
     req.logger.setLevel('warn')
@@ -117,7 +129,9 @@ async function handleError(error, req, res, next) {
     res.status(400)
     if (shouldSendErrorResponse) {
       const validationError = fromZodError(error.zodError)
-      res.render('general/400', { message: validationError.message })
+      if (Settings.underleaf)
+        HttpErrorHandler.badRequest(req, res, validationError.message)
+      else res.render('general/400', { message: validationError.message })
     }
   } else {
     req.logger.setLevel('error')

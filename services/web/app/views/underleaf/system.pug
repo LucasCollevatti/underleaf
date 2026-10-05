@@ -1,0 +1,21 @@
+extends ../layout-react
+
+block entrypointVar
+	- entrypoint = 'pages/underleaf-system'
+
+block vars
+	- isWebsiteRedesign = true
+	- suppressNavbar = true
+	- suppressFooter = true
+	- suppressPugCookieBanner = true
+	- suppressSkipToContent = false
+
+block append meta
+	meta(name='ol-underleafSystem' data-type='json' content=systemPage)
+	if userSettings
+		meta(name='ol-userSettings' data-type='json' content=userSettings)
+	meta(name='ol-overallThemes' data-type='json' content=overallThemes)
+
+block content
+	#underleaf-system-root
+		include ./system-shell

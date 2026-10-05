@@ -4,15 +4,26 @@ import { useLocation } from '../hooks/use-location'
 import { DefaultMessage } from './default-message'
 import MaterialIcon from './material-icon'
 import OLButton from '@/shared/components/ol/ol-button'
+import getMeta from '@/utils/meta'
 
 export const GenericErrorBoundaryFallback: FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const { t } = useTranslation()
   const { reload: handleClick } = useLocation()
+  const isUnderleaf = getMeta('ol-ExposedSettings').underleaf
 
   return (
     <div className="error-boundary-container">
+      {isUnderleaf && (
+        <img
+          src="/underleaf-lockup.svg"
+          alt="Underleaf"
+          width={238}
+          height={48}
+          className="underleaf-error-brand"
+        />
+      )}
       <MaterialIcon
         accessibilityLabel={`${t('generic_something_went_wrong')} ${t(
           'please_refresh'
@@ -28,6 +39,7 @@ export const GenericErrorBoundaryFallback: FC<React.PropsWithChildren> = ({
       <OLButton variant="primary" onClick={handleClick}>
         {t('refresh')}
       </OLButton>
+      {isUnderleaf && <a href="/project">{t('back_to_your_projects')}</a>}
     </div>
   )
 }

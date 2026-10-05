@@ -265,7 +265,10 @@ webRouter.use(function checkIfSiteClosed(req, res, next) {
 webRouter.use(function checkIfEditorClosed(req, res, next) {
   if (Settings.editorIsOpen) {
     next()
-  } else if (req.url.indexOf('/admin') === 0) {
+  } else if (
+    req.url.indexOf('/admin') === 0 ||
+    (Settings.underleaf && req.path === '/status')
+  ) {
     next()
   } else {
     HttpErrorHandler.maintenance(req, res)

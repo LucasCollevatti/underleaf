@@ -1,14 +1,24 @@
 {
   "name": "Underleaf",
+  "short_name": "Underleaf",
+  "description": "Self-hosted collaborative LaTeX editor",
+  "id": "/",
   "icons": [
     {
-      "src": "/underleaf-logo.png",
+      "src": "/underleaf-favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/underleaf-apple-touch-icon.png",
       "type": "image/png",
-      "sizes": "1254x1254"
+      "purpose": "any"
     }
   ],
-  "theme_color": "#1b222c",
+  "theme_color": "#138a45",
   "background_color": "#ffffff",
-  "start_url": "/",
+  "start_url": "/project",
+  "scope": "/",
   "display": "standalone"
 }

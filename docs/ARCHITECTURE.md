@@ -68,8 +68,30 @@ usando o tema ativo, incluindo mudanças no tema do sistema operacional.
 
 Projects, incluindo o estado vazio, Login, Welcome, Settings, Administration e
 Users usam o shell. Projects vazio mantém filtros, tags, lixeira e criação ou
-importação no dashboard normal, sem abrir uma página de marketing. Status e
-erros ainda serão migrados; o editor mantém seu layout próprio.
+importação no dashboard normal, sem abrir uma página de marketing. Status, erros,
+manutenção, sessão expirada e confirmação de logout também usam o shell; o
+editor mantém seu layout próprio com a marca Underleaf e o wordmark no loading.
+
+`pages/underleaf-system` substitui o HTML inicial apenas após carregar as
+traduções. O servidor mantém navegação, mensagens e formulário de logout
+utilizáveis quando o JavaScript falha. Erros anteriores aos metadados da página
+usam `system-static`, sem consultas ao banco durante a renderização do erro.
+Mensagens internas de erros 5xx não são expostas. O logout continua sendo POST
+com CSRF; cancelar não encerra a sessão.
+
+`GET /status` com preferência por HTML exige administrador e informa o processo
+web e as configurações de acesso do site/editor. Não é um diagnóstico de Mongo,
+Redis ou do compilador. Health checks com Accept curinga, JSON ou texto mantêm
+as respostas públicas anteriores, inclusive o 503 durante encerramento;
+`/status` da API privada também permanece inalterado.
+
+Uma sessão expirada no editor oferece login em outra aba e atualização manual.
+A aba não é recarregada automaticamente sobre alterações não salvas. Navbar e
+footer no Underleaf não mostram planos, afiliações, marketing ou suporte SaaS.
+Os avisos de origem, copyright e licença permanecem preservados. Os favicons
+SVG distinguem compilação em andamento, sucesso e erro, com cores claras/escuras;
+o manifest abre Projects. Os textos novos têm versões em inglês e português,
+com fallback inglês no frontend para outros idiomas.
 
 ## Administração de contas
 

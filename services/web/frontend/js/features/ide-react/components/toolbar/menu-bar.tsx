@@ -50,8 +50,9 @@ export const ToolbarMenuBar = () => {
   const openProject = useOpenProject()
 
   const anonymous = getMeta('ol-anonymous')
-  const showSupport = getMeta('ol-showSupport')
-  const showDocumentation = getMeta('ol-wikiEnabled')
+  const isUnderleaf = getMeta('ol-ExposedSettings').underleaf
+  const showSupport = !isUnderleaf && getMeta('ol-showSupport')
+  const showDocumentation = !isUnderleaf && getMeta('ol-wikiEnabled')
 
   useCommandProvider(
     () => [
@@ -92,7 +93,9 @@ export const ToolbarMenuBar = () => {
         children: ['new_file', 'new_folder', 'upload_file', 'copy_project'],
       },
       { id: 'file-tools', children: ['show_version_history', 'word_count'] },
-      { id: 'submit', children: ['submit-project', 'manage-template'] },
+      ...(!isUnderleaf
+        ? [{ id: 'submit', children: ['submit-project', 'manage-template'] }]
+        : []),
       {
         id: 'file-download',
         children: [
@@ -114,7 +117,7 @@ export const ToolbarMenuBar = () => {
         children: ['open-settings'],
       },
     ],
-    [t]
+    [t, isUnderleaf]
   )
 
   const editMenuStructure: MenuStructure = useMemo(
@@ -333,6 +336,15 @@ export const ToolbarMenuBar = () => {
               title={t('documentation')}
               eventKey="documentation"
               href="/learn"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
+          {isUnderleaf && (
+            <MenuBarOption
+              title={t('underleaf_source_code')}
+              eventKey="underleaf_source"
+              href="https://github.com/LucasCollevatti/underleaf"
               target="_blank"
               rel="noopener noreferrer"
             />

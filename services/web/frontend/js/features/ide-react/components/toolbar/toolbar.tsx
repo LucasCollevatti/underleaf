@@ -30,7 +30,8 @@ export const Toolbar = () => {
     useLayoutContext()
   const { cobranding, isRestrictedTokenMember } = useEditorContext()
   const { permissionsLevel } = useIdeReactContext()
-  const showUpgradePrompt = getMeta('ol-showUpgradePrompt')
+  const isUnderleaf = getMeta('ol-ExposedSettings').underleaf
+  const showUpgradePrompt = !isUnderleaf && getMeta('ol-showUpgradePrompt')
   const improvedFlakyConnections = useFeatureFlag(
     'intermittent-connection-improvements'
   )
@@ -38,6 +39,7 @@ export const Toolbar = () => {
 
   const isOfflineDueToNetworkStall = useIsNetworkStalled()
   const shouldDisplaySubmitButton =
+    !isUnderleaf &&
     (permissionsLevel === 'owner' || permissionsLevel === 'readAndWrite') &&
     SubmitProjectButton
 

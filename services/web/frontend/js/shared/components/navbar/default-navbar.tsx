@@ -14,8 +14,11 @@ import { useContactUsModal } from '@/shared/hooks/use-contact-us-modal'
 import { UserProvider } from '@/shared/context/user-context'
 import { X } from '@phosphor-icons/react'
 import type { CSSPropertiesWithVariables } from '../../../../../types/css-properties-with-variables'
+import getMeta from '@/utils/meta'
+import { UnderleafAppProviders } from '@/shared/components/underleaf/underleaf-app-shell'
+import useThemedPage from '@/shared/hooks/use-themed-page'
 
-function DefaultNavbar(
+function LegacyDefaultNavbar(
   props: DefaultNavbarMetadata & { overleafLogo?: string }
 ) {
   const {
@@ -151,6 +154,77 @@ function DefaultNavbar(
       </Navbar>
       <UserProvider>{contactUsModal}</UserProvider>
     </>
+  )
+}
+
+function UnderleafNavbar({
+  sessionUser,
+  canDisplayAdminMenu,
+  suppressNavbarRight,
+}: DefaultNavbarMetadata) {
+  const { t } = useTranslation()
+  useThemedPage()
+  return (
+    <Navbar
+      className="navbar-main underleaf-navbar"
+      expand="lg"
+      aria-label={t('primary')}
+    >
+      <Container fluid>
+        <HeaderLogoOrTitle />
+        {!suppressNavbarRight && (
+          <>
+            <Navbar.Toggle
+              aria-controls="underleaf-navbar-links"
+              aria-label={t('menu')}
+            />
+            <Navbar.Collapse
+              id="underleaf-navbar-links"
+              className="justify-content-end"
+            >
+              <Nav>
+                {sessionUser ? (
+                  <>
+                    <Nav.Link href="/project">{t('projects')}</Nav.Link>
+                    <Nav.Link href="/user/settings">
+                      {t('account_settings')}
+                    </Nav.Link>
+                    {canDisplayAdminMenu && (
+                      <>
+                        <Nav.Link href="/admin">
+                          {t('underleaf_administration')}
+                        </Nav.Link>
+                        <Nav.Link href="/admin/users">
+                          {t('underleaf_users')}
+                        </Nav.Link>
+                        <Nav.Link href="/status">
+                          {t('underleaf_system')}
+                        </Nav.Link>
+                      </>
+                    )}
+                    <Nav.Link href="/logout">{t('log_out')}</Nav.Link>
+                  </>
+                ) : (
+                  <Nav.Link href="/login">{t('log_in')}</Nav.Link>
+                )}
+              </Nav>
+            </Navbar.Collapse>
+          </>
+        )}
+      </Container>
+    </Navbar>
+  )
+}
+
+function DefaultNavbar(
+  props: DefaultNavbarMetadata & { overleafLogo?: string }
+) {
+  return getMeta('ol-ExposedSettings').underleaf ? (
+    <UnderleafAppProviders>
+      <UnderleafNavbar {...props} />
+    </UnderleafAppProviders>
+  ) : (
+    <LegacyDefaultNavbar {...props} />
   )
 }
 

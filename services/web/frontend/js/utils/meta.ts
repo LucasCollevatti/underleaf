@@ -1,5 +1,6 @@
 import { User, Features, FeatureUsage } from '../../../types/user'
 import type { UnderleafAdminPageData } from '../../../types/underleaf-admin'
+import type { UnderleafSystemPageData } from '../../../types/underleaf-system'
 import { User as MinimalUser } from '../../../types/admin/user'
 import { User as ManagedUser } from '../../../types/group-management/user'
 import { UserSettings } from '../../../types/user-settings'
@@ -73,8 +74,10 @@ import { SharingPermissions } from '../../../modules/sharing-permissions/app/src
 import { FullHistoryFailure } from '@ol-types/history/projectHistory'
 
 export interface Meta {
+  'ol-underleafSystem': UnderleafSystemPageData
   'ol-underleafAdmin': UnderleafAdminPageData
   'ol-underleafAuthPage': 'welcome' | 'login'
+  'ol-underleafSessionExpired': boolean
   'ol-ExposedSettings': ExposedSettings
   'ol-adminCapabilities': AdminCapability[]
   'ol-adminSubscription': AdminSubscription
@@ -367,6 +370,8 @@ export interface Meta {
   'ol-totalLicenses': number
   'ol-translationIoNotLoaded': string
   'ol-translationLoadErrorMessage': string
+  'ol-translationSessionExpired': string
+  'ol-translationLogIn': string
   'ol-translationMaintenance': string
   'ol-translationUnableToJoin': string
   'ol-trialDisabledReason': string | undefined

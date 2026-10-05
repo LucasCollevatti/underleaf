@@ -20,13 +20,14 @@ else
 	meta(name='og:title' content=translate(title))
 
 //- Description
+- const siteDescription = translate(settings.underleaf ? 'underleaf_site_description' : 'site_description')
 if metadata && metadata.description
 	meta(name='description' content=metadata.description)
 	meta(itemprop='description' content=metadata.description)
 	//-twitter and og descriptions handeled in their sections below
 else
-	meta(name='description' content=translate('site_description'))
-	meta(itemprop='description' content=translate('site_description'))
+	meta(name='description' content=siteDescription)
+	meta(itemprop='description' content=siteDescription)
 
 //- Image
 if metadata && metadata.image && metadata.image.fields
@@ -66,7 +67,7 @@ if settings.social && settings.social.twitter && settings.social.twitter.handle
 if metadata && metadata.twitterDescription
 	meta(name='twitter:description' content=metadata.twitterDescription)
 else
-	meta(name='twitter:description' content=translate('site_description'))
+	meta(name='twitter:description' content=siteDescription)
 if metadata && metadata.twitterImage && metadata.twitterImage.fields
 	//- from the CMS
 	meta(name='twitter:image' content=metadata.twitterImage.fields.file.url)
@@ -92,7 +93,7 @@ if settings.social && settings.social.facebook && settings.social.facebook.appId
 if metadata && metadata.openGraphDescription
 	meta(property='og:description' content=metadata.openGraphDescription)
 else
-	meta(property='og:description' content=translate('site_description'))
+	meta(property='og:description' content=siteDescription)
 
 if metadata && metadata.openGraphImage && metadata.openGraphImage.fields
 	//- from the CMS
@@ -132,6 +133,8 @@ if settings.robotsNoindex
 
 //- Icons
 link(rel='icon' href='/underleaf-favicon.png' type='image/png')
+if settings.underleaf
+	link(rel='icon' href=buildBaseAssetPath() + 'underleaf-favicon.svg' type='image/svg+xml')
 link(rel='apple-touch-icon' href=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png')
 
 //- Canonical Tag for SEO

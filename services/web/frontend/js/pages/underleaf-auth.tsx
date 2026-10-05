@@ -11,7 +11,12 @@ function Root() {
   const { isReady, error } = useWaitForI18n()
   if (error) throw error
   if (!isReady) return null
-  return <UnderleafAuthPage page={getMeta('ol-underleafAuthPage')} />
+  return (
+    <UnderleafAuthPage
+      page={getMeta('ol-underleafAuthPage')}
+      sessionExpired={getMeta('ol-underleafSessionExpired')}
+    />
+  )
 }
 
 const element = document.getElementById('underleaf-auth-root')

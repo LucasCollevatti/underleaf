@@ -1,0 +1,51 @@
+.project-ds-nav-page.website-redesign.underleaf-app-shell.underleaf-static-shell(data-static-theme=initialTheme || 'system')
+	.project-list-wrapper.underleaf-app-layout
+		aside.project-list-sidebar-wrapper-react.underleaf-sidebar
+			.underleaf-sidebar-brand
+				a(href=systemPage.backPath aria-label='Underleaf')
+					img.underleaf-brand.underleaf-static-brand-light(src='/underleaf-lockup.svg' alt='Underleaf' width='238' height='48')
+					img.underleaf-brand.underleaf-static-brand-dark(src='/underleaf-lockup-dark.svg' alt='Underleaf' width='238' height='48')
+			.underleaf-sidebar-sections
+				nav.underleaf-sidebar-navigation(aria-label=translate('primary'))
+					a.ds-nav-page-switcher-item(href=systemPage.backPath)= systemPage.backLabel
+					if systemPage.signedIn
+						a.ds-nav-page-switcher-item(href='/user/settings')= translate('account_settings')
+					if systemPage.canAdmin
+						a.ds-nav-page-switcher-item(href='/admin')= translate('underleaf_administration')
+						a.ds-nav-page-switcher-item(href='/admin/users')= translate('underleaf_users')
+						a.ds-nav-page-switcher-item(href='/status' aria-current=systemPage.kind === 'status' ? 'page' : undefined)= translate('underleaf_system')
+				.underleaf-sidebar-lower
+					p.px-3 #{translate('theme')}: #{translate('underleaf_theme_' + (initialTheme || 'system'))}
+		.underleaf-app-content
+			main#main-content.underleaf-system-main
+				section.underleaf-system-panel(aria-labelledby='underleaf-system-heading')
+					if systemPage.code
+						p.underleaf-system-code= systemPage.code
+					h1#underleaf-system-heading= systemPage.title
+					if systemPage.descriptionHtml
+						div !{systemPage.descriptionHtml}
+					else
+						p= systemPage.description
+					if systemPage.detail
+						p.alert.alert-danger= systemPage.detail
+					if systemPage.status
+						dl.underleaf-system-status
+							dt= translate('underleaf_status_web')
+							dd= translate(systemPage.status.shuttingDown ? 'underleaf_status_stopping' : 'underleaf_status_ready')
+							dt= translate('underleaf_status_site')
+							dd= translate(systemPage.status.siteOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
+							dt= translate('underleaf_status_editor')
+							dd= translate(systemPage.status.editorOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
+							dt= translate('underleaf_status_uptime')
+							dd= systemPage.status.uptimeSeconds
+					if systemPage.kind === 'logout'
+						form(method='POST' action='/logout')
+							input(type='hidden' name='_csrf' value=csrfToken)
+							button.btn.btn-primary(type='submit')= translate('log_out')
+							a.btn.btn-secondary.ms-2(href='/project')= translate('cancel')
+					else
+						.underleaf-system-actions
+							a.btn.btn-primary(href=systemPage.kind === 'session-expired' ? '/login?session=expired' : systemPage.backPath)= systemPage.kind === 'session-expired' ? translate('log_in') : systemPage.backLabel
+							if systemPage.kind === 'status'
+								a.btn.btn-secondary(href='/status')= translate('refresh')
+			include ./footer

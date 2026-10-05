@@ -2,6 +2,7 @@ import OLTooltip from '@/shared/components/ol/ol-tooltip'
 import MaterialIcon from '@/shared/components/material-icon'
 import { useTranslation } from 'react-i18next'
 import { Cobranding } from '../../../../../../types/cobranding'
+import getMeta from '@/utils/meta'
 
 type ToolbarLogosProps = {
   cobranding?: Cobranding
@@ -9,6 +10,7 @@ type ToolbarLogosProps = {
 
 export const ToolbarLogos = ({ cobranding }: ToolbarLogosProps) => {
   const { t } = useTranslation()
+  const isUnderleaf = getMeta('ol-ExposedSettings').underleaf
 
   return (
     <div className="ide-redesign-toolbar-logos">
@@ -18,13 +20,21 @@ export const ToolbarLogos = ({ cobranding }: ToolbarLogosProps) => {
         overlayProps={{ delay: 0, placement: 'bottom' }}
       >
         <div className="ide-redesign-toolbar-home-button">
-          <a href="/project" className="ide-redesign-toolbar-home-link">
-            <span className="toolbar-ol-logo" aria-label={t('overleaf_logo')} />
+          <a
+            href="/project"
+            className="ide-redesign-toolbar-home-link"
+            aria-label={t('back_to_your_projects')}
+          >
+            <span
+              className="toolbar-ol-logo"
+              aria-label={isUnderleaf ? 'Underleaf' : t('overleaf_logo')}
+              role="img"
+            />
             <MaterialIcon type="home" className="toolbar-ol-home-button" />
           </a>
         </div>
       </OLTooltip>
-      {cobranding && cobranding.logoImgUrl && (
+      {!isUnderleaf && cobranding && cobranding.logoImgUrl && (
         <>
           <span className="ide-redesign-toolbar-cobranding-separator" />
           <a

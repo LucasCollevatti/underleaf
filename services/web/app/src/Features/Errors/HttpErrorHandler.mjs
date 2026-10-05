@@ -1,5 +1,9 @@
 import logger from '@overleaf/logger'
 import Settings from '@overleaf/settings'
+import {
+  renderErrorPage,
+  renderMaintenance,
+} from '../Underleaf/UnderleafSystemPage.mjs'
 import { plainTextResponse } from '../../infrastructure/Response.mjs'
 
 function renderJSONError(res, message, info = {}) {
@@ -20,6 +24,7 @@ function handleGeneric500Error(req, res, statusCode, message) {
   res.status(statusCode)
   switch (req.accepts(['html', 'json'])) {
     case 'html':
+      if (Settings.underleaf) return renderErrorPage(req, res, statusCode)
       return res.render('general/500', { title: 'Server Error' })
     case 'json':
       return renderJSONError(res, message)
@@ -32,6 +37,8 @@ function handleGeneric400Error(req, res, statusCode, message, info = {}) {
   res.status(statusCode)
   switch (req.accepts(['html', 'json'])) {
     case 'html':
+      if (Settings.underleaf)
+        return renderErrorPage(req, res, statusCode, message)
       return res.render('general/400', {
         title: 'Client Error',
         message,
@@ -82,6 +89,7 @@ export default HttpErrorHandler = {
     res.status(409)
     switch (req.accepts(['html', 'json'])) {
       case 'html':
+        if (Settings.underleaf) return renderErrorPage(req, res, 409, message)
         return res.render('general/400', {
           title: 'Client Error',
           message,
@@ -97,6 +105,7 @@ export default HttpErrorHandler = {
     res.status(403)
     switch (req.accepts(['html', 'json'])) {
       case 'html':
+        if (Settings.underleaf) return renderErrorPage(req, res, 403)
         return res.render('user/restricted', { title: 'restricted' })
       case 'json':
         return renderJSONError(res, message, info)
@@ -109,6 +118,7 @@ export default HttpErrorHandler = {
     res.status(404)
     switch (req.accepts(['html', 'json'])) {
       case 'html':
+        if (Settings.underleaf) return renderErrorPage(req, res, 404)
         return res.render('general/404', { title: 'page_not_found' })
       case 'json':
         return renderJSONError(res, message, info)
@@ -121,6 +131,7 @@ export default HttpErrorHandler = {
     res.status(422)
     switch (req.accepts(['html', 'json'])) {
       case 'html':
+        if (Settings.underleaf) return renderErrorPage(req, res, 422, message)
         return res.render('general/400', {
           title: 'Client Error',
           message,
@@ -154,6 +165,7 @@ export default HttpErrorHandler = {
     }
     switch (req.accepts(['html', 'json'])) {
       case 'html':
+        if (Settings.underleaf) return renderMaintenance(req, res)
         return res.render('general/closed', { title: 'maintenance' })
       case 'json':
         return renderJSONError(res, message, {})

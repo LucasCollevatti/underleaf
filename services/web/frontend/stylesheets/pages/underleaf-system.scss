@@ -1,0 +1,120 @@
+.underleaf-system-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+
+  @include media-breakpoint-down(md) {
+    padding: 24px 16px;
+  }
+}
+
+.underleaf-system-panel {
+  width: 100%;
+  max-width: 760px;
+  padding: 32px;
+  background: var(--bg-primary-themed);
+  border: 1px solid var(--border-divider-themed);
+  border-radius: 8px;
+}
+
+.underleaf-system-code {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.underleaf-system-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.underleaf-system-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+
+  dd {
+    margin: 0;
+  }
+}
+
+.underleaf-product-footer {
+  padding: 24px 32px;
+  color: var(--content-secondary-themed);
+  border-top: 1px solid var(--border-divider-themed);
+}
+
+.underleaf-static-brand-dark {
+  display: none;
+}
+
+.underleaf-static-shell {
+  @include light-themed-variables;
+  --ds-nav-content-bg-secondary: var(--bg-light-secondary);
+  color-scheme: light;
+}
+
+@mixin underleaf-static-dark {
+  @include dark-themed-variables;
+  --ds-nav-content-bg-secondary: var(--bg-dark-secondary);
+  color-scheme: dark;
+  .underleaf-static-brand-light {
+    display: none;
+  }
+  .underleaf-static-brand-dark {
+    display: block;
+  }
+}
+
+.underleaf-static-shell[data-static-theme='dark'] {
+  @include underleaf-static-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .underleaf-static-shell[data-static-theme='system'] {
+    @include underleaf-static-dark;
+  }
+}
+
+.underleaf-static-shell .underleaf-sidebar .underleaf-sidebar-sections {
+  display: flex;
+}
+
+.underleaf-navbar {
+  background: var(--bg-primary-themed);
+  border-bottom: 1px solid var(--border-divider-themed);
+
+  .nav-link {
+    color: var(--content-primary-themed);
+  }
+}
+
+.underleaf-navbar-brand {
+  display: inline-flex;
+  padding: 8px 0;
+
+  img {
+    max-width: 238px;
+    height: 48px;
+  }
+}
+
+body[data-theme='default'] .underleaf-navbar {
+  .underleaf-static-brand-light {
+    display: none;
+  }
+  .underleaf-static-brand-dark {
+    display: block;
+  }
+}
+
+.underleaf-error-brand {
+  margin-bottom: 24px;
+  padding: 8px;
+  background: #fff;
+  border-radius: 4px;
+}

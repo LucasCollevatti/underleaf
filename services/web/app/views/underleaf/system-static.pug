@@ -1,0 +1,8 @@
+extends ../layout/layout-no-js
+
+block vars
+	- metadata = { title: systemPage.title + ' - Underleaf', viewport: true }
+
+block body
+	body.website-redesign(data-theme='light' data-initial-theme='system')
+		include ./system-shell

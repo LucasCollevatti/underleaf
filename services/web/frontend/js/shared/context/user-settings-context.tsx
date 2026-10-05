@@ -64,10 +64,14 @@ export const UserSettingsProvider: FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [userSettings, setUserSettings] = useState<UserSettings>(() => {
-    const settings = { ...defaultSettings, ...getMeta('ol-userSettings') }
+    const savedSettings = getMeta('ol-userSettings')
+    const settings = { ...defaultSettings, ...savedSettings }
     // Authenticated account settings stay authoritative; guests use the same
     // preference values locally until an account is available.
-    if (!getMeta('ol-user_id') && !getMeta('ol-navbar')?.sessionUser) {
+    if (
+      (!getMeta('ol-user_id') && !getMeta('ol-navbar')?.sessionUser) ||
+      (getMeta('ol-ExposedSettings')?.underleaf && !savedSettings)
+    ) {
       settings.overallTheme = readBrowserOverallTheme() ?? 'system'
     }
     return settings

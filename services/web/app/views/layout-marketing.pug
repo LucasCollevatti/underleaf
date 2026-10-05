@@ -8,20 +8,26 @@ block entrypointVar
 
 block body
 	if typeof suppressNavbar === 'undefined'
-		include layout/navbar-marketing
+		if settings.underleaf
+			include underleaf/navbar
+		else
+			include layout/navbar-marketing
 
 	block content
 
 	if typeof suppressFooter === 'undefined'
-		if showThinFooter
+		if settings.underleaf
+			include underleaf/footer
+		else if showThinFooter
 			include layout/thin-footer
 		else
 			include layout/fat-footer
 
-	if typeof suppressPugCookieBanner == 'undefined'
+	if !settings.underleaf && typeof suppressPugCookieBanner == 'undefined'
 		include _cookie_banner
 
-	!= moduleIncludes('contactModal-marketing', locals)
+	if !settings.underleaf
+		!= moduleIncludes('contactModal-marketing', locals)
 
 block prepend foot-scripts
 	+bootstrap-js

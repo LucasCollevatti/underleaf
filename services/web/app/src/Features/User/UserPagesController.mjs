@@ -1,4 +1,5 @@
 import UserGetter from './UserGetter.mjs'
+import UnderleafSystemController from '../Underleaf/UnderleafSystemController.mjs'
 import UserSettingsHelper from '../Project/UserSettingsHelper.mjs'
 import OError from '@overleaf/o-error'
 import UserSessionsManager from './UserSessionsManager.mjs'
@@ -133,17 +134,20 @@ async function accountSuspended(req, res) {
   })
 }
 
-async function logout(req, res) {
+async function logout(req, res, next) {
   const isLoggedIn = SessionManager.isUserLoggedIn(req.session)
   if (!isLoggedIn) {
     return res.redirect('/')
   }
+  if (Settings.underleaf)
+    return UnderleafSystemController.logout(req, res, next)
   res.render('user/logout')
 }
 
 const loginPageSchema = z.object({
   query: z.object({
     redir: z.string().optional(),
+    session: z.string().optional(),
   }),
 })
 
@@ -172,6 +176,7 @@ const UserPagesController = {
     res.set('Cache-Control', 'no-store')
     res.render('underleaf/auth', {
       authPage: 'login',
+      sessionExpired: query.session === 'expired',
       title: Settings.nav?.login_support_title || 'login',
       login_support_title: Settings.nav?.login_support_title,
       login_support_text: Settings.nav?.login_support_text,

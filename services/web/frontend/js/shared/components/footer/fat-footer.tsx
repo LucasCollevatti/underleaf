@@ -1,6 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import FatFooterBase from './fat-footer-base'
+import getMeta from '@/utils/meta'
+import { UnderleafFooter } from '@/shared/components/underleaf/underleaf-footer'
 
 type FooterLinkProps = {
   href: string
@@ -16,6 +18,7 @@ type FooterSectionProps = {
 
 function FatFooter() {
   const { t } = useTranslation()
+  if (getMeta('ol-ExposedSettings').underleaf) return <UnderleafFooter />
   const hideFatFooter = false
 
   const sections = [

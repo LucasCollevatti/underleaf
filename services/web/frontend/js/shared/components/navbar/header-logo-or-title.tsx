@@ -1,5 +1,6 @@
 import type { DefaultNavbarMetadata } from '@/shared/components/types/default-navbar-metadata'
 import getMeta from '@/utils/meta'
+import { UnderleafBrand } from '@/shared/components/underleaf/underleaf-brand'
 
 export default function HeaderLogoOrTitle({
   overleafLogo,
@@ -8,7 +9,17 @@ export default function HeaderLogoOrTitle({
 }: Pick<DefaultNavbarMetadata, 'customLogo' | 'title'> & {
   overleafLogo?: string
 }) {
-  const { appName } = getMeta('ol-ExposedSettings')
+  const { appName, underleaf } = getMeta('ol-ExposedSettings')
+  if (underleaf)
+    return (
+      <a
+        href="/project"
+        aria-label="Underleaf"
+        className="underleaf-navbar-brand"
+      >
+        <UnderleafBrand />
+      </a>
+    )
   const logoUrl = customLogo ?? overleafLogo
   return (
     <a href="/" aria-label={appName} className="navbar-brand">

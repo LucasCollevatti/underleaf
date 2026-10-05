@@ -12,6 +12,13 @@ const COMPILE_ICONS = {
   UNCOMPILED: 'underleaf-favicon.png',
 } as const
 
+const UNDERLEAF_COMPILE_ICONS = {
+  ERROR: 'underleaf-favicon-error.svg',
+  COMPILING: 'underleaf-favicon-compiling.svg',
+  COMPILED: 'underleaf-favicon-compiled.svg',
+  UNCOMPILED: 'underleaf-favicon.svg',
+} as const
+
 type CompileStatus = keyof typeof COMPILE_ICONS
 
 const useCompileStatus = (): CompileStatus => {
@@ -32,8 +39,11 @@ const updateFavicon = (status: CompileStatus = 'UNCOMPILED') => {
   removeFavicon()
   const linkElement = document.createElement('link')
   linkElement.rel = 'icon'
-  linkElement.href = getMeta('ol-baseAssetPath') + COMPILE_ICONS[status]
-  linkElement.type = COMPILE_ICONS[status].endsWith('.svg')
+  const icons = getMeta('ol-ExposedSettings').underleaf
+    ? UNDERLEAF_COMPILE_ICONS
+    : COMPILE_ICONS
+  linkElement.href = getMeta('ol-baseAssetPath') + icons[status]
+  linkElement.type = icons[status].endsWith('.svg')
     ? 'image/svg+xml'
     : 'image/png'
   linkElement.setAttribute('data-compile-status', 'true')

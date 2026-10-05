@@ -64,6 +64,7 @@ import SocketDiagnostics from './Features/SocketDiagnostics/SocketDiagnostics.mj
 import ClsiCacheController from './Features/Compile/ClsiCacheController.mjs'
 import AsyncLocalStorage from './infrastructure/AsyncLocalStorage.mjs'
 import UnderleafAdminController from './Features/Underleaf/UnderleafAdminController.mjs'
+import UnderleafSystemController from './Features/Underleaf/UnderleafSystemController.mjs'
 import UnderleafSharingRouter from './Features/Underleaf/UnderleafSharingRouter.mjs'
 import UnderleafWelcomeRouter from './Features/Underleaf/UnderleafWelcomeRouter.mjs'
 import UnderleafRetiredIdentityRouter from './Features/Underleaf/UnderleafRetiredIdentityRouter.mjs'
@@ -268,6 +269,11 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
 
   EditorRouter.apply(webRouter, privateApiRouter)
   if (Settings.underleaf) {
+    webRouter.get(
+      '/status',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafSystemController.status
+    )
     UnderleafSharingRouter.apply(webRouter)
   }
   if (Settings.underleaf) {
@@ -1051,7 +1057,11 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     plainTextResponse(res, 'hello')
   })
 
-  publicApiRouter.get('/status', (req, res) => {
+  publicApiRouter.get('/status', (req, res, next) => {
+    // Browsers continue into the authenticated web router. Wildcard/JSON/text
+    // health checks keep the existing unauthenticated monitoring contract.
+    if (Settings.underleaf && req.accepts(['text', 'html']) === 'html')
+      return next()
     if (Settings.shuttingDown) {
       res.sendStatus(503) // Service unavailable
     } else if (!Settings.siteIsOpen) {

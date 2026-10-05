@@ -8,10 +8,18 @@ import {
   OLModalTitle,
 } from '@/shared/components/ol/ol-modal'
 import { useFeatureFlag } from '@/shared/context/split-test-context'
+import getMeta from '@/utils/meta'
+import OLButton from '@/shared/components/ol/ol-button'
+import { useUnsavedDocsContext } from '@/features/ide-react/context/unsaved-docs-context'
+import { UnsavedDocsAlert } from '@/features/ide-react/components/unsaved-docs/unsaved-docs-alert'
 
 // show modal when editor is forcefully disconnected
 function ForceDisconnected() {
   const { connectionState } = useConnectionContext()
+  const { unsavedDocs } = useUnsavedDocsContext()
+  const sessionExpired =
+    getMeta('ol-ExposedSettings').underleaf &&
+    connectionState.error === 'not-logged-in'
   const { t } = useTranslation()
   const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(0)
   const [show, setShow] = useState(false)
@@ -34,7 +42,7 @@ function ForceDisconnected() {
   }, [connectionState.forceDisconnected, connectionState.forcedDisconnectDelay])
 
   useEffect(() => {
-    if (show) {
+    if (show && !sessionExpired) {
       const timer = window.setInterval(() => {
         setSecondsUntilRefresh(seconds => Math.max(0, seconds - 1))
       }, 1000)
@@ -43,7 +51,7 @@ function ForceDisconnected() {
         window.clearInterval(timer)
       }
     }
-  }, [show])
+  }, [show, sessionExpired])
 
   if (!show) {
     return null
@@ -60,10 +68,36 @@ function ForceDisconnected() {
       themed={themed}
     >
       <OLModalHeader closeButton={false}>
-        <OLModalTitle>{t('please_wait')}</OLModalTitle>
+        <OLModalTitle>
+          {t(sessionExpired ? 'underleaf_session_expired' : 'please_wait')}
+        </OLModalTitle>
       </OLModalHeader>
       <OLModalBody>
-        {t('were_performing_maintenance', { seconds: secondsUntilRefresh })}
+        {sessionExpired ? (
+          <>
+            <p>{t('underleaf_editor_session_expired')}</p>
+            {unsavedDocs.size > 0 && (
+              <UnsavedDocsAlert unsavedDocs={unsavedDocs} />
+            )}
+            <div className="underleaf-system-actions">
+              <OLButton
+                href="/login?session=expired&redir=/project"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('log_in')}
+              </OLButton>
+              <OLButton
+                variant="secondary"
+                onClick={() => window.location.reload()}
+              >
+                {t('underleaf_reload_after_login')}
+              </OLButton>
+            </div>
+          </>
+        ) : (
+          t('were_performing_maintenance', { seconds: secondsUntilRefresh })
+        )}
       </OLModalBody>
     </OLModal>
   )

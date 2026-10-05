@@ -7,6 +7,7 @@ import OLCol from '@/shared/components/ol/ol-col'
 import LanguagePicker from '@/shared/components/language-picker'
 import getMeta from '@/utils/meta.ts'
 import React from 'react'
+import { UnderleafFooter } from '@/shared/components/underleaf/underleaf-footer'
 
 function FooterItemLi({
   text,
@@ -48,7 +49,8 @@ function ThinFooter({
   leftItems,
   rightItems,
 }: FooterMetadata) {
-  const { env } = getMeta('ol-ExposedSettings')
+  const { env, underleaf } = getMeta('ol-ExposedSettings')
+  if (underleaf) return <UnderleafFooter />
   const showLanguagePicker = Boolean(
     subdomainLang && Object.keys(subdomainLang).length > 1
   )

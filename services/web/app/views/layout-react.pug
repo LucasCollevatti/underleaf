@@ -15,8 +15,8 @@ block append meta
 	- const canDisplaySplitTestMenu = hasFeature('saas') && hasNonAdminDomainCapability('view-split-test')
 	- const canDisplaySurveyMenu = hasFeature('saas') && canDisplayAdminMenu && hasAdminCapability('manage-survey', false)
 	- const canDisplayScriptLogMenu = hasFeature('saas') && hasAdminCapability('view-script-log', false) && canDisplayAdminMenu
-	- const enableUpgradeButton = projectDashboardReact && usersBestSubscription && (usersBestSubscription.type === 'free' || usersBestSubscription.type === 'standalone-ai-add-on')
-	- const showSignUpLink = hasFeature('registration-page')
+	- const enableUpgradeButton = !settings.underleaf && projectDashboardReact && usersBestSubscription && (usersBestSubscription.type === 'free' || usersBestSubscription.type === 'standalone-ai-add-on')
+	- const showSignUpLink = !settings.underleaf && hasFeature('registration-page')
 
 	meta(
 		name='ol-navbar'
@@ -34,7 +34,7 @@ block append meta
 			enableUpgradeButton,
 			suppressNavbarRight: !!suppressNavbarRight,
 			suppressNavContentLinks: !!suppressNavContentLinks,
-			showSubscriptionLink: nav.showSubscriptionLink,
+			showSubscriptionLink: !settings.underleaf && nav.showSubscriptionLink,
 			showSignUpLink: showSignUpLink,
 			currentUrl: currentUrl,
 			sessionUser: sessionUser ? {username: sessionUser.username, displayName: sessionUser.displayName} : undefined,
@@ -47,7 +47,7 @@ block append meta
 		data-type='json'
 		content={
 			showThinFooter: showThinFooter,
-			showPoweredBy: !hasFeature('saas') && !settings.nav.hide_powered_by,
+			showPoweredBy: !settings.underleaf && !hasFeature('saas') && !settings.nav.hide_powered_by,
 			subdomainLang: settings.i18n.subdomainLang,
 			translatedLanguages: settings.translatedLanguages,
 			leftItems: cloneAndTranslateText(settings.nav.left_footer),
@@ -62,10 +62,12 @@ block body
 	block content
 
 	if typeof suppressFooter === 'undefined'
-		if showThinFooter
+		if settings.underleaf
+			include underleaf/footer
+		else if showThinFooter
 			include layout/thin-footer
 		else
 			include layout/fat-footer-react
 
-	if typeof suppressPugCookieBanner === 'undefined'
+	if !settings.underleaf && typeof suppressPugCookieBanner === 'undefined'
 		include _cookie_banner
