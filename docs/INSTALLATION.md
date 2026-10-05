@@ -30,6 +30,30 @@ O stack local usa a porta 8080 e preserva os dados
 em volumes Docker nomeados. `make down` para os containers sem apagar esses
 volumes.
 
+A inicialização e a conta do primeiro administrador são gravadas juntas no
+MongoDB. O replica set do Compose é necessário para essa transação. Se o
+processo falhar, repita o acesso ao Welcome; após a confirmação, ele não aceita
+outro bootstrap. Instalações existentes com usuários são reconhecidas como
+inicializadas. Excluir contas não reabre o Welcome.
+
+## Contas e aparência
+
+Login e compartilhamento usam exclusivamente **username**. Não cadastre email
+nem endereço sintético para identificar contas. Em `/admin/users`, um
+administrador cria contas, altera username e nome de exibição, redefine senhas
+e administra papéis e status. Uma pessoa que perdeu a senha solicita a
+redefinição ao administrador; não há recuperação por email.
+
+Em Settings, cada usuário altera nome de exibição, senha e aparência.
+System acompanha o tema do sistema operacional; Light e Dark fixam a aparência.
+A preferência da conta persiste entre navegação, logout/login e reinicializações.
+Visitantes podem escolher o tema na sidebar de Welcome e Login, com preferência
+local no navegador.
+
+`/status` no navegador é uma página administrativa com estado do processo web
+e flags de acesso. Para a saúde dos serviços, use `make health`, conforme
+[`OBSERVABILITY.md`](OBSERVABILITY.md).
+
 ## Instalação atrás de HTTPS
 
 Use um domínio que a máquina consiga resolver e aponte os registros DNS para o
@@ -92,3 +116,8 @@ make restore BACKUP=/srv/backups/underleaf-2026-10-02
 Consulte [`DEPLOYMENT.md`](DEPLOYMENT.md), [`BACKUP.md`](BACKUP.md),
 [`PERSISTENCE.md`](PERSISTENCE.md) e [`SECURITY.md`](SECURITY.md) antes de
 expor a instalação à Internet.
+
+Para desenvolvimento e execução da cobertura em uma instalação descartável,
+consulte [`DEVELOPMENT.md`](DEVELOPMENT.md). Instalação inicial e upgrade de
+dados existentes são procedimentos distintos; preserve um backup completo
+antes de atualizar a instalação.

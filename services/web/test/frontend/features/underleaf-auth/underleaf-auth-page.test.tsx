@@ -11,7 +11,7 @@ describe('<UnderleafAuthPage />', function () {
   beforeEach(function () {
     previousMeta = window.metaAttributesCache
     window.metaAttributesCache = new Map([
-      ['ol-ExposedSettings', { appName: 'Underleaf', ieeeBrandId: 1234 }],
+      ['ol-ExposedSettings', { appName: 'Underleaf', underleaf: true }],
       ['ol-navbar', { items: [] }],
       ['ol-csrfToken', 'test-csrf'],
     ])
@@ -132,6 +132,14 @@ describe('<UnderleafAuthPage />', function () {
     expect(navigate.calledOnceWithExactly('/project/example')).to.equal(true)
     expect(screen.queryByLabelText('Email')).to.be.null
     expect(screen.getByRole('heading', { name: 'Welcome back' })).to.exist
+  })
+
+  it('explains an expired session and keeps recovery in the username login form', function () {
+    render(<UnderleafAuthPage page="login" sessionExpired />)
+    expect(screen.getByRole('status').textContent).to.include('session expired')
+    expect(screen.getByLabelText('Username')).to.exist
+    expect(screen.queryByLabelText('Email')).to.be.null
+    expect(document.querySelector('a[href="/forgot-password"]')).to.be.null
   })
 
   it('shows inherited login errors returned with HTTP 200', async function () {

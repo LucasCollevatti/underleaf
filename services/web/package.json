@@ -42,6 +42,7 @@
     "convert-themes": "node frontend/js/features/source-editor/themes/scripts/convert.js",
     "cypress:open-ct": "OVERLEAF_CONFIG=$(pwd)/config/settings.webpack.js cypress open --component",
     "cypress:run-ct": "OVERLEAF_CONFIG=$(pwd)/config/settings.webpack.js cypress run --component --browser chrome",
+    "test:product:e2e": "cypress run --e2e --config-file cypress.underleaf.config.ts --browser chrome",
     "cypress:docker:open-ct": "USER_UID=$(id -u) USER_GID=$(id -g) docker compose -f docker-compose.cypress.yml run --rm cypress yarn run cypress:open-ct",
     "cypress:docker:run-ct": "USER_UID=$(id -u) USER_GID=$(id -g) docker compose -f docker-compose.cypress.yml run --rm cypress yarn run cypress:run-ct --browser chrome",
     "lezer-latex:generate": "node scripts/lezer-latex/generate.mjs",

@@ -16,6 +16,7 @@ import DropdownMenuItem from '@/shared/components/dropdown/dropdown-menu-item'
 import EditableLabel from './editable-label'
 import { DuplicateProject } from './duplicate-project'
 import { ExportProjectWithConversionButton } from './export-project-with-conversion-button'
+import getMeta from '@/utils/meta'
 
 const [publishModalModules] = importOverleafModules(
   'publishModalDropdownButton'
@@ -29,6 +30,7 @@ export const ToolbarProjectTitle = () => {
   const { permissionsLevel } = useIdeReactContext()
   const { name } = useProjectContext()
   const shouldDisplaySubmitButton =
+    !getMeta('ol-ExposedSettings').underleaf &&
     (permissionsLevel === 'owner' || permissionsLevel === 'readAndWrite') &&
     SubmitProjectButton
   const hasRenamePermissions = permissionsLevel === 'owner'

@@ -214,13 +214,18 @@ Username
 Password
 ```
 
-Email must not be required.
+Username is the only account identity. Persist and expose `username` and
+`displayName`; do not add `email`, `emails[]`, technical email domains or
+synthetic addresses to users, sessions or public account APIs. Password hashes
+are internal and must never be returned in page metadata or API responses.
 
 There should be no public registration.
 
 There should be no email confirmation workflow.
 
-There should be no password reset via email requirement.
+Password recovery is an administrator reset, with the existing CLI as an
+operator fallback. Do not reintroduce password recovery, verification,
+confirmation or secondary-identity flows based on email.
 
 Administrators manage accounts.
 
@@ -303,7 +308,16 @@ cancel operation
 
 A fresh Underleaf installation must support bootstrapping the first administrator without public signup.
 
-Prefer a CLI workflow such as:
+The normal first-run workflow is `/welcome`: create the first administrator,
+commit that user and durable installation state atomically in MongoDB, sign in
+automatically and open `/project`. The installation singleton must survive
+restarts and backups. Existing users close setup; deleting users must never
+reopen it. Initialized installations redirect away from Welcome and reject
+further bootstrap writes.
+
+Keep the CLI only for recovery and automation, using the same transactional
+bootstrap guard. It must refuse to create another administrator when one exists,
+including disabled administrators. Operator examples:
 
 ```bash
 docker compose exec app underleaf create-admin
@@ -322,6 +336,41 @@ Do not automatically create a predictable administrator password.
 ---
 
 # Project Dashboard
+
+## Shared product UI invariants
+
+- Projects, including the first-run empty state, Welcome, Login, Settings,
+  Administration, Users, Status, errors, maintenance and logout use the shared
+  Underleaf shell. The editor retains its mature layout and uses Underleaf marks.
+- Reuse the imported Overleaf design system, tokens, components and existing
+  providers. Do not build a second sidebar, design system or theme state.
+- Use `UnderleafAppProviders` only when the page does not already provide its
+  contexts; use `UnderleafAppShell` directly inside existing providers.
+- Preserve the three appearance values: System (`system`), Light (`light-`) and
+  Dark (`''`). Authenticated server preferences are authoritative. Guests use
+  browser persistence without writing account settings. System follows OS
+  changes; theme controls remain synchronized across the shell and content.
+- Use the mark for compact editor/browser icons, the wordmark with a standalone
+  mark on loading screens, and the lockup for sidebar/navbar branding. Choose
+  their existing light/dark SVG variants; retain compile-state favicon feedback.
+- Do not show email identity, subscriptions, upgrade buttons, institutional
+  affiliations or SaaS marketing/support surfaces. Preserve legal origin,
+  copyright, license notices and the links that expose them.
+- Keep HTML error rendering usable without JavaScript and without database
+  queries. Never expose internal 5xx details. Keep CSRF and POST logout semantics.
+- `/status` HTML requires an administrator and reports web-process/configured
+  access only. Preserve public text/JSON/wildcard health-check responses and
+  shutdown 503; do not claim compiler, Redis or Mongo health without a probe.
+- Keep an expired editor session open until the user chooses recovery. Do not
+  automatically reload over unsaved edits or discard backups on cancellation.
+- Maintain accessible headings, landmarks, form labels, keyboard controls and
+  navigation on both desktop and compact layouts.
+
+The browser contract is `services/web/test/e2e/underleaf/product-journey.cy.js`.
+It requires an explicitly selected fresh, disposable installation and never
+resets an existing database. See `docs/DEVELOPMENT.md` for commands and coverage.
+
+## Dashboard behavior
 
 The default authenticated interface should primarily show projects.
 

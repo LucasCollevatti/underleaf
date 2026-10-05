@@ -31,8 +31,9 @@ type NewProjectData = {
   owner: {
     first_name: string
     last_name: string
-    email: string
-    id: string
+    username: string
+    displayName: string
+    _id: string
   }
 }
 

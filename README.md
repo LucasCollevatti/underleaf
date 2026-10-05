@@ -71,8 +71,12 @@ migração incremental.
 
 ## Desenvolvimento
 
-Leia [`AGENTS.md`](AGENTS.md) antes de alterar o projeto. Para consultar o
-estado do stack:
+Leia [`AGENTS.md`](AGENTS.md) antes de alterar o projeto.
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) documenta o ambiente, as
+invariantes de identidade/shell/temas e as suites unitária, frontend, acceptance
+e E2E. A jornada E2E requer uma instalação descartável vazia e cria contas e
+projetos reais; o documento registra quais validações ainda não foram executadas.
+Para consultar o estado do stack:
 
 ```bash
 docker compose ps

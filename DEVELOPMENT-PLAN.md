@@ -1,11 +1,37 @@
 # Underleaf — Plano de desenvolvimento
 
-> Status geral: M0–M23 concluídos
+> Status geral: baseline M0–M23 registrado; sequência de coesão do produto implementada
 >
-> Última revisão: 2026-10-02
+> Última revisão: 2026-10-05
 
 Este é o plano operacional do Underleaf. Ele deve ser mantido como Markdown,
 com checkboxes atualizados conforme cada entrega for validada.
+
+## Fechamento da sequência de coesão do produto
+
+| Commit | Entrega                                                                       |
+| ------ | ----------------------------------------------------------------------------- |
+| 1      | Shell compartilhado, identidade visual e aparência                            |
+| 2      | Welcome, bootstrap atômico persistente e login automático                     |
+| 3      | Identidade exclusivamente por username, migração e recuperação administrativa |
+| 4      | Settings e compartilhamento direto por username                               |
+| 5      | Projects, estado vazio e administração de usuários no mesmo dashboard         |
+| 6      | Status, erros, sessão expirada e remoção das superfícies SaaS do produto      |
+| 7      | Cobertura das invariantes, fluxo E2E e documentação permanente                |
+
+- [x] Implementar a sequência na branch `refactor/underleaf-product-cohesion`.
+- [x] Escrever o fluxo E2E com serviços reais, instalação vazia e credenciais aleatórias.
+- [x] Cobrir shell, temas, identidade pública, administração, compartilhamento e telas de sistema.
+- [x] Atualizar as regras permanentes em `AGENTS.md` e os procedimentos operacionais.
+- [ ] Executar a cobertura unitária, frontend, acceptance e E2E desta revisão.
+- [ ] Executar build e validar reinstalação, reinicialização e upgrade com dados persistentes.
+
+Os testes e o build desta sequência não foram executados nesta sessão, por
+instrução do responsável pelo projeto. O commit 7 entrega as fontes de teste
+e a documentação; não declara os gates de release aprovados. As evidências
+de execução abaixo pertencem ao baseline histórico de 2026-10-02 e não
+substituem a validação da branch atual. Os comandos, pré-requisitos e o
+isolamento do E2E estão em [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
 
 ## Estado atual
 
@@ -15,7 +41,7 @@ com checkboxes atualizados conforme cada entrega for validada.
 - [x] Revisão importada registrada em `docs/ORIGIN.md`.
 - [x] Baseline funcional validado e marcado com uma tag permanente.
 - [x] Infraestrutura Compose, documentação operacional e identidade Underleaf
-  aplicadas.
+      aplicadas.
 
 O repositório contém o snapshot funcional importado e as camadas operacionais
 de infraestrutura, documentação, identidade, autenticação, administração,
@@ -47,7 +73,7 @@ Overleaf é um ponto de partida, não um contrato de compatibilidade.
 ### O que o produto não precisa
 
 - cadastro público;
-- e-mail obrigatório para usuários;
+- identidade por e-mail, campos sintéticos `email`/`emails` ou domínio técnico;
 - confirmação ou recuperação de senha por e-mail;
 - convites por e-mail;
 - planos, billing ou subscriptions;
@@ -78,13 +104,13 @@ funciona antes de mudar sua arquitetura.
 
 - [x] Importar um snapshot do Overleaf Community Edition.
 - [x] Registrar repositório original, commit SHA, data de importação e licença em
-  `docs/ORIGIN.md`.
+      `docs/ORIGIN.md`.
 - [x] Preservar `LICENSE`, headers de copyright e atribuições existentes.
 - [x] Confirmar que o build original funciona.
 - [x] Confirmar login, criação de projeto e edição de um arquivo `.tex`.
 - [x] Confirmar compilação e visualização de um PDF.
 - [x] Criar uma tag permanente, neste caso
-  `v0.0.0-overleaf-import`.
+      `v0.0.0-overleaf-import`.
 
 **Critério de aceite:** uma instalação limpa consegue iniciar, autenticar,
 criar um projeto, editar LaTeX, compilar e exibir o PDF.
@@ -102,9 +128,9 @@ próprio repositório.
 - [x] Criar `compose.yaml` na raiz.
 - [x] Definir os serviços necessários para a aplicação, MongoDB e Redis.
 - [x] Definir o serviço de compilação conforme a necessidade da revisão
-  importada.
+      importada.
 - [x] Configurar volumes persistentes para banco, projetos, histórico e saídas
-  de compilação.
+      de compilação.
 - [x] Adicionar healthchecks para os serviços essenciais.
 - [x] Documentar variáveis em `.env.example`.
 - [x] Validar build e subida reproduzível em Linux com Compose.
@@ -124,11 +150,11 @@ MongoDB 8. O motivo e a compatibilidade estão documentados em
 intencionalmente o comportamento.
 
 - [x] Criar a primeira estrutura de destino em `apps/`, `packages/`, `infra/`,
-  `scripts/`, `docs/` e `tests/`.
+      `scripts/`, `docs/` e `tests/`.
 - [x] Documentar responsabilidades e limites dos diretórios sem inventar
-  novas abstrações.
+      novas abstrações.
 - [x] Registrar que imports, builds e runtime permanecem nos caminhos herdados
-  até cada migração poder ser feita atomicamente e validada.
+      até cada migração poder ser feita atomicamente e validada.
 - [x] Manter o produto executável durante esta primeira etapa da migração.
 - [x] Evitar adicionar funcionalidades de usuário neste milestone.
 
@@ -145,11 +171,11 @@ do M0.
 **Objetivo:** transformar a identidade visível em Underleaf.
 
 - [x] Substituir referências visíveis a Overleaf e ShareLaTeX por Underleaf onde
-  elas representarem a identidade do produto.
+      elas representarem a identidade do produto.
 - [x] Adicionar nome, logo, favicon, títulos e metadata do Underleaf.
 - [x] Atualizar README e informações de versão.
 - [x] Remover referências visíveis a SaaS, pricing, planos e cloud quando não
-  forem necessárias.
+      forem necessárias.
 - [x] Manter avisos legais e atribuições de código originário.
 
 **Critério de aceite:** a experiência visível apresenta o Underleaf sem apagar
@@ -171,7 +197,7 @@ internos herdados não foram renomeados sem necessidade.
   API interna `200`, compilação `200` com status `success` e download do PDF
   `200` com assinatura `%PDF-`.
 - Identidade: a página de login retornou o título `Login - Underleaf, Online
-  LaTeX Editor`, com `/underleaf-logo.png` e `/underleaf-favicon.png`.
+LaTeX Editor`, com `/underleaf-logo.png` e `/underleaf-favicon.png`.
 
 ### M4 — Remoção de funcionalidades desnecessárias
 
@@ -182,7 +208,7 @@ internos herdados não foram renomeados sem necessidade.
 - [x] Remover billing, subscriptions, plans e pricing.
 - [x] Remover fluxos de marketing e integrações cloud não utilizadas.
 - [x] Remover OAuth, SAML e outros provedores de identidade que não tenham
-  requisito no produto.
+      requisito no produto.
 - [x] Remover rotas e serviços órfãos depois de verificar suas dependências.
 
 **Critério de aceite:** as funcionalidades removidas não podem ser acessadas
@@ -200,7 +226,7 @@ saudável.
 compartilhamento.
 
 - [x] Definir usuário com `id`, `username`, `passwordHash`, `displayName`,
-  `role`, `status`, `createdAt`, `updatedAt` e `lastLoginAt` quando aplicável.
+      `role`, `status`, `createdAt`, `updatedAt` e `lastLoginAt` quando aplicável.
 - [x] Garantir username único e normalizado.
 - [x] Permitir inicialmente os papéis `admin` e `user`.
 - [x] Permitir os estados `active` e `disabled`.
@@ -211,11 +237,14 @@ compartilhamento.
 **Critério de aceite:** duas variações normalizadas do mesmo username não
 podem criar contas distintas e a persistência mantém apenas hashes seguros.
 
-**Evidência:** `UserSchema` possui os campos canônicos, índice único sparse e
-os papéis/estados permitidos. `UnderleafUserManager` normaliza usernames,
-valida duplicidade e grava somente hashes bcrypt. A migration
-`20261002100000_underleaf_username_accounts` preenche contas importadas sem
-username antes de criar o índice único.
+**Implementação atual:** `UserSchema` usa `username`, `displayName`,
+`passwordHash`, `role` e `status`, sem identidade por email. A migration
+`20261005100000_underleaf_username_identity` completa a adaptação do baseline
+`20261002100000_underleaf_username_accounts`, remove campos e índices de
+identidade por email e estabelece o índice único de username sem `sparse`.
+Sessões e respostas públicas usam a identidade canônica e omitem hashes.
+A recuperação de senha é uma ação administrativa. A validação desta revisão
+permanece pendente conforme o fechamento da sequência acima.
 
 ### M6 — Autenticação simples
 
@@ -223,7 +252,7 @@ username antes de criar o índice único.
 
 - [x] Implementar login, logout e consulta de sessão.
 - [x] Remover dependência de `/register`, `/forgot-password` e
-  `/confirm-email`.
+      `/confirm-email`.
 - [x] Usar bcrypt com o mecanismo seguro já adotado pelo snapshot.
 - [x] Configurar cookies `HttpOnly`, `Secure` e `SameSite` adequados.
 - [x] Implementar proteção contra CSRF.
@@ -243,21 +272,26 @@ redirecionamentos de visitantes não apontam mais para `/register`.
 **Objetivo:** permitir a criação segura do primeiro administrador sem cadastro
 público nem credenciais previsíveis.
 
-- [x] Implementar `underleaf create-admin` ou `scripts/create-admin.sh`.
+- [x] Implementar `/welcome` como instalação normal e manter a CLI como fallback.
+- [x] Persistir a inicialização e criar o primeiro administrador em uma transação.
+- [x] Autenticar automaticamente e abrir `/project` após a criação.
+- [x] Fechar o Welcome em instalações existentes, sem reabertura por exclusão de usuários.
 - [x] Solicitar username, senha e confirmação de senha de forma segura.
 - [x] Impedir criação de credenciais padrão.
 - [x] Tornar a operação idempotente ou retornar um erro claro quando já houver
-  administrador.
+      administrador.
 - [x] Documentar o fluxo de instalação.
 
-**Critério de aceite:** uma instalação nova consegue criar o primeiro admin
-somente por uma operação administrativa explícita.
+**Critério de aceite:** uma instalação vazia abre Welcome e inicializa uma
+única vez; uma instalação existente não aceita outro bootstrap web. A CLI
+permite recuperação ou automação somente quando não existe administrador.
 
-**Evidência:** `underleaf create-admin` e `scripts/create-admin.sh` executam o
-bootstrap dentro do container. O CLI valida que ainda não existe administrador,
-solicita username, senha e confirmação, oculta a senha em terminal interativo,
-grava apenas o hash e retorna erro claro quando o bootstrap já foi realizado.
-O fluxo está documentado em `docs/DEPLOYMENT.md`.
+**Implementação atual:** Welcome e CLI compartilham o lock transacional e o
+estado `underleafInstallations/installation`. A CLI recusa a operação se já
+houver administrador, inclusive desabilitado, e não reabre o Welcome. Senhas
+são fornecidas por entrada oculta ou stdin, e apenas hashes são persistidos.
+O fluxo está documentado em `docs/DEPLOYMENT.md`; a execução da nova cobertura
+de bootstrap e do fluxo completo permanece pendente.
 
 ### M8 — Painel administrativo
 
@@ -272,7 +306,7 @@ self-hosted.
 - [x] Promover e remover privilégios de administrador.
 - [x] Excluir usuários com confirmação explícita.
 - [x] Definir se os projetos serão transferidos, excluídos ou se a operação será
-  cancelada ao excluir um usuário.
+      cancelada ao excluir um usuário.
 - [x] Exibir informações básicas de saúde do sistema quando disponíveis.
 
 **Critério de aceite:** nenhuma ação administrativa destrói projetos sem uma
@@ -362,9 +396,9 @@ MongoDB e Redis.
 - [x] Disponibilizar latexmk, BibTeX, Biber e makeindex.
 - [x] Disponibilizar TeX Live Full ou uma distribuição equivalente documentada.
 - [x] Validar pacotes como TikZ, PGFPlots, Circuitikz, Minted, Fontspec,
-  BibLaTeX e Chemfig.
+      BibLaTeX e Chemfig.
 - [x] Manter a atualização do ambiente LaTeX separada da atualização da
-  aplicação.
+      aplicação.
 
 **Critério de aceite:** documentos representativos compilam com os engines e
 pacotes suportados, com testes reproduzíveis.
@@ -386,13 +420,13 @@ aplicação sem necessidade.
 - [x] Usar diretório temporário e filesystem de compilação controlado.
 - [x] Manter a rede interna e limitar acessos externos.
 - [x] Tornar timeout configurável, por exemplo
-  `UNDERLEAF_COMPILE_TIMEOUT=3600`.
+      `UNDERLEAF_COMPILE_TIMEOUT=3600`.
 - [x] Tornar CPU e memória configuráveis, por exemplo
-  `UNDERLEAF_COMPILE_CPUS=4` e `UNDERLEAF_COMPILE_MEMORY=8G`.
+      `UNDERLEAF_COMPILE_CPUS=4` e `UNDERLEAF_COMPILE_MEMORY=8G`.
 - [x] Permitir `UNDERLEAF_MAX_PROJECT_SIZE=0` quando não houver limite
-  artificial de produto.
+      artificial de produto.
 - [x] Documentar que esses limites são salvaguardas de infraestrutura, não
-  planos comerciais.
+      planos comerciais.
 
 **Critério de aceite:** uma compilação não consegue acessar secrets da
 aplicação e é interrompida de forma previsível ao exceder os limites.
@@ -435,9 +469,9 @@ de forma insegura.
 - [x] Validar conflitos e comportamento offline/reconnect quando suportado.
 - [x] Validar presença e atualizações de cursor quando disponíveis.
 - [x] Avaliar extração para `apps/collaboration`; a responsabilidade permanece
-  em `services/real-time` porque a extração não reduziria o acoplamento atual.
+      em `services/real-time` porque a extração não reduziria o acoplamento atual.
 - [x] Adicionar testes de concorrência e regressão antes de substituir a lógica
-  herdada.
+      herdada.
 
 **Critério de aceite:** dois usuários conseguem editar o mesmo documento sem
 perder alterações após sincronização ou reconexão.
@@ -523,9 +557,9 @@ histórico.
 - [x] Adicionar logs estruturados com timestamp, nível, serviço e request ID.
 - [x] Incluir user ID e project ID somente quando necessário e permitido.
 - [x] Não registrar senha, hash, session token, secrets ou conteúdo de
-  documentos.
+      documentos.
 - [x] Exibir métricas úteis, como disco, compilações ativas e fila, quando
-  possível.
+      possível.
 
 **Critério de aceite:** um administrador consegue distinguir falha de
 aplicação, banco, cache e compilador sem expor dados sensíveis.
@@ -543,7 +577,7 @@ alterar os serializers que filtram credenciais e conteúdo de documentos.
 - [x] Manter configuração Compose base na raiz.
 - [x] Adicionar overlays para desenvolvimento e produção em `infra/compose/`.
 - [x] Documentar `make dev`, `make build`, `make test`, `make up`, `make down`,
-  `make logs`, `make backup` e `make restore` quando existirem.
+      `make logs`, `make backup` e `make restore` quando existirem.
 - [x] Adicionar redes internas, volumes persistentes e restart policies.
 - [x] Validar configuração obrigatória na inicialização.
 - [x] Configurar limites de recursos sem transformá-los em planos comerciais.
@@ -564,7 +598,7 @@ recursos. A identidade visual usa os assets PNG do Underleaf em
 **Objetivo:** fornecer uma entrada suportada e segura para a instalação.
 
 - [x] Versionar configuração de Nginx, Caddy ou outra opção escolhida em
-  `infra/proxy/`.
+      `infra/proxy/`.
 - [x] Expor normalmente apenas as portas web necessárias, como 80 e 443.
 - [x] Manter MongoDB, Redis e compilador em redes internas sem portas públicas.
 - [x] Documentar certificados, headers e encaminhamento de WebSocket.
@@ -619,9 +653,9 @@ Para a versão 1.0, validar a matriz completa:
 - [x] compartilhamento por username com owner, editor e viewer;
 - [x] histórico, atribuição e restore;
 - [x] Docker Compose, volumes persistentes, healthchecks, backup, restore e
-  HTTPS;
+      HTTPS;
 - [x] documentação de instalação, desenvolvimento, deploy, backup, segurança
-  e origem.
+      e origem.
 
 **Critério de aceite:** uma pessoa nova consegue instalar, administrar,
 compartilhar, editar, compilar, fazer backup e restaurar uma instalação sem
@@ -639,7 +673,7 @@ Ideias que não são requisitos da primeira versão:
 
 - templates administráveis e pessoais;
 - integração Git por projeto;
-- temas, snippets, Vim bindings e command palette;
+- snippets, Vim bindings e command palette;
 - audit log administrativo;
 - métricas mais detalhadas;
 - perfis de compilação para agendamento de recursos.
@@ -663,6 +697,8 @@ ela pode exigir:
 
 ## Próximo passo recomendado
 
-Iniciar o M4: remover funcionalidades SaaS desnecessárias, começando por
-mapear cadastro público, recuperação de senha, billing, planos e integrações
-cloud antes de apagar qualquer rota ou serviço.
+Quando a execução for autorizada, validar a sequência de coesão em uma
+instalação descartável conforme `docs/DEVELOPMENT.md`, incluindo os temas,
+bootstrap, identidade e fluxo completo. Validar separadamente o upgrade de
+uma cópia dos dados existentes e a persistência após recriação dos containers.
+Só atualizar a matriz de release com os resultados efetivamente obtidos.

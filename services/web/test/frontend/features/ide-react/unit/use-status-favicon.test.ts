@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { renderHook } from '@testing-library/react'
+import { act, cleanup, renderHook } from '@testing-library/react'
 import * as CompileContext from '@/shared/context/detach-compile-context'
 
 import { useStatusFavicon } from '@/features/ide-react/hooks/use-status-favicon'
@@ -11,6 +11,7 @@ describe('useStatusFavicon', function () {
   let mockUseDetachCompileContext: sinon.SinonStub
   let clock: sinon.SinonFakeTimers
   let originalHidden: PropertyDescriptor | undefined
+  let previousMeta: typeof window.metaAttributesCache
 
   const setCompilation = (compileContext: Compilation) => {
     mockUseDetachCompileContext.returns(compileContext)
@@ -21,7 +22,7 @@ describe('useStatusFavicon', function () {
       configurable: true,
       value: hidden,
     })
-    document.dispatchEvent(new Event('visibilitychange'))
+    act(() => document.dispatchEvent(new Event('visibilitychange')))
   }
 
   const getFaviconElements = () =>
@@ -35,6 +36,12 @@ describe('useStatusFavicon', function () {
   }
 
   beforeEach(function () {
+    previousMeta = window.metaAttributesCache
+    window.metaAttributesCache = new Map(previousMeta)
+    window.metaAttributesCache.set('ol-ExposedSettings', {
+      appName: 'Underleaf',
+      underleaf: true,
+    })
     mockUseDetachCompileContext = sinon.stub(
       CompileContext,
       'useDetachCompileContext'
@@ -44,10 +51,7 @@ describe('useStatusFavicon', function () {
     clock = sinon.useFakeTimers()
 
     // Store original document.hidden descriptor
-    originalHidden = Object.getOwnPropertyDescriptor(
-      Document.prototype,
-      'hidden'
-    )
+    originalHidden = Object.getOwnPropertyDescriptor(document, 'hidden')
 
     // Clean up any existing favicon elements
     document
@@ -61,13 +65,15 @@ describe('useStatusFavicon', function () {
   })
 
   afterEach(function () {
+    cleanup()
+    window.metaAttributesCache = previousMeta
     sinon.restore()
     clock.restore()
 
     // Restore original document.hidden
     if (originalHidden) {
       Object.defineProperty(document, 'hidden', originalHidden)
-    }
+    } else delete (document as { hidden?: boolean }).hidden
 
     // Clean up favicon elements
     document
@@ -78,25 +84,29 @@ describe('useStatusFavicon', function () {
   it('updates favicon to reflect status: UNCOMPILED', function () {
     setCompilation({ uncompiled: true, compiling: false, error: false })
     renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.svg')
   })
 
   it('updates favicon to reflect status: COMPILING', function () {
     setCompilation({ uncompiled: false, compiling: true, error: false })
     renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiling.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiling.svg'
+    )
   })
 
   it('updates favicon to reflect status: COMPILED', function () {
     setCompilation({ uncompiled: false, compiling: false, error: false })
     renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiled.svg'
+    )
   })
 
   it('updates favicon to reflect status: ERROR', function () {
     setCompilation({ uncompiled: false, compiling: false, error: true })
     renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/favicon-error.svg')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon-error.svg')
   })
 
   it('keeps the COMPILED favicon for 5 seconds when the window is active', function () {
@@ -104,11 +114,15 @@ describe('useStatusFavicon', function () {
     const { rerender } = renderHook(() => useStatusFavicon())
     setHidden(false)
     rerender()
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiled.svg'
+    )
     clock.tick(4500)
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiled.svg'
+    )
     clock.tick(1000)
-    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.svg')
   })
 
   it('keeps the COMPILED favicon forever when the window is hidden', function () {
@@ -117,20 +131,36 @@ describe('useStatusFavicon', function () {
     setHidden(true)
     rerender()
 
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiled.svg'
+    )
     clock.tick(90000)
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiled.svg')
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiled.svg'
+    )
   })
 
   it('should only have one favicon element at a time', function () {
     setCompilation({ uncompiled: true, compiling: false, error: false })
     const { rerender } = renderHook(() => useStatusFavicon())
     expect(getFaviconElements()).to.have.length(1)
-    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.png')
+    expect(getCurrentFaviconHref()).to.include('/underleaf-favicon.svg')
 
     setCompilation({ uncompiled: false, compiling: true, error: false })
     rerender()
     expect(getFaviconElements()).to.have.length(1)
+    expect(getCurrentFaviconHref()).to.include(
+      '/underleaf-favicon-compiling.svg'
+    )
+  })
+
+  it('uses the legacy compile indicator only outside Underleaf', function () {
+    window.metaAttributesCache.set('ol-ExposedSettings', {
+      appName: 'Overleaf',
+      underleaf: false,
+    })
+    setCompilation({ uncompiled: false, compiling: true, error: false })
+    renderHook(() => useStatusFavicon())
     expect(getCurrentFaviconHref()).to.include('/favicon-compiling.svg')
   })
 })

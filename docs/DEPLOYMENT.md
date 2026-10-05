@@ -175,6 +175,40 @@ management.
 Complete Welcome before making a fresh installation publicly reachable: the
 first person who completes it becomes the administrator.
 
+## Identity and appearance
+
+Authentication, administration and project sharing use username exclusively.
+Do not provision technical email addresses. Administrators create accounts and
+reset forgotten passwords through `/admin/users`; email confirmation, secondary
+emails and email recovery are not product flows.
+
+Existing accounts are adapted by the versioned username identity migration,
+`tools/migrations/20261005100000_underleaf_username_identity.mjs`, using the
+existing migration mechanism. It removes email identity fields/indexes and
+establishes the canonical username index. Preserve a full backup before an
+upgrade and validate the migration against a restored copy first. The first-run
+E2E suite does not validate an upgrade of existing data.
+
+The installation state, user identities and authenticated theme preferences
+are persisted in MongoDB. Include them in backup/restore and container
+recreation verification. System follows the operating-system theme; Light and
+Dark remain account preferences across login and navigation. Visitor theme
+selection is stored locally in the browser.
+
+## Status and product validation
+
+HTML `/status` is administrator-only and shows web-process uptime and configured
+access flags. Public plaintext/JSON/wildcard monitoring requests retain their
+existing response. Use `make health` and the probes documented in
+[`OBSERVABILITY.md`](OBSERVABILITY.md) to assess actual service dependencies.
+
+[`DEVELOPMENT.md`](DEVELOPMENT.md) documents the product suites, current
+validation status and the disposable-installation requirement for the E2E
+journey. The supplied Compose fixes container, volume and network names; a
+different Compose project name alone does not isolate test data. Use a separate
+Docker environment or override all shared names and ports before running the
+bootstrap suite.
+
 ## Security
 
 Read [`SECURITY.md`](SECURITY.md) before publishing the service. It records the

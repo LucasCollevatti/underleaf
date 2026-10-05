@@ -34,7 +34,7 @@ describe('<UnderleafAppShell />', function () {
     window.metaAttributesCache = new Map()
     window.metaAttributesCache.set('ol-ExposedSettings', {
       appName: 'Underleaf',
-      ieeeBrandId: 1234,
+      underleaf: true,
     })
     window.metaAttributesCache.set('ol-navbar', { items: [] })
     localStorage.clear()
