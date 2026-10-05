@@ -1,81 +1,84 @@
 import { expect } from 'chai'
-import sinon from 'sinon'
-import { screen, render, waitFor } from '@testing-library/react'
-import * as eventTracking from '@/infrastructure/event-tracking'
-import SettingsPageRoot from '../../../../../frontend/js/features/settings/components/root'
+import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import fetchMock from 'fetch-mock'
+import SettingsPageRoot from '@/features/settings/components/root'
 import getMeta from '@/utils/meta'
 
-describe('<SettingsPageRoot />', function () {
-  let sendMBSpy: sinon.SinonSpy
+describe('<SettingsPageRoot /> local Underleaf accounts', function () {
   beforeEach(function () {
-    window.metaAttributesCache.set('ol-usersEmail', 'foo@bar.com')
-    Object.assign(getMeta('ol-ExposedSettings'), { isOverleaf: true })
-    window.metaAttributesCache.set('ol-hasPassword', true)
     Object.assign(getMeta('ol-ExposedSettings'), {
-      hasAffiliationsFeature: true,
+      underleaf: true,
       isOverleaf: true,
+      labsEnabled: true,
+      hasAffiliationsFeature: true,
+      enableSubscriptions: true,
     })
+    window.metaAttributesCache.set('ol-navbar', { items: [] })
+    window.metaAttributesCache.set('ol-user_id', 'account-id')
     window.metaAttributesCache.set('ol-user', {
-      features: { github: true, dropbox: true, mendeley: true, zotero: true },
-      refProviders: {
-        mendeley: true,
-        zotero: true,
-      },
+      id: 'account-id',
+      username: 'lucas',
+      displayName: 'Lucas',
+      role: 'user',
+      status: 'active',
     })
-    window.metaAttributesCache.set('ol-github', { enabled: true })
-    window.metaAttributesCache.set('ol-dropbox', { registered: true })
-    window.metaAttributesCache.set('ol-oauthProviders', {})
-    sendMBSpy = sinon.spy(eventTracking, 'sendMB')
+    window.metaAttributesCache.set('ol-hasPassword', true)
+    window.metaAttributesCache.set('ol-userSettings', {
+      overallTheme: 'system',
+    })
+    window.metaAttributesCache.set('ol-passwordStrengthOptions', {})
   })
-
   afterEach(function () {
-    sendMBSpy.restore()
+    cleanup()
+    fetchMock.removeRoutes().clearHistory()
+    localStorage.clear()
   })
-
-  it('displays page for Overleaf', async function () {
+  it('shows local account controls in the same sidebar shell', async function () {
     render(<SettingsPageRoot />)
-
-    await waitFor(() => {
-      screen.getByText('Account settings')
-    })
-    screen.getByText('Emails and affiliations')
-    screen.getByText('Update account info')
-    screen.getByText('Change password')
-    screen.getByText('Overleaf beta program')
-    screen.getByText('Sessions')
-    screen.getByText('Newsletter')
-    screen.getByRole('button', {
-      name: 'Delete your account',
-    })
+    await screen.findByRole('heading', { name: 'Account settings' })
+    expect(screen.getByRole('link', { name: 'Projects' })).to.exist
+    expect(screen.getByRole('img', { name: 'Underleaf' })).to.exist
+    expect(screen.getByLabelText('Username')).to.have.property('value', 'lucas')
+    expect(screen.getByLabelText('Display name')).to.have.property(
+      'value',
+      'Lucas'
+    )
+    expect(screen.getByRole('heading', { name: 'Change password' })).to.exist
+    expect(screen.getByRole('link', { name: 'Manage sessions' })).to.exist
+    const appearance = screen.getByRole('region', { name: 'Appearance' })
+    for (const name of ['System', 'Light', 'Dark'])
+      expect(within(appearance).getByRole('radio', { name })).to.exist
   })
-
-  it('displays page for non-Overleaf', async function () {
-    Object.assign(getMeta('ol-ExposedSettings'), {
-      hasAffiliationsFeature: false,
-      isOverleaf: false,
-    })
+  it('omits SaaS account sections even if inherited flags are enabled', async function () {
     render(<SettingsPageRoot />)
-
-    await waitFor(() => {
-      screen.getByText('Account settings')
-    })
-    expect(screen.queryByText('Emails and affiliations')).to.not.exist
-    screen.getByText('Update account info')
-    screen.getByText('Change password')
-    expect(screen.queryByText('Overleaf beta program')).to.not.exist
-    screen.getByText('Sessions')
-    expect(screen.queryByText('Newsletter')).to.not.exist
+    await screen.findByRole('heading', { name: 'Account settings' })
+    for (const name of ['Email', 'First name', 'Last name', 'Institution'])
+      expect(screen.queryByLabelText(name)).to.be.null
+    for (const name of [
+      'Emails and affiliations',
+      'Newsletter',
+      'Overleaf beta program',
+      'Subscription',
+    ])
+      expect(screen.queryByText(name)).to.be.null
+    expect(screen.queryByRole('button', { name: 'Delete your account' })).to.be
+      .null
+  })
+  it('saves the same appearance choice from Settings and the sidebar', async function () {
+    fetchMock.post('/user/settings', 200)
+    render(<SettingsPageRoot />)
+    await screen.findByRole('heading', { name: 'Appearance' })
+    const appearance = screen.getByRole('region', { name: 'Appearance' })
+    await userEvent.click(
+      within(appearance).getByRole('radio', { name: 'Light' })
+    )
     expect(
-      screen.queryByRole('button', {
-        name: 'Delete your account',
+      fetchMock.callHistory.called('/user/settings', {
+        body: { overallTheme: 'light-' },
       })
-    ).to.not.exist
-  })
-
-  it('sends tracking event on load', async function () {
-    render(<SettingsPageRoot />)
-
-    sinon.assert.calledOnce(sendMBSpy)
-    sinon.assert.calledWith(sendMBSpy, 'settings-view')
+    ).to.be.true
+    for (const radio of screen.getAllByRole('radio', { name: 'Light' }))
+      expect(radio).to.have.property('checked', true)
   })
 })

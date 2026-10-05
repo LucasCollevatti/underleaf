@@ -22,6 +22,8 @@ import { useFeatureFlag } from '@/shared/context/split-test-context'
 import { useShareProjectContext } from '@/features/share-project-modal/components/share-project-modal'
 import { ErrorBoundaryFallback } from '@/shared/components/error-boundary-fallback'
 import withErrorBoundary from '@/infrastructure/error-boundary'
+import getMeta from '@/utils/meta'
+import UnderleafShareModalContent from './underleaf-share-modal-content'
 
 const ReadOnlyTokenLink = lazy(() =>
   import('./link-sharing').then(({ ReadOnlyTokenLink }) => ({
@@ -58,12 +60,16 @@ export default function ShareProjectModalContent({
 }: ShareProjectModalContentProps) {
   return (
     <OLModal show={show} onShow={onShow} onHide={cancel} animation={animation}>
-      <ShareProjectModalContentInnerWithErrorBoundary
-        inFlight={inFlight}
-        error={error}
-        projectName={projectName}
-        cancel={cancel}
-      />
+      {getMeta('ol-ExposedSettings').underleaf ? (
+        <UnderleafShareModalContentWithErrorBoundary cancel={cancel} />
+      ) : (
+        <ShareProjectModalContentInnerWithErrorBoundary
+          inFlight={inFlight}
+          error={error}
+          projectName={projectName}
+          cancel={cancel}
+        />
+      )}
     </OLModal>
   )
 }
@@ -206,5 +212,10 @@ const ShareProjectModalContentInnerFallback = () => {
 
 const ShareProjectModalContentInnerWithErrorBoundary = withErrorBoundary(
   ShareProjectModalContentInner,
+  () => <ShareProjectModalContentInnerFallback />
+)
+
+const UnderleafShareModalContentWithErrorBoundary = withErrorBoundary(
+  UnderleafShareModalContent,
   () => <ShareProjectModalContentInnerFallback />
 )

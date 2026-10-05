@@ -136,7 +136,7 @@ function PasswordForm() {
           form="password-change-form"
           type="submit"
           variant="primary"
-          disabled={!isFormValid}
+          disabled={isLoading || !isFormValid}
           isLoading={isLoading}
           loadingLabel={`${t('saving')}…`}
         >

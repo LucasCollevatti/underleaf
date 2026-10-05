@@ -1,4 +1,5 @@
 import UserGetter from './UserGetter.mjs'
+import UserSettingsHelper from '../Project/UserSettingsHelper.mjs'
 import OError from '@overleaf/o-error'
 import UserSessionsManager from './UserSessionsManager.mjs'
 import logger from '@overleaf/logger'
@@ -43,6 +44,30 @@ async function settingsPage(req, res) {
       null,
       () => res.redirect('/')
     )
+  }
+
+  if (Settings.underleaf) {
+    const userSettings = await UserSettingsHelper.buildUserSettings(req, res, {
+      ...user,
+      ace: user.ace || {},
+    })
+    res.set('Cache-Control', 'no-store')
+    return res.render('user/settings', {
+      title: 'account_settings',
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName || user.username,
+        isAdmin: user.role === 'admin',
+        role: user.role,
+        status: user.status,
+      },
+      hasPassword: Boolean(user.passwordHash),
+      userSettings,
+      initialTheme: UserSettingsHelper.getInitialTheme(
+        userSettings.overallTheme
+      ),
+    })
   }
 
   let personalAccessTokens

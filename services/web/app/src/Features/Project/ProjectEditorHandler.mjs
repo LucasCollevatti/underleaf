@@ -65,6 +65,7 @@ export default ProjectEditorHandler = {
       trackChangesVisible: ProjectEditorHandler.trackChangesAvailable,
       symbolPalette: false,
     })
+    if (Settings.underleaf) result.features.collaborators = -1
 
     if (result.features.trackChanges) {
       result.trackChangesState = project.track_changes || false

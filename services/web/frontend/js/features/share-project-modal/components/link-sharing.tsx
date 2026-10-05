@@ -29,7 +29,9 @@ type Tokens = {
 type AccessLevel = 'private' | 'tokenBased' | 'readAndWrite' | 'readOnly'
 
 export default function LinkSharing() {
-  const isSharingUpdatesEnabled = useFeatureFlag('sharing-updates')
+  const isSharingUpdatesEnabled =
+    useFeatureFlag('sharing-updates') &&
+    !getMeta('ol-ExposedSettings').underleaf
   const [inflight, setInflight] = useState(false)
   const [showLinks, setShowLinks] = useState(true)
   const linkSharingEnabled =
@@ -311,6 +313,7 @@ function AccessToken({
 
 function LinkSharingInfo() {
   const { t } = useTranslation()
+  if (getMeta('ol-ExposedSettings').underleaf) return null
 
   return (
     <OLTooltip

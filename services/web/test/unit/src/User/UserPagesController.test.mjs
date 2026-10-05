@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import Settings from '@overleaf/settings'
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
@@ -48,6 +49,7 @@ import UserPagesController from '../../../../app/src/Features/User/UserPagesCont
 let req, user
 beforeEach(() => {
   vi.clearAllMocks()
+  Settings.underleaf = true
   user = {
     _id: 'account-id',
     username: 'alpha',
@@ -56,6 +58,7 @@ beforeEach(() => {
     status: 'active',
     identityVersion: 1,
     passwordHash: 'private-hash',
+    ace: { overallTheme: 'light-' },
     features: {},
     refProviders: { zotero: { encrypted: 'private-token' } },
     ip_address: '127.0.0.1',
@@ -143,13 +146,17 @@ describe('UserPagesController local username accounts', () => {
     ])
       expect(result.data).not.toHaveProperty(field)
     expect(result.data.hasPassword).toBe(true)
-    expect(result.data.user.refProviders).toEqual({
-      zotero: true,
-      mendeley: false,
-      papers: false,
-    })
+    expect(result.data.user).not.toHaveProperty('refProviders')
+    expect(result.data.user).not.toHaveProperty('features')
+    expect(result.data.user).not.toHaveProperty('allowedFreeTrial')
+    expect(result.data).not.toHaveProperty('personalAccessTokens')
+    expect(result.headers['Cache-Control']).toBe('no-store')
+    expect(result.data.userSettings.overallTheme).toBe('light-')
+    expect(result.data.initialTheme).toBe('light')
+    expect(mocks.hooks).not.toHaveBeenCalled()
   })
   it('keeps sync notifications and consumes them from the session', async () => {
+    Settings.underleaf = false
     req.session.projectSyncSuccessMessage = 'Synced'
     req.session.referenceLinkingErrorMessage = 'Cannot link'
     const result = await invoke(UserPagesController.settingsPage)
@@ -159,6 +166,7 @@ describe('UserPagesController local username accounts', () => {
     expect(req.session).not.toHaveProperty('referenceLinkingErrorMessage')
   })
   it('preserves personal access token integrations independently of login identity', async () => {
+    Settings.underleaf = false
     mocks.hooks.mockResolvedValue([[{ name: 'automation', id: 'token-id' }]])
     const result = await invoke(UserPagesController.settingsPage)
     expect(result.data.personalAccessTokens).toEqual([
@@ -170,6 +178,7 @@ describe('UserPagesController local username accounts', () => {
     )
   })
   it('still renders settings if an optional integration fails', async () => {
+    Settings.underleaf = false
     mocks.hooks.mockRejectedValue(new Error('Optional integration unavailable'))
     expect((await invoke(UserPagesController.settingsPage)).view).toBe(
       'user/settings'

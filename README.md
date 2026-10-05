@@ -28,6 +28,10 @@ criar o primeiro administrador e entrar automaticamente em Projects.
 Instalações já configuradas continuam usando `/login`. A CLI de criação de
 administrador fica disponível para recuperação ou automação.
 Para parar os containers, use `make down`.
+Em Settings, usuários alteram o nome de exibição, a senha e a aparência
+System/Light/Dark. O username é administrado pelo responsável pela instalação.
+No editor, Share Project busca contas existentes por username e concede acesso
+direto como editor ou viewer, sem convites por email nem limites de plano.
 Volumes nomeados preservam projetos, histórico, cache, banco e saídas entre
 reinicializações.
 

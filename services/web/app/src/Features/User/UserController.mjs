@@ -1,3 +1,4 @@
+import Settings from '@overleaf/settings'
 import UserDeleter from './UserDeleter.mjs'
 import UserGetter from './UserGetter.mjs'
 import { User } from '../../models/User.mjs'
@@ -271,8 +272,17 @@ const updateUserSettingsSchema = z.object({
   }),
 })
 
+const underleafUserSettingsSchema = updateUserSettingsSchema.extend({
+  body: updateUserSettingsSchema.shape.body.omit({ institution: true }).extend({
+    overallTheme: z.enum(['system', 'light-', '']).optional(),
+  }),
+})
+
 async function updateUserSettings(req, res, next) {
-  const { body } = parseReq(req, updateUserSettingsSchema)
+  const { body } = parseReq(
+    req,
+    Settings.underleaf ? underleafUserSettingsSchema : updateUserSettingsSchema
+  )
   const userId = SessionManager.getLoggedInUserId(req.session)
   req.logger.addFields({ userId })
 

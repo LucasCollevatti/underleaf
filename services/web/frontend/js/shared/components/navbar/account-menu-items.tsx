@@ -34,7 +34,7 @@ export function AccountMenuItems({
       <NavDropdownLinkItem href="/user/settings">
         {t('account_settings')}
       </NavDropdownLinkItem>
-      {showSubscriptionLink ? (
+      {showSubscriptionLink && !getMeta('ol-ExposedSettings').underleaf ? (
         <NavDropdownLinkItem href="/user/subscription">
           {t('subscription')}
         </NavDropdownLinkItem>

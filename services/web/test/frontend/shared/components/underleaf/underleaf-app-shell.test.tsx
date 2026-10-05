@@ -84,6 +84,11 @@ describe('<UnderleafAppShell />', function () {
     renderPage('authenticated')
     expect(screen.getByRole('link', { name: 'Projects' })).to.exist
     expect(screen.queryByRole('link', { name: 'Administration' })).to.be.null
+    expect(
+      screen
+        .getByRole('link', { name: 'Account settings' })
+        .getAttribute('href')
+    ).to.equal('/user/settings')
   })
 
   it('persists guest theme across login/setup mounts without saving account settings', async function () {

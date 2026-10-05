@@ -5,6 +5,7 @@ type TemplateLink = {
 }
 
 export type ExposedSettings = {
+  underleaf: boolean
   adminEmail: string
   appName: string
   cookieDomain: string

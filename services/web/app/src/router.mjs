@@ -271,7 +271,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     UnderleafSharingRouter.apply(webRouter)
   }
   if (Settings.underleaf) {
-    webRouter.post('/project/:Project_id/invite', (req, res) =>
+    webRouter.use('/project/:Project_id/invite', (req, res) =>
       res.sendStatus(404)
     )
     webRouter.get(
@@ -279,13 +279,15 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
       AuthenticationController.requireLogin(),
       (req, res) => res.json({ invites: [] })
     )
-    webRouter.post(
-      '/project/:Project_id/invite/:invite_id/resend',
+    webRouter.use(
+      ['/project/:Project_id/sharing-link', '/project/:Project_id/share'],
       (req, res) => res.sendStatus(404)
     )
   }
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
-  SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
+  if (!Settings.underleaf) {
+    SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
+  }
   UploadsRouter.apply(webRouter, privateApiRouter)
   StaticPagesRouter.apply(webRouter, privateApiRouter)
   ContactRouter.apply(webRouter, privateApiRouter)

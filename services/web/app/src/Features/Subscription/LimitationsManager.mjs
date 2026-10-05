@@ -23,6 +23,7 @@ async function allowedNumberOfCollaboratorsInProject(projectId) {
  * @param {any} userId
  */
 async function allowedNumberOfCollaboratorsForUser(userId) {
+  if (Settings.underleaf) return -1
   const user = await UserGetter.promises.getUser(userId, { features: 1 })
   if (user?.features?.collaborators) {
     return user.features.collaborators

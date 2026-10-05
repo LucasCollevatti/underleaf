@@ -1,227 +1,74 @@
 import { expect } from 'chai'
-import { fireEvent, screen, render } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import fetchMock from 'fetch-mock'
-import AccountInfoSection from '../../../../../frontend/js/features/settings/components/account-info-section'
-import { UserProvider } from '../../../../../frontend/js/shared/context/user-context'
-import getMeta from '@/utils/meta'
+import AccountInfoSection from '@/features/settings/components/account-info-section'
+import { UserProvider } from '@/shared/context/user-context'
 
-function renderSectionWithUserProvider() {
-  render(<AccountInfoSection />, {
-    wrapper: ({ children }) => <UserProvider>{children}</UserProvider>,
-  })
+function renderSection() {
+  render(
+    <UserProvider>
+      <AccountInfoSection />
+    </UserProvider>
+  )
 }
-
-describe('<AccountInfoSection />', function () {
+describe('<AccountInfoSection /> username profile', function () {
   beforeEach(function () {
     window.metaAttributesCache.set('ol-user', {
-      email: 'sherlock@holmes.co.uk',
-      first_name: 'Sherlock',
-      last_name: 'Holmes',
+      id: 'account-id',
+      username: 'lucas',
+      displayName: 'Lucas Collevatti',
     })
-    Object.assign(getMeta('ol-ExposedSettings'), {
-      hasAffiliationsFeature: false,
-    })
-    window.metaAttributesCache.set(
-      'ol-isExternalAuthenticationSystemUsed',
-      false
-    )
-    window.metaAttributesCache.set('ol-shouldAllowEditingDetails', true)
   })
-
   afterEach(function () {
+    cleanup()
     fetchMock.removeRoutes().clearHistory()
   })
-
-  it('submits all inputs', async function () {
-    const updateMock = fetchMock.post('/user/settings', 200)
-    renderSectionWithUserProvider()
-
-    fireEvent.change(screen.getByLabelText('Email'), {
-      target: { value: 'john@watson.co.uk' },
+  it('keeps username read-only and sends only the trimmed display name', async function () {
+    fetchMock.post('/user/settings', 200)
+    renderSection()
+    expect(screen.getByLabelText('Username')).to.have.property('readOnly', true)
+    expect(screen.queryByLabelText('Email')).to.be.null
+    fireEvent.change(screen.getByLabelText('Display name'), {
+      target: { value: ' New name ' },
     })
-    fireEvent.change(screen.getByLabelText('First name'), {
-      target: { value: 'John' },
-    })
-    fireEvent.change(screen.getByLabelText('Last name'), {
-      target: { value: 'Watson' },
-    })
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Update account info',
-      })
+    await userEvent.click(screen.getByRole('button', { name: 'Update' }))
+    await waitFor(
+      () =>
+        expect(
+          fetchMock.callHistory.called('/user/settings', {
+            body: { displayName: 'New name' },
+          })
+        ).to.be.true
     )
-    expect(updateMock.callHistory.called()).to.be.true
-    expect(
-      JSON.parse(updateMock.callHistory.calls().at(-1)?.options.body as string)
-    ).to.deep.equal({
-      email: 'john@watson.co.uk',
-      first_name: 'John',
-      last_name: 'Watson',
-    })
+    await screen.findByText('Thanks, your settings have been updated.')
   })
-
-  it('disables button on invalid email', async function () {
-    const updateMock = fetchMock.post('/user/settings', 200)
-    renderSectionWithUserProvider()
-
-    fireEvent.change(screen.getByLabelText('Email'), {
-      target: { value: 'john' },
+  it('does not submit an empty name', async function () {
+    fetchMock.post('/user/settings', 200)
+    renderSection()
+    fireEvent.change(screen.getByLabelText('Display name'), {
+      target: { value: '  ' },
     })
-    const button = screen.getByRole('button', {
-      name: 'Update account info',
-    }) as HTMLButtonElement
-
-    expect(button.disabled).to.be.true
-    fireEvent.click(button)
-
-    expect(updateMock.callHistory.called()).to.be.false
-  })
-
-  it('shows inflight state and success message', async function () {
-    let finishUpdateCall: (value: any) => void = () => {}
-    fetchMock.post(
-      '/user/settings',
-      new Promise(resolve => (finishUpdateCall = resolve))
+    expect(screen.getByRole('button', { name: 'Update' })).to.have.property(
+      'disabled',
+      true
     )
-    renderSectionWithUserProvider()
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
-    await screen.findByRole('button', { name: /saving/i })
-
-    finishUpdateCall(200)
-    await screen.findByRole('button', {
-      name: /update/i,
-    })
-    screen.getByText('Thanks, your settings have been updated.')
+    expect(fetchMock.callHistory.called('/user/settings')).to.be.false
   })
-
-  it('shows server error', async function () {
+  it('shows a server failure while leaving the name editable', async function () {
     fetchMock.post('/user/settings', 500)
-    renderSectionWithUserProvider()
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
+    renderSection()
+    await userEvent.click(screen.getByRole('button', { name: 'Update' }))
     await screen.findByText('Something went wrong. Please try again.')
-  })
-
-  it('shows invalid error', async function () {
-    fetchMock.post('/user/settings', 400)
-    renderSectionWithUserProvider()
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
-    await screen.findByText(
-      'Invalid Request. Please correct the data and try again.'
-    )
-  })
-
-  it('shows conflict error', async function () {
-    fetchMock.post('/user/settings', {
-      status: 409,
-      body: {
-        message:
-          'This email address is already associated with a different Overleaf account.',
-      },
-    })
-    renderSectionWithUserProvider()
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
-    await screen.findByText(
-      'This email address is already associated with a different Overleaf account.'
-    )
-  })
-
-  it('hides email input', async function () {
-    Object.assign(getMeta('ol-ExposedSettings'), {
-      hasAffiliationsFeature: true,
-    })
-    const updateMock = fetchMock.post('/user/settings', 200)
-
-    renderSectionWithUserProvider()
-    expect(screen.queryByLabelText('Email')).to.not.exist
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
-    expect(
-      JSON.parse(updateMock.callHistory.calls().at(-1)?.options.body as string)
-    ).to.deep.equal({
-      first_name: 'Sherlock',
-      last_name: 'Holmes',
-    })
-  })
-
-  it('disables email input', async function () {
-    window.metaAttributesCache.set(
-      'ol-isExternalAuthenticationSystemUsed',
-      true
-    )
-    const updateMock = fetchMock.post('/user/settings', 200)
-
-    renderSectionWithUserProvider()
-    expect(screen.getByLabelText('Email')).to.have.property('readOnly', true)
-    expect(screen.getByLabelText('First name')).to.have.property(
+    expect(screen.getByLabelText('Display name')).to.have.property(
       'readOnly',
       false
     )
-    expect(screen.getByLabelText('Last name')).to.have.property(
-      'readOnly',
-      false
-    )
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update account info/i,
-      })
-    )
-    expect(
-      JSON.parse(updateMock.callHistory.calls().at(-1)?.options.body as string)
-    ).to.deep.equal({
-      first_name: 'Sherlock',
-      last_name: 'Holmes',
-    })
-  })
-
-  it('disables names input', async function () {
-    window.metaAttributesCache.set('ol-shouldAllowEditingDetails', false)
-    const updateMock = fetchMock.post('/user/settings', 200)
-
-    renderSectionWithUserProvider()
-    expect(screen.getByLabelText('Email')).to.have.property('readOnly', false)
-    expect(screen.getByLabelText('First name')).to.have.property(
-      'readOnly',
-      true
-    )
-    expect(screen.getByLabelText('Last name')).to.have.property(
-      'readOnly',
-      true
-    )
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /update/i,
-      })
-    )
-    expect(
-      JSON.parse(updateMock.callHistory.calls().at(-1)?.options.body as string)
-    ).to.deep.equal({
-      email: 'sherlock@holmes.co.uk',
-    })
   })
 })

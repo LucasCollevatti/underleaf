@@ -26,9 +26,11 @@ function AccountInfoSection() {
         id="account-info-form"
         onSubmit={event => {
           event.preventDefault()
-          runAsync(postJSON('/user/settings', { body: { displayName } })).catch(
-            () => {}
-          )
+          runAsync(
+            postJSON('/user/settings', {
+              body: { displayName: displayName.trim() },
+            })
+          ).catch(() => {})
         }}
       >
         <OLFormGroup controlId="username-input">
@@ -59,7 +61,7 @@ function AccountInfoSection() {
           type="submit"
           variant="primary"
           isLoading={isLoading}
-          disabled={!displayName?.trim()}
+          disabled={isLoading || !displayName?.trim()}
         >
           {t('update')}
         </OLButton>
@@ -73,7 +75,7 @@ type ReadOrWriteFormGroupProps = {
   type: string
   label: string
   value?: string
-  handleChange: (event: any) => void
+  handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   canEdit: boolean
   maxLength?: number
   required: boolean

@@ -1,4 +1,5 @@
 import OError from '@overleaf/o-error'
+import Settings from '@overleaf/settings'
 import HttpErrorHandler from '../../Features/Errors/HttpErrorHandler.mjs'
 import mongodb from 'mongodb-legacy'
 import CollaboratorsHandler from './CollaboratorsHandler.mjs'
@@ -54,6 +55,7 @@ async function removeUserFromProject(req, res, next) {
   const projectId = params.Project_id
   const userId = params.user_id
   const sessionUserId = SessionManager.getLoggedInUserId(req.session)
+  if (await rejectOwnerChange(projectId, userId, res)) return
   await _removeUserIdFromProject(projectId, userId)
   EditorRealTimeController.emitToRoom(projectId, 'project:membership:changed', {
     members: true,
@@ -90,6 +92,7 @@ async function removeSelfFromProject(req, res, next) {
   })
   const projectId = params.Project_id
   const userId = SessionManager.getLoggedInUserId(req.session)
+  if (await rejectOwnerChange(projectId, userId, res)) return
   await _removeUserIdFromProject(projectId, userId)
   EditorRealTimeController.emitToRoom(projectId, 'project:membership:changed', {
     members: true,
@@ -182,6 +185,7 @@ async function setCollaboratorInfo(req, res, next) {
     const projectId = params.Project_id
     const userId = params.user_id
     const { privilegeLevel } = body
+    if (await rejectOwnerChange(projectId, userId, res)) return
 
     const allowed =
       await LimitationsManager.promises.canChangeCollaboratorPrivilegeLevel(
@@ -259,6 +263,7 @@ async function transferOwnership(req, res, next) {
         allowTransferToNonCollaborators: hasAdminAccess(sessionUser),
         sessionUserId: new ObjectId(sessionUser._id),
         ipAddress: req.ip,
+        ...(Settings.underleaf ? { skipEmails: true } : {}),
       }
     )
     res.sendStatus(204)
@@ -504,18 +509,20 @@ async function grantAccessRequest(req, res) {
   // invite they may still have (e.g. they were invited by email but joined
   // via a sharing link before requesting edit access). Mirrors the
   // token-access join flow; a failure here shouldn't fail the grant.
-  try {
-    const requesterEmails =
-      await UserGetter.promises.getUserConfirmedEmails(requesterId)
-    await CollaboratorsInviteHandler.promises.revokeInviteForUser(
-      projectId,
-      requesterEmails
-    )
-  } catch (err) {
-    logger.error(
-      { err, projectId, requesterId },
-      'failed to revoke pending invite after granting access request'
-    )
+  if (!Settings.underleaf) {
+    try {
+      const requesterEmails =
+        await UserGetter.promises.getUserConfirmedEmails(requesterId)
+      await CollaboratorsInviteHandler.promises.revokeInviteForUser(
+        projectId,
+        requesterEmails
+      )
+    } catch (err) {
+      logger.error(
+        { err, projectId, requesterId },
+        'failed to revoke pending invite after granting access request'
+      )
+    }
   }
 
   EditorRealTimeController.emitToRoom(
@@ -558,6 +565,7 @@ async function _notifyRequesterOfOutcome(
   outcome,
   privilegeLevel
 ) {
+  if (Settings.underleaf) return
   const project = await ProjectGetter.promises.getProject(projectId, {
     _id: 1,
     name: 1,
@@ -584,6 +592,7 @@ async function _notifyOwnerOfAccessRequest(
   requesterId,
   privilegeLevel
 ) {
+  if (Settings.underleaf) return
   const project = await ProjectGetter.promises.getProject(projectId, {
     _id: 1,
     name: 1,
@@ -609,6 +618,19 @@ async function _notifyOwnerOfAccessRequest(
     requester,
     privilegeLevel,
   })
+}
+
+async function rejectOwnerChange(projectId, userId, res) {
+  if (!Settings.underleaf) return false
+  const access = await CollaboratorsGetter.promises.getProjectAccess(projectId)
+  if (access.privilegeLevelForUser(userId) !== PrivilegeLevels.OWNER)
+    return false
+  res.status(409).json({
+    error: 'owner_cannot_be_removed',
+    message:
+      'Transfer ownership before removing or changing the owner’s access.',
+  })
+  return true
 }
 
 async function _removeUserIdFromProject(projectId, userId) {

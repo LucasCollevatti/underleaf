@@ -368,7 +368,8 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
 
   webRouter.use(function (req, res, next) {
     res.locals.ExposedSettings = {
-      isOverleaf: Settings.overleaf != null,
+      underleaf: Boolean(Settings.underleaf),
+      isOverleaf: !Settings.underleaf && Settings.overleaf != null,
       env: Settings.env,
       appName: Settings.appName,
       adminEmail: Settings.adminEmail,
@@ -403,7 +404,7 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
       sentryRelease: Settings.sentry.release,
       hotjarId: Settings.hotjar?.id,
       hotjarVersion: Settings.hotjar?.version,
-      enableSubscriptions: Settings.enableSubscriptions,
+      enableSubscriptions: !Settings.underleaf && Settings.enableSubscriptions,
       gaToken:
         Settings.analytics &&
         Settings.analytics.ga &&

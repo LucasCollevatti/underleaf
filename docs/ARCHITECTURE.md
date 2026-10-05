@@ -66,8 +66,8 @@ Os SVGs públicos `underleaf-mark`, `underleaf-wordmark` e `underleaf-lockup`
 possuem variantes claras e escuras. `UnderleafBrand` seleciona a variante
 usando o tema ativo, incluindo mudanças no tema do sistema operacional.
 
-O dashboard com projetos, Login e Welcome usam o shell. A migração do
-dashboard vazio, de Admin/Users/Settings e de Status/erros ocorre nas fases
+O dashboard com projetos, Login, Welcome e Settings usam o shell. A migração do
+dashboard vazio, de Admin/Users e de Status/erros ocorre nas fases
 seguintes; o editor mantém seu layout próprio.
 
 ## Inicialização da instalação
@@ -94,3 +94,33 @@ avança por Welcome, Administrator e Ready, depois abre `/project`
 automaticamente. Login usa username/password e preserva os redirects seguros
 do fluxo existente. Preferências de tema de visitantes continuam locais;
 contas autenticadas continuam usando a preferência do servidor.
+
+## Conta e colaboração local
+
+Settings mostra username somente para leitura, nome de exibição editável,
+troca de senha, sessões e aparência System/Light/Dark. O servidor fornece a
+preferência salva através de `UserSettingsHelper`, compartilhada com Projects
+e o editor. O endpoint de preferências continua aceitando as opções do editor,
+mas no Underleaf rejeita instituição e temas fora dos três valores suportados.
+Os metadados de conta da página não incluem email, afiliações, planos ou SSO.
+
+O modal de compartilhamento do Underleaf usa contas existentes, sem convites
+por email, CAPTCHA de convite ou limites de plano. A busca autenticada
+`GET /underleaf/users/search?username=lu` retorna até 20 usuários ativos por
+prefixo normalizado, ordenados por username, com apenas id, username e nome de
+exibição. A busca e as concessões possuem rate limiting.
+
+`PUT /project/:Project_id/users/by-username` concede ou atualiza acesso editor
+ou viewer. `DELETE /project/:Project_id/users/by-username/:username` remove
+acesso, inclusive de contas desativadas. Ambas exigem acesso administrativo ao
+projeto e reutilizam os handlers de colaboração, auditoria e websocket. O
+proprietário não pode ser rebaixado ou removido por esses caminhos; sua
+transferência continua no fluxo explícito existente. Pedidos de acesso são
+resolvidos dentro do modal sem notificações por email.
+
+As rotas antigas de convite, aceitação por token de convite, links reutilizáveis
+de grupos, subscriptions e afiliações ficam indisponíveis no Underleaf. Links
+clássicos de compartilhamento por token continuam opcionais quando a instalação
+os permite; conceder acesso por username não depende deles. O código histórico
+de SaaS compartilhado e os dados persistentes antigos permanecem no repositório
+e no banco; esta mudança não executa migração destrutiva.

@@ -158,6 +158,21 @@ beforeEach(() => {
 })
 
 describe('UserController local profile and password', () => {
+  it.each(['system', 'light-', ''])(
+    'accepts the appearance choice %s',
+    async overallTheme => {
+      req.body = { overallTheme }
+      expect(await call(UserController.updateUserSettings)).toBe(200)
+      expect(user.ace.overallTheme).toBe(overallTheme)
+    }
+  )
+  it('rejects invalid appearance values before saving', async () => {
+    req.body = { overallTheme: 'premium-theme' }
+    await expect(
+      call(UserController.updateUserSettings)
+    ).rejects.toBeInstanceOf(Error)
+    expect(user.save).not.toHaveBeenCalled()
+  })
   it('updates display name, legacy presentation names and the current session', async () => {
     req.body = { displayName: ' New name ' }
     expect(await call(UserController.updateUserSettings)).toBe(200)
@@ -169,16 +184,21 @@ describe('UserController local profile and password', () => {
     expect(req.session.passport.user.displayName).toBe('New name')
     expect(user.save).toHaveBeenCalledOnce()
   })
-  it.each(['email', 'emails', 'username', 'role', 'status', 'passwordHash'])(
-    'rejects profile changes to %s',
-    async field => {
-      req.body = { [field]: field === 'emails' ? [] : 'tampered' }
-      await expect(call(UserController.updateUserSettings)).rejects.toThrow(
-        'Invalid request'
-      )
-      expect(user.save).not.toHaveBeenCalled()
-    }
-  )
+  it.each([
+    'email',
+    'emails',
+    'username',
+    'role',
+    'status',
+    'passwordHash',
+    'institution',
+  ])('rejects profile changes to %s', async field => {
+    req.body = { [field]: field === 'emails' ? [] : 'tampered' }
+    await expect(call(UserController.updateUserSettings)).rejects.toThrow(
+      'Invalid request'
+    )
+    expect(user.save).not.toHaveBeenCalled()
+  })
   it.each(['', ' ', 'x'.repeat(256)])(
     'rejects invalid display names: %s',
     async displayName => {

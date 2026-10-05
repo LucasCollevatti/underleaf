@@ -19,6 +19,7 @@ import {
   getSharingLink,
   SharingLinkData,
 } from '@/features/share-project-modal/utils/api'
+import getMeta from '@/utils/meta'
 
 export type ProjectAccessType =
   | 'legacyLinkSharing'
@@ -98,10 +99,12 @@ const ShareProjectModal = React.memo(function ShareProjectModal({
   const { splitTestVariants } = useSplitTestContext()
   const isSharingUpdatesEnabled = useFeatureFlag('sharing-updates')
   const isNewLinkEnabled = useFeatureFlag('sharing-updates-new-link')
+  const isUnderleaf = Boolean(getMeta('ol-ExposedSettings').underleaf)
 
   // show the new share modal if project owner
   // is over collaborator limit or has pending editors (once every 24 hours)
   useEffect(() => {
+    if (isUnderleaf) return
     const hasExceededCollaboratorLimit = () => {
       if (!isProjectOwner || !project || !project.features) {
         return false
@@ -132,7 +135,7 @@ const ShareProjectModal = React.memo(function ShareProjectModal({
         customLocalStorage.setItem(localStorageKey, Date.now())
       }
     }
-  }, [project, isProjectOwner, handleOpen, projectId])
+  }, [project, isProjectOwner, handleOpen, projectId, isUnderleaf])
 
   // send tracking event when the modal is opened
   useEffect(() => {
@@ -152,6 +155,15 @@ const ShareProjectModal = React.memo(function ShareProjectModal({
   }, [show])
 
   const handleShow = useCallback(async () => {
+    if (isUnderleaf) {
+      setSharingLinkData(null)
+      setProjectAccess(
+        publicAccessLevel === 'tokenBased'
+          ? 'legacyLinkSharing'
+          : 'onlyInvitedPeople'
+      )
+      return
+    }
     if (!isSharingUpdatesEnabled || !isProjectOwner) {
       return
     }
@@ -207,6 +219,7 @@ const ShareProjectModal = React.memo(function ShareProjectModal({
     isSharingUpdatesEnabled,
     isNewLinkEnabled,
     isProjectOwner,
+    isUnderleaf,
   ])
 
   // close the modal if not in flight

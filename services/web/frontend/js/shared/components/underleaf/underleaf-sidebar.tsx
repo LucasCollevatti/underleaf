@@ -98,6 +98,13 @@ export function UnderleafSidebar({
                   : t('underleaf_guest_description')}
               </p>
             ))}
+          {authenticated &&
+            link(
+              'settings',
+              '/user/settings',
+              t('account_settings'),
+              'settings'
+            )}
           {authenticated && navbar?.canDisplayAdminMenu && (
             <div className="underleaf-sidebar-administration">
               {link(

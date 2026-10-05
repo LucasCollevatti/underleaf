@@ -5,6 +5,10 @@ block entrypointVar
 
 block vars
 	- isWebsiteRedesign = true
+	- suppressNavbar = true
+	- suppressFooter = true
+	- suppressPugCookieBanner = true
+	- suppressSkipToContent = false
 
 block append meta
 	meta(name='ol-hasPassword' data-type='boolean' content=hasPassword)
@@ -14,24 +18,8 @@ block append meta
 		content=settings.passwordStrengthOptions || {}
 	)
 	meta(name='ol-user' data-type='json' content=user)
-	meta(name='ol-showAiFeatures' data-type='boolean' content=showAiFeatures)
-	meta(name='ol-labsExperiments' data-type='json' content=labsExperiments)
-	meta(name='ol-dropbox' data-type='json' content=dropbox)
-	meta(name='ol-github' data-type='json' content=github)
-	meta(name='ol-projectSyncSuccessMessage' content=projectSyncSuccessMessage)
-	meta(name='ol-projectSyncErrorMessage' content=projectSyncErrorMessage)
-	meta(
-		name='ol-referenceLinkingErrorMessage'
-		content=referenceLinkingErrorMessage
-	)
-	meta(
-		name='ol-personalAccessTokens'
-		data-type='json'
-		content=personalAccessTokens
-	)
-	meta(name='ol-gitBridgeEnabled' data-type='boolean' content=gitBridgeEnabled)
-	meta(name='ol-capabilities' data-type='json' content=capabilities)
+	meta(name='ol-userSettings' data-type='json' content=userSettings)
+	meta(name='ol-overallThemes' data-type='json' content=overallThemes)
 
 block content
-	main#main-content.content.content-alt
-		#settings-page-root
+	#settings-page-root
