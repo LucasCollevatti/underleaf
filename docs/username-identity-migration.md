@@ -21,7 +21,10 @@ changing the account role. Never put passwords in command-line arguments.
    history and indexes. Store the backup and the previous image tag securely.
    Verify the dump can be restored into a disposable database before upgrading.
 3. Start the new image. The existing init migration runner executes
-   `20261005100000_underleaf_username_identity` before starting web. A failed
+   `20261002100000_underleaf_username_accounts` (when not already applied), then
+   `20261005100000_underleaf_username_identity`, before starting web. Both use
+   the same normalized reservation planner, so a legacy `Alpha` reserves `alpha`
+   before a missing username derived from an `alpha@...` address is assigned. A failed
    migration prevents startup. It is safe to rerun after correcting its cause.
 4. Inspect `users`: every document must have a unique normalized `username`,
    `displayName`, `role` (`admin`/`user`), `status` (`active`/`disabled`) and no

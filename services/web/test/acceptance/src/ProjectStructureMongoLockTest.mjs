@@ -46,7 +46,8 @@ describe('ProjectStructureMongoLock', function () {
       this.lockValue = 'lock-value'
       const userDetails = {
         holdingAccount: false,
-        email: 'test@example.com',
+        username: 'lock-' + crypto.randomBytes(8).toString('hex'),
+        password: 'project-lock-test-secret',
         analyticsId: crypto.randomUUID(),
       }
       UserCreator.createNewUser(userDetails, {}, (err, user) => {

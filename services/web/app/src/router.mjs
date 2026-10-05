@@ -20,7 +20,6 @@ import NotificationsController from './Features/Notifications/NotificationsContr
 import CollaboratorsRouter from './Features/Collaborators/CollaboratorsRouter.mjs'
 import UserInfoController from './Features/User/UserInfoController.mjs'
 import UserController from './Features/User/UserController.mjs'
-import UserEmailsController from './Features/User/UserEmailsController.mjs'
 import UserPagesController from './Features/User/UserPagesController.mjs'
 import TutorialController from './Features/Tutorial/TutorialController.mjs'
 import DocumentController from './Features/Documents/DocumentController.mjs'
@@ -32,7 +31,6 @@ import FileStoreController from './Features/FileStore/FileStoreController.mjs'
 import DocumentUpdaterController from './Features/DocumentUpdater/DocumentUpdaterController.mjs'
 import HistoryRouter from './Features/History/HistoryRouter.mjs'
 import ExportsController from './Features/Exports/ExportsController.mjs'
-import PasswordResetRouter from './Features/PasswordReset/PasswordResetRouter.mjs'
 import StaticPagesRouter from './Features/StaticPages/StaticPagesRouter.mjs'
 import ChatController from './Features/Chat/ChatController.mjs'
 import Modules from './infrastructure/Modules.mjs'
@@ -68,6 +66,7 @@ import AsyncLocalStorage from './infrastructure/AsyncLocalStorage.mjs'
 import UnderleafAdminController from './Features/Underleaf/UnderleafAdminController.mjs'
 import UnderleafSharingRouter from './Features/Underleaf/UnderleafSharingRouter.mjs'
 import UnderleafWelcomeRouter from './Features/Underleaf/UnderleafWelcomeRouter.mjs'
+import UnderleafRetiredIdentityRouter from './Features/Underleaf/UnderleafRetiredIdentityRouter.mjs'
 import {
   getRawReqInput,
   parseReq,
@@ -79,10 +78,6 @@ const { renderUnsupportedBrowserPage, unsupportedBrowserMiddleware } =
   UnsupportedBrowserMiddleware
 
 const rateLimiters = {
-  addEmail: new RateLimiter('add-email', {
-    points: 10,
-    duration: 60,
-  }),
   addProjectToTag: new RateLimiter('add-project-to-tag', {
     points: 30,
     duration: 60,
@@ -103,10 +98,6 @@ const rateLimiters = {
     points: 200,
     duration: 10 * 60,
   }),
-  confirmEmail: new RateLimiter('confirm-email', {
-    points: 10,
-    duration: 60,
-  }),
   createProject: new RateLimiter('create-project', {
     points: 20,
     duration: 60,
@@ -115,20 +106,12 @@ const rateLimiters = {
     points: 30,
     duration: 60,
   }),
-  deleteEmail: new RateLimiter('delete-email', {
-    points: 10,
-    duration: 60,
-  }),
   deleteTag: new RateLimiter('delete-tag', {
     points: 30,
     duration: 60,
   }),
   deleteUser: new RateLimiter('delete-user', {
     points: 10,
-    duration: 60,
-  }),
-  endorseEmail: new RateLimiter('endorse-email', {
-    points: 30,
     duration: 60,
   }),
   getProjects: new RateLimiter('get-projects', {
@@ -180,14 +163,6 @@ const rateLimiters = {
   }),
   renameTag: new RateLimiter('rename-tag', {
     points: 30,
-    duration: 60,
-  }),
-  resendConfirmation: new RateLimiter('resend-confirmation', {
-    points: 1,
-    duration: 60,
-  }),
-  sendConfirmation: new RateLimiter('send-confirmation', {
-    points: 2,
     duration: 60,
   }),
   sendChatMessage: new RateLimiter('send-chat-message', {
@@ -264,12 +239,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthenticationController.passportLogin
   )
 
-  webRouter.get(
-    '/compromised-password',
-    AuthenticationController.requireLogin(),
-    UserPagesController.compromisedPasswordPage
-  )
-
   webRouter.get('/account-suspended', UserPagesController.accountSuspended)
 
   webRouter.get(
@@ -290,40 +259,12 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     )
   }
 
-  webRouter.get(
-    '/read-only/one-time-login',
-    UserPagesController.oneTimeLoginPage
-  )
-  AuthenticationController.addEndpointToLoginWhitelist(
-    '/read-only/one-time-login'
-  )
-
   webRouter.get('/logout', UserPagesController.logout)
   webRouter.post('/logout', UserController.logout)
 
   webRouter.get('/restricted', AuthorizationMiddleware.restricted)
 
-  if (Features.hasFeature('registration-page')) {
-    webRouter.get('/register', UserPagesController.registerPage)
-    AuthenticationController.addEndpointToLoginWhitelist('/register')
-  }
-
-  if (Settings.underleaf) {
-    webRouter.use(
-      [
-        '/register',
-        '/user/password/reset',
-        '/user/password/set',
-        '/user/reconfirm',
-        '/user/emails',
-        '/user/email-preferences',
-        '/user/newsletter',
-        '/user/activate',
-        '/register/activate',
-      ],
-      (req, res) => res.sendStatus(404)
-    )
-  }
+  UnderleafRetiredIdentityRouter.apply(webRouter)
 
   EditorRouter.apply(webRouter, privateApiRouter)
   if (Settings.underleaf) {
@@ -346,9 +287,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
   SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
   UploadsRouter.apply(webRouter, privateApiRouter)
-  if (!Settings.underleaf) {
-    PasswordResetRouter.apply(webRouter, privateApiRouter)
-  }
   StaticPagesRouter.apply(webRouter, privateApiRouter)
   ContactRouter.apply(webRouter, privateApiRouter)
   AnalyticsRouter.apply(webRouter, privateApiRouter, publicApiRouter)
@@ -389,101 +327,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     PermissionsController.requirePermission('change-password'),
     UserController.changePassword
   )
-  if (!Settings.underleaf) {
-    webRouter.get(
-      '/user/emails',
-      AuthenticationController.requireLogin(),
-      AsyncLocalStorage.middleware,
-      PermissionsController.useCapabilities(),
-      UserController.ensureAffiliationMiddleware,
-      UserEmailsController.list
-    )
-    webRouter.get(
-      '/user/emails/confirm',
-      AuthenticationController.requireLogin(),
-      UserEmailsController.showConfirm
-    )
-    webRouter.post(
-      '/user/emails/confirm',
-      AuthenticationController.requireLogin(),
-      RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
-      UserEmailsController.confirm
-    )
-
-    webRouter.post(
-      '/user/emails/send-confirmation-code',
-      AuthenticationController.requireLogin(),
-      RateLimiterMiddleware.rateLimit(rateLimiters.sendConfirmation),
-      await Modules.middleware('confirmationEmailMiddleware'),
-      UserEmailsController.sendExistingEmailConfirmationCode
-    )
-
-    webRouter.post(
-      '/user/emails/resend-confirmation-code',
-      AuthenticationController.requireLogin(),
-      RateLimiterMiddleware.rateLimit(rateLimiters.resendConfirmation),
-      UserEmailsController.resendExistingSecondaryEmailConfirmationCode
-    )
-
-    webRouter.post(
-      '/user/emails/confirm-code',
-      AuthenticationController.requireLogin(),
-      RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
-      UserEmailsController.checkExistingEmailConfirmationCode
-    )
-
-    webRouter.get(
-      '/user/emails/primary-email-check',
-      AuthenticationController.requireLogin(),
-      UserEmailsController.primaryEmailCheckPage
-    )
-
-    webRouter.post(
-      '/user/emails/primary-email-check',
-      AuthenticationController.requireLogin(),
-      PermissionsController.useCapabilities(),
-      UserEmailsController.primaryEmailCheck
-    )
-
-    if (Features.hasFeature('affiliations')) {
-      webRouter.post(
-        '/user/emails/delete',
-        AuthenticationController.requireLogin(),
-        RateLimiterMiddleware.rateLimit(rateLimiters.deleteEmail),
-        await Modules.middleware('userDeleteEmail'),
-        UserEmailsController.remove
-      )
-      webRouter.post(
-        '/user/emails/default',
-        AuthenticationController.requireLogin(),
-        UserEmailsController.setDefault
-      )
-      webRouter.post(
-        '/user/emails/endorse',
-        AuthenticationController.requireLogin(),
-        PermissionsController.requirePermission('endorse-email'),
-        RateLimiterMiddleware.rateLimit(rateLimiters.endorseEmail),
-        UserEmailsController.endorse
-      )
-    }
-
-    if (Features.hasFeature('saas')) {
-      webRouter.get(
-        '/user/emails/add-secondary',
-        AuthenticationController.requireLogin(),
-        PermissionsController.requirePermission('add-secondary-email'),
-        UserEmailsController.addSecondaryEmailPage
-      )
-
-      webRouter.get(
-        '/user/emails/confirm-secondary',
-        AuthenticationController.requireLogin(),
-        PermissionsController.requirePermission('add-secondary-email'),
-        UserEmailsController.confirmSecondaryEmailPage
-      )
-    }
-  }
-
   webRouter.get(
     '/user/sessions',
     AuthenticationController.requireLogin(),
@@ -494,33 +337,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthenticationController.requireLogin(),
     UserController.clearSessions
   )
-
-  // deprecated
-  webRouter.delete(
-    '/user/newsletter/unsubscribe',
-    AuthenticationController.requireLogin(),
-    UserController.unsubscribe
-  )
-
-  webRouter.post(
-    '/user/newsletter/unsubscribe',
-    AuthenticationController.requireLogin(),
-    UserController.unsubscribe
-  )
-
-  webRouter.post(
-    '/user/newsletter/subscribe',
-    AuthenticationController.requireLogin(),
-    UserController.subscribe
-  )
-
-  if (!Settings.underleaf) {
-    webRouter.get(
-      '/user/email-preferences',
-      AuthenticationController.requireLogin(),
-      UserPagesController.emailPreferencesPage
-    )
-  }
 
   webRouter.post(
     '/user/delete',
@@ -545,14 +361,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthenticationController.requireLogin(),
     UserInfoController.getUserFeatures
   )
-
-  if (!Settings.underleaf) {
-    webRouter.get(
-      '/user/reconfirm',
-      UserPagesController.renderReconfirmAccountPage
-    )
-  }
-  // for /user/reconfirm POST, see password router
 
   webRouter.get(
     '/user/tpds/queues',
@@ -1156,7 +964,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     if (SessionManager.isUserLoggedIn(req.session)) {
       res.redirect('/project')
     } else {
-      res.redirect('/register')
+      res.redirect('/login')
     }
   })
 

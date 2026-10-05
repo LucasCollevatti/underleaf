@@ -20,7 +20,6 @@ import NotificationsHandler from '../Notifications/NotificationsHandler.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import { OError, V1ConnectionError } from '../Errors/Errors.js'
 import { User } from '../../models/User.mjs'
-import UserPrimaryEmailCheckHandler from '../User/UserPrimaryEmailCheckHandler.mjs'
 import UserController from '../User/UserController.mjs'
 import NotificationsBuilder from '../Notifications/NotificationsBuilder.mjs'
 import GeoIpLookup from '../../infrastructure/GeoIpLookup.mjs'
@@ -275,19 +274,6 @@ async function projectListPage(req, res, next) {
       survey = await SurveyHandler.promises.getSurvey(userId)
     } catch (error) {
       logger.err({ err: error, userId }, 'Failed to load the active survey')
-    }
-
-    if (
-      user &&
-      UserPrimaryEmailCheckHandler.requiresPrimaryEmailCheck({
-        username: user.username,
-        displayName: user.displayName,
-        emails: user.emails,
-        lastPrimaryEmailCheck: user.lastPrimaryEmailCheck,
-        signUpDate: user.signUpDate,
-      })
-    ) {
-      return res.redirect('/user/emails/primary-email-check')
     }
 
     onboardingDataCollection = await OnboardingDataCollection.findById(

@@ -1,4 +1,3 @@
-import Settings from '@overleaf/settings'
 import UserDeleter from './UserDeleter.mjs'
 import UserGetter from './UserGetter.mjs'
 import { User } from '../../models/User.mjs'
@@ -6,15 +5,12 @@ import logger from '@overleaf/logger'
 import metrics from '@overleaf/metrics'
 import AuthenticationManager from '../Authentication/AuthenticationManager.mjs'
 import SessionManager from '../Authentication/SessionManager.mjs'
-import Features from '../../infrastructure/Features.mjs'
 import { z, zz, parseReq } from '../../infrastructure/Validation.mjs'
 import UserAuditLogHandler from './UserAuditLogHandler.mjs'
 import UserSessionsManager from './UserSessionsManager.mjs'
-import UserUpdater from './UserUpdater.mjs'
 import Errors from '../Errors/Errors.js'
 import HttpErrorHandler from '../Errors/HttpErrorHandler.mjs'
 import OError from '@overleaf/o-error'
-import EmailHandler from '../Email/EmailHandler.mjs'
 import UrlHelper from '../Helpers/UrlHelper.mjs'
 import { promisify } from 'node:util'
 import { expressify } from '@overleaf/promise-utils'
@@ -22,50 +18,6 @@ import { sanitizeControlCharacters } from '../../infrastructure/Sanitize.mjs'
 import { acceptsJson } from '../../infrastructure/RequestContentTypeDetection.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import OneTimeTokenHandler from '../Security/OneTimeTokenHandler.mjs'
-
-async function _sendSecurityAlertClearedSessions(user) {
-  if (Settings.underleaf) return
-  const emailOptions = {
-    to: user.email,
-    actionDescribed: `active sessions were cleared on your account ${user.email}`,
-    action: 'active sessions cleared',
-  }
-  try {
-    await EmailHandler.promises.sendEmail('securityAlert', emailOptions)
-  } catch (error) {
-    // log error when sending security alert email but do not pass back
-    logger.error(
-      { error, userId: user._id },
-      'could not send security alert email when sessions cleared'
-    )
-  }
-}
-
-function _sendSecurityAlertPasswordChanged(user) {
-  if (Settings.underleaf) return
-  const emailOptions = {
-    to: user.email,
-    actionDescribed: `your password has been changed on your account ${user.email}`,
-    action: 'password changed',
-  }
-  EmailHandler.promises
-    .sendEmail('securityAlert', emailOptions)
-    .catch(error => {
-      // log error when sending security alert email but do not pass back
-      logger.error(
-        { error, userId: user._id },
-        'could not send security alert email when password changed'
-      )
-    })
-}
-
-async function _ensureAffiliation(userId, emailData) {
-  if (emailData.samlProviderId) {
-    await UserUpdater.promises.confirmEmail(userId, emailData.email)
-  } else {
-    await UserUpdater.promises.addAffiliationForNewUser(userId, emailData.email)
-  }
-}
 
 const changePasswordSchema = z.object({
   body: z.strictObject({
@@ -82,9 +34,7 @@ async function changePassword(req, res, next) {
 
   const { user } = await AuthenticationManager.promises.authenticate(
     { _id: userId },
-    body.currentPassword,
-    null,
-    { enforceHIBPCheck: false }
+    body.currentPassword
   )
   if (!user) {
     return HttpErrorHandler.badRequest(
@@ -120,12 +70,6 @@ async function changePassword(req, res, next) {
         res,
         req.i18n.translate('password_change_password_must_be_different')
       )
-    } else if (error.name === 'PasswordReusedError') {
-      return res.status(400).json({
-        message: {
-          key: 'password-must-be-strong',
-        },
-      })
     } else {
       throw error
     }
@@ -140,8 +84,6 @@ async function changePassword(req, res, next) {
   SessionManager.setInSessionUser(req.session, {
     identityVersion: user.identityVersion + 1,
   })
-  // no need to wait, errors are logged and not passed back
-  _sendSecurityAlertPasswordChanged(user)
 
   await UserSessionsManager.promises.removeSessionsFromRedis(
     user,
@@ -181,63 +123,7 @@ async function clearSessions(req, res, next) {
     req.sessionID // remove all sessions except the current session
   )
 
-  await _sendSecurityAlertClearedSessions(user)
-
   res.sendStatus(201)
-}
-
-async function ensureAffiliation(user) {
-  if (!Features.hasFeature('affiliations')) {
-    return
-  }
-
-  const flaggedEmails = user.emails.filter(email => email.affiliationUnchecked)
-  if (flaggedEmails.length === 0) {
-    return
-  }
-
-  if (flaggedEmails.length > 1) {
-    logger.error(
-      { userId: user._id },
-      `Unexpected number of flagged emails: ${flaggedEmails.length}`
-    )
-  }
-
-  await _ensureAffiliation(user._id, flaggedEmails[0])
-}
-
-const ensureAffiliationMiddlewareSchema = z.object({
-  query: z.object({
-    // just a truthiness flag on whether to run the affiliation check; the
-    // real caller sends the query string `?ensureAffiliation=true`
-    ensureAffiliation: z.coerce.boolean().optional(),
-  }),
-})
-
-async function ensureAffiliationMiddleware(req, res, next) {
-  let user
-  const { query } = parseReq(req, ensureAffiliationMiddlewareSchema, {
-    logOnly: true,
-  })
-  if (!Features.hasFeature('affiliations') || !query.ensureAffiliation) {
-    return next()
-  }
-  const userId = SessionManager.getLoggedInUserId(req.session)
-  try {
-    user = await UserGetter.promises.getUser(userId)
-  } catch (error) {
-    throw new Errors.UserNotFoundError({ info: { userId } })
-  }
-  // if the user does not have permission to add an affiliation, we skip this middleware
-  try {
-    req.assertPermission('add-affiliation')
-  } catch (error) {
-    if (error instanceof Errors.ForbiddenError) {
-      return next()
-    }
-  }
-  await ensureAffiliation(user)
-  return next()
 }
 
 const tryDeleteUserSchema = z.object({
@@ -264,9 +150,7 @@ async function tryDeleteUser(req, res, next) {
     user = (
       await AuthenticationManager.promises.authenticate(
         { _id: userId },
-        password,
-        null,
-        { enforceHIBPCheck: false }
+        password
       )
     ).user
   } catch (err) {
@@ -330,40 +214,6 @@ async function tryDeleteUser(req, res, next) {
   // https://www.w3.org/TR/clear-site-data/#ref-for-grammardef-
   res.set('Clear-Site-Data', '"*"')
   res.sendStatus(200)
-}
-
-async function subscribe(req, res, next) {
-  const userId = SessionManager.getLoggedInUserId(req.session)
-  req.logger.addFields({ userId })
-
-  await Modules.promises.hooks.fire(
-    'updateTopicSubscription',
-    userId,
-    'newsletter',
-    true
-  )
-
-  res.json({
-    message: req.i18n.translate('thanks_settings_updated'),
-    subscribed: true,
-  })
-}
-
-async function unsubscribe(req, res, next) {
-  const userId = SessionManager.getLoggedInUserId(req.session)
-  req.logger.addFields({ userId })
-
-  await Modules.promises.hooks.fire(
-    'updateTopicSubscription',
-    userId,
-    'newsletter',
-    false
-  )
-
-  res.json({
-    message: req.i18n.translate('thanks_settings_updated'),
-    subscribed: false,
-  })
 }
 
 const refProviderSettingsSchema = z
@@ -589,12 +439,8 @@ export default {
   clearSessions: expressify(clearSessions),
   changePassword: expressify(changePassword),
   tryDeleteUser: expressify(tryDeleteUser),
-  subscribe: expressify(subscribe),
-  unsubscribe: expressify(unsubscribe),
   updateUserSettings: expressify(updateUserSettings),
   logout: expressify(logout),
   expireDeletedUser: expressify(expireDeletedUser),
   expireDeletedUsersAfterDuration: expressify(expireDeletedUsersAfterDuration),
-  ensureAffiliationMiddleware: expressify(ensureAffiliationMiddleware),
-  ensureAffiliation,
 }

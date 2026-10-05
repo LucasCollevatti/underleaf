@@ -1,6 +1,5 @@
 import Features from './Features.mjs'
 import Queues from './Queues.mjs'
-import UserOnboardingEmailManager from '../Features/User/UserOnboardingEmailManager.mjs'
 import UserPostRegistrationAnalyticsManager from '../Features/User/UserPostRegistrationAnalyticsManager.mjs'
 import FeaturesUpdater from '../Features/Subscription/FeaturesUpdater.mjs'
 
@@ -45,11 +44,6 @@ function start() {
     } else {
       await queue.add(data || {}, options || {})
     }
-  })
-
-  registerQueue('emails-onboarding', async job => {
-    const { userId } = job.data
-    await UserOnboardingEmailManager.sendOnboardingEmail(userId)
   })
 
   registerQueue('post-registration-analytics', async job => {

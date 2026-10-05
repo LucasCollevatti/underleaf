@@ -110,9 +110,6 @@ describe('ProjectListController', function () {
     ctx.OnboardingDataCollectionModel = {
       findById: sinon.stub().resolves(ctx.onboardingDataCollection),
     }
-    ctx.UserPrimaryEmailCheckHandler = {
-      requiresPrimaryEmailCheck: sinon.stub().returns(false),
-    }
     ctx.ProjectGetter = {
       promises: {
         findAllUsersProjects: sinon.stub(),
@@ -284,13 +281,6 @@ describe('ProjectListController', function () {
     vi.doMock('../../../../app/src/Features/Survey/SurveyHandler', () => ({
       default: ctx.SurveyHandler,
     }))
-
-    vi.doMock(
-      '../../../../app/src/Features/User/UserPrimaryEmailCheckHandler',
-      () => ({
-        default: ctx.UserPrimaryEmailCheckHandler,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/Notifications/NotificationsBuilder',

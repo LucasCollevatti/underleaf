@@ -1,372 +1,133 @@
-import { assert, beforeEach, describe, expect, it, vi } from 'vitest'
-import sinon from 'sinon'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const modulePath = '../../../../app/src/Features/User/UserCreator.mjs'
-
-describe('UserCreator', function () {
-  beforeEach(async function (ctx) {
-    const self = ctx
-    ctx.user = { _id: '12390i', ace: {}, analyticsId: 'uuid' }
-    ctx.user.save = sinon.stub().resolves(self.user)
-    ctx.UserModel = class Project {
-      constructor() {
-        return self.user
+const mocks = vi.hoisted(() => ({
+  existing: null,
+  hash: vi.fn(),
+  save: vi.fn(),
+}))
+vi.mock(
+  '../../../../app/src/Features/Authentication/AuthenticationManager.mjs',
+  () => ({
+    default: {
+      validatePassword: value =>
+        typeof value === 'string' && value.length >= 8
+          ? null
+          : { info: { code: 'invalid_password' } },
+      promises: { hashPassword: mocks.hash },
+    },
+  })
+)
+vi.mock('../../../../app/src/Features/User/UserDeleter.mjs', () => ({
+  default: {},
+}))
+vi.mock('../../../../app/src/infrastructure/mongodb.mjs', () => ({ db: {} }))
+vi.mock('../../../../app/src/models/User.mjs', () => ({
+  User: class {
+    constructor(data) {
+      Object.assign(this, data)
+    }
+    static findOne() {
+      return {
+        session() {
+          return this
+        },
+        select() {
+          return this
+        },
+        lean: async () => mocks.existing,
       }
     }
-
-    ctx.logger = {
-      error: sinon.stub(),
+    save(options) {
+      mocks.save(this, options)
+      return Promise.resolve(this)
     }
-    vi.doMock('@overleaf/logger', () => ({
-      default: ctx.logger,
-    }))
+  },
+}))
 
-    vi.doMock('../../../../app/src/models/User', () => ({
-      User: ctx.UserModel,
-    }))
+import UserCreator from '../../../../app/src/Features/User/UserCreator.mjs'
 
-    vi.doMock('../../../../app/src/infrastructure/Features', () => ({
-      default: (ctx.Features = {
-        hasFeature: sinon.stub().returns(false),
-      }),
-    }))
+beforeEach(() => {
+  vi.clearAllMocks()
+  mocks.existing = null
+  mocks.hash.mockResolvedValue('bcrypt-hash')
+})
 
-    vi.doMock('../../../../app/src/Features/User/UserDeleter', () => ({
-      default: (ctx.UserDeleter = {
-        promises: {
-          deleteNewUser: sinon.stub().resolves(),
-        },
-      }),
-    }))
-
-    vi.doMock('../../../../app/src/Features/User/UserGetter', () => ({
-      default: (ctx.UserGetter = {
-        promises: {
-          getUser: sinon.stub().resolves(ctx.user),
-        },
-      }),
-    }))
-
-    vi.doMock('../../../../app/src/Features/User/UserUpdater', () => ({
-      default: (ctx.UserUpdater = {
-        promises: {
-          addAffiliationForNewUser: sinon.stub().resolves({
-            matchedCount: 1,
-            modifiedCount: 1,
-            acknowledged: true,
-          }),
-          updateUser: sinon.stub().resolves(),
-        },
-      }),
-    }))
-
-    vi.doMock(
-      '../../../../app/src/Features/Analytics/AnalyticsManager',
-      () => ({
-        default: (ctx.Analytics = {
-          recordEventForMongoUserInBackground: sinon.stub(),
-          recordEventForUserInBackground: sinon.stub(),
-          setUserPropertyForMongoUser: sinon.stub(),
-        }),
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/SplitTests/SplitTestHandler',
-      () => ({
-        default: (ctx.SplitTestHandler = {
-          promises: {
-            getAssignmentForUser: sinon.stub().resolves({ variant: 'active' }),
-          },
-        }),
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/User/UserOnboardingEmailManager',
-      () => ({
-        default: (ctx.UserOnboardingEmailManager = {
-          scheduleOnboardingEmail: sinon.stub(),
-        }),
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/User/UserPostRegistrationAnalyticsManager',
-      () => ({
-        default: (ctx.UserPostRegistrationAnalyticsManager = {
-          schedulePostRegistrationAnalytics: sinon.stub(),
-        }),
-      })
-    )
-
-    ctx.UserCreator = (await import(modulePath)).default
-
-    ctx.email = 'bob.oswald@gmail.com'
-    ctx.attributes = {
-      email: ctx.email,
-      analyticsId: '8055c676-bcc7-4e64-a66f-8069f9a0bd92',
-    }
+describe('UserCreator username accounts', () => {
+  it('creates a normalized account without email or duplicate password fields', async () => {
+    const user = await UserCreator.promises.createNewUser({
+      username: ' ALPHA ',
+      displayName: ' Alpha User ',
+      password: 'local-secret',
+    })
+    expect(user).toMatchObject({
+      username: 'alpha',
+      displayName: 'Alpha User',
+      passwordHash: 'bcrypt-hash',
+      role: 'user',
+      status: 'active',
+    })
+    for (const field of ['email', 'emails', 'password', 'hashedPassword'])
+      expect(user).not.toHaveProperty(field)
+    expect(mocks.hash).toHaveBeenCalledWith('local-secret')
   })
-
-  describe('createNewUser', function () {
-    describe('with callbacks', function () {
-      it('should take the opts and put them in the model', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser({
-          ...ctx.attributes,
-          holdingAccount: true,
-        })
-        assert.equal(user.email, ctx.email)
-        assert.equal(user.holdingAccount, true)
-        assert.equal(user.first_name, 'bob.oswald')
-      })
-
-      it('should use the start of the email if the first name is empty string', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser({
-          ...ctx.attributes,
-          holdingAccount: true,
-          first_name: '',
-        })
-        assert.equal(user.email, ctx.email)
-        assert.equal(user.holdingAccount, true)
-        assert.equal(user.first_name, 'bob.oswald')
-      })
-
-      it('should use the first name if passed', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser({
-          ...ctx.attributes,
-          holdingAccount: true,
-          first_name: 'fiiirstname',
-        })
-        assert.equal(user.email, ctx.email)
-        assert.equal(user.holdingAccount, true)
-        assert.equal(user.first_name, 'fiiirstname')
-      })
-
-      it('should use the last name if passed', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser({
-          ...ctx.attributes,
-          holdingAccount: true,
-          last_name: 'lastNammmmeee',
-        })
-        assert.equal(user.email, ctx.email)
-        assert.equal(user.holdingAccount, true)
-        assert.equal(user.last_name, 'lastNammmmeee')
-      })
-
-      it('should set emails attribute', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser(
-          ctx.attributes
-        )
-        user.email.should.equal(ctx.email)
-        user.emails.length.should.equal(1)
-        user.emails[0].email.should.equal(ctx.email)
-        user.emails[0].createdAt.should.be.a('date')
-        user.emails[0].reversedHostname.should.equal('moc.liamg')
-      })
-
-      describe('with affiliations feature', function () {
-        let user
-        beforeEach(function (ctx) {
-          ctx.Features.hasFeature = sinon
-            .stub()
-            .withArgs('affiliations')
-            .returns(true)
-        })
-
-        describe('when v1 affiliations API does not return an error', function () {
-          beforeEach(async function (ctx) {
-            user = await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-          })
-
-          it('should flag that affiliation is unchecked', function () {
-            user.emails[0].affiliationUnchecked.should.equal(true)
-          })
-
-          it('should try to add affiliation to v1', function (ctx) {
-            sinon.assert.calledOnce(
-              ctx.UserUpdater.promises.addAffiliationForNewUser
-            )
-            sinon.assert.calledWithMatch(
-              ctx.UserUpdater.promises.addAffiliationForNewUser,
-              user._id,
-              ctx.email
-            )
-          })
-
-          it('should query for updated user data', function (ctx) {
-            sinon.assert.calledOnce(ctx.UserGetter.promises.getUser)
-          })
-        })
-
-        describe('when v1 affiliations API does return an error', function () {
-          beforeEach(async function (ctx) {
-            ctx.UserUpdater.promises.addAffiliationForNewUser.rejects()
-            user = await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-          })
-
-          it('should flag that affiliation is unchecked', function () {
-            user.emails[0].affiliationUnchecked.should.equal(true)
-          })
-
-          it('should try to add affiliation to v1', function (ctx) {
-            sinon.assert.calledOnce(
-              ctx.UserUpdater.promises.addAffiliationForNewUser
-            )
-            sinon.assert.calledWithMatch(
-              ctx.UserUpdater.promises.addAffiliationForNewUser,
-              user._id,
-              ctx.email
-            )
-          })
-
-          it('should not query for updated user data', function (ctx) {
-            sinon.assert.notCalled(ctx.UserGetter.promises.getUser)
-          })
-
-          it('should log error', function (ctx) {
-            sinon.assert.calledOnce(ctx.logger.error)
-          })
-        })
-
-        describe('when v1 affiliations API returns an error and requireAffiliation=true', function () {
-          beforeEach(async function (ctx) {
-            ctx.UserUpdater.promises.addAffiliationForNewUser.rejects()
-            user = await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-          })
-
-          it('should flag that affiliation is unchecked', function () {
-            user.emails[0].affiliationUnchecked.should.equal(true)
-          })
-
-          it('should try to add affiliation to v1', function (ctx) {
-            sinon.assert.calledOnce(
-              ctx.UserUpdater.promises.addAffiliationForNewUser
-            )
-            sinon.assert.calledWithMatch(
-              ctx.UserUpdater.promises.addAffiliationForNewUser,
-              user._id,
-              ctx.email
-            )
-          })
-
-          it('should not query for updated user data', function (ctx) {
-            sinon.assert.notCalled(ctx.UserGetter.promises.getUser)
-          })
-
-          it('should log error', function (ctx) {
-            sinon.assert.calledOnce(ctx.logger.error)
-          })
-        })
-      })
-
-      it('should not add affiliation when without affiliation feature', async function (ctx) {
-        await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-        sinon.assert.notCalled(
-          ctx.UserUpdater.promises.addAffiliationForNewUser
-        )
-      })
+  it('defaults the display name to username', async () => {
+    const user = await UserCreator.promises.createNewUser({
+      username: 'alpha',
+      password: 'local-secret',
     })
-
-    describe('with promises', function () {
-      it('should take the opts and put them in the model', async function (ctx) {
-        const opts = {
-          ...ctx.attributes,
-          holdingAccount: true,
-        }
-        const user = await ctx.UserCreator.promises.createNewUser(opts)
-        assert.equal(user.email, ctx.email)
-        assert.equal(user.holdingAccount, true)
-        assert.equal(user.first_name, 'bob.oswald')
-      })
-
-      it('should add affiliation when with affiliation feature', async function (ctx) {
-        ctx.Features.hasFeature = sinon
-          .stub()
-          .withArgs('affiliations')
-          .returns(true)
-        const user = await ctx.UserCreator.promises.createNewUser(
-          ctx.attributes
-        )
-        sinon.assert.calledOnce(
-          ctx.UserUpdater.promises.addAffiliationForNewUser
-        )
-        sinon.assert.calledWithMatch(
-          ctx.UserUpdater.promises.addAffiliationForNewUser,
-          user._id,
-          ctx.email
-        )
-      })
-
-      it('should not add affiliation when without affiliation feature', async function (ctx) {
-        ctx.Features.hasFeature = sinon.stub().returns(false)
-        await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-        sinon.assert.notCalled(
-          ctx.UserUpdater.promises.addAffiliationForNewUser
-        )
-      })
-
-      it('should include SAML provider ID with email', async function (ctx) {
-        const attributes = {
-          ...ctx.attributes,
-          samlIdentifiers: [{ email: ctx.email, providerId: '1' }],
-        }
-        const user = await ctx.UserCreator.promises.createNewUser(attributes)
-        assert.equal(user.emails[0].samlProviderId, '1')
-      })
-
-      it('should fire an analytics event and user property on registration', async function (ctx) {
-        const user = await ctx.UserCreator.promises.createNewUser(
-          ctx.attributes
-        )
-        assert.equal(user.email, ctx.email)
-        sinon.assert.calledWith(
-          ctx.Analytics.recordEventForMongoUserInBackground,
-          user,
-          'user-registered'
-        )
-        sinon.assert.calledWith(
-          ctx.Analytics.setUserPropertyForMongoUser,
-          user,
-          'created-at'
-        )
-      })
-
-      it('should schedule post registration jobs on registration with saas feature', async function (ctx) {
-        ctx.Features.hasFeature = sinon.stub().withArgs('saas').returns(true)
-        const user = await ctx.UserCreator.promises.createNewUser(
-          ctx.attributes
-        )
-        assert.equal(user.email, ctx.email)
-        sinon.assert.calledWith(
-          ctx.UserOnboardingEmailManager.scheduleOnboardingEmail,
-          user
-        )
-        sinon.assert.calledWith(
-          ctx.UserPostRegistrationAnalyticsManager
-            .schedulePostRegistrationAnalytics,
-          user
-        )
-      })
-
-      it('should not schedule post registration checks when without saas feature', async function (ctx) {
-        await ctx.UserCreator.promises.createNewUser(ctx.attributes)
-        sinon.assert.notCalled(
-          ctx.UserOnboardingEmailManager.scheduleOnboardingEmail
-        )
-        sinon.assert.notCalled(
-          ctx.UserPostRegistrationAnalyticsManager
-            .schedulePostRegistrationAnalytics
-        )
-      })
-
-      it('should throw without analyticsId', async function (ctx) {
-        await expect(
-          ctx.UserCreator.promises.createNewUser({ email: ctx.email })
-        ).to.eventually.be.rejectedWith(
-          /bug: attributes.analyticsId is missing/
-        )
-      })
+    expect(user.displayName).toBe('alpha')
+  })
+  it('does not create an email identity even when legacy attributes are supplied', async () => {
+    const user = await UserCreator.promises.createNewUser({
+      username: 'alpha',
+      password: 'local-secret',
+      email: 'old@example.org',
+      emails: [],
     })
+    expect(user).not.toHaveProperty('email')
+    expect(user).not.toHaveProperty('emails')
+  })
+  it.each(['', 'ab', 'alpha@example.org', '-alpha', 'alpha-', 'x'.repeat(33)])(
+    'rejects invalid usernames: %s',
+    async username => {
+      await expect(
+        UserCreator.promises.createNewUser({
+          username,
+          password: 'local-secret',
+        })
+      ).rejects.toMatchObject({ code: 'invalid_username' })
+      expect(mocks.save).not.toHaveBeenCalled()
+    }
+  )
+  it('rejects duplicate usernames before saving', async () => {
+    mocks.existing = { _id: 'existing-id' }
+    await expect(
+      UserCreator.promises.createNewUser({
+        username: 'alpha',
+        password: 'local-secret',
+      })
+    ).rejects.toMatchObject({ code: 'username_taken' })
+    expect(mocks.save).not.toHaveBeenCalled()
+  })
+  it('rejects missing local passwords', async () => {
+    await expect(
+      UserCreator.promises.createNewUser({ username: 'alpha' })
+    ).rejects.toMatchObject({ code: 'invalid_password' })
+  })
+  it('creates administrator accounts with coherent role fields', async () => {
+    const user = await UserCreator.promises.createNewUser({
+      username: 'alpha',
+      password: 'local-secret',
+      role: 'admin',
+    })
+    expect(user).toMatchObject({ role: 'admin', isAdmin: true })
+  })
+  it('passes an installation transaction through to persistence', async () => {
+    const session = { transaction: true }
+    await UserCreator.promises.createNewUser(
+      { username: 'alpha', password: 'local-secret' },
+      { session }
+    )
+    expect(mocks.save).toHaveBeenCalledWith(expect.anything(), { session })
   })
 })

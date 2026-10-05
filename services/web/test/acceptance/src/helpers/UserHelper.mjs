@@ -73,6 +73,18 @@ class UserHelper {
    * Generate default email from unique (per instantiation) user number
    * @returns {string} email
    */
+  getDefaultUsername() {
+    return `test-user-${this.userNum}`
+  }
+
+  getDefaultUsernamePassword(userData = {}) {
+    return {
+      username: this.getDefaultUsername(),
+      password: this.getDefaultPassword(),
+      ...userData,
+    }
+  }
+
   getDefaultEmail() {
     return `test.user.${this.userNum}@example.com`
   }
@@ -240,18 +252,7 @@ class UserHelper {
    */
   static async createUser(attributes = {}) {
     const userHelper = new UserHelper()
-    attributes = userHelper.getDefaultEmailPassword(attributes)
-
-    // hash password and delete plaintext if set
-    if (attributes.password) {
-      attributes.hashedPassword =
-        await AuthenticationManager.promises.hashPassword(attributes.password)
-      delete attributes.password
-    }
-
-    if (!attributes.analyticsId) {
-      attributes.analyticsId = Crypto.randomUUID()
-    }
+    attributes = userHelper.getDefaultUsernamePassword(attributes)
 
     userHelper.user = await UserCreator.promises.createNewUser(attributes)
 
@@ -307,8 +308,8 @@ class UserHelper {
    * @returns {UserHelper}
    */
   static async loginUser(userData, expectedRedirect) {
-    if (!userData || !userData.email || !userData.password) {
-      throw new Error('email and password required')
+    if (!userData || !userData.username || !userData.password) {
+      throw new Error('username and password required')
     }
     const userHelper = new UserHelper()
     const loginPath = Settings.enableLegacyLogin ? '/login/legacy' : '/login'
@@ -349,10 +350,10 @@ class UserHelper {
     }
 
     userHelper.user = await UserGetter.promises.getUser({
-      email: userData.email,
+      username: userData.username,
     })
     if (!userHelper.user) {
-      throw new Error(`user not found for email: ${userData.email}`)
+      throw new Error(`user not found for username: ${userData.username}`)
     }
     await userHelper.getCsrfToken()
 

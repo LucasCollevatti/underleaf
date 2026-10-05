@@ -110,30 +110,20 @@ describe('Authentication', function () {
       await user.logout()
       await user.getCsrfToken()
     })
-    it('should return a 401, and add an entry to the audit log', async function () {
+    it('should return 401 and record the failed attempt on the account', async function () {
       const {
         response: { statusCode },
       } = await user.doRequest('POST', {
         url: Settings.enableLegacyLogin ? '/login/legacy' : '/login',
         json: {
-          email: user.email,
+          username: user.username,
           password: 'foo-bar-baz',
           'g-recaptcha-response': 'valid',
         },
       })
       expect(statusCode).to.equal(401)
-      const auditLog = await user.getAuditLog()
-      const auditLogEntry = auditLog.pop()
-      expect(auditLogEntry).to.exist
-      expect(auditLogEntry.timestamp).to.exist
-      expect(auditLogEntry.initiatorId).to.deep.equal(new ObjectId(user.id))
-      expect(auditLogEntry.userId).to.deep.equal(new ObjectId(user.id))
-      expect(auditLogEntry.operation).to.equal('failed-password-match')
-      expect(auditLogEntry.info).to.deep.equal({
-        method: 'Password login',
-        fromKnownDevice: true,
-      })
-      expect(auditLogEntry.ipAddress).to.equal('127.0.0.1')
+      const account = await user.get()
+      expect(account.lastFailedLogin).to.be.instanceOf(Date)
     })
   })
 
@@ -146,19 +136,19 @@ describe('Authentication', function () {
       await user.getCsrfToken()
     })
     async function tryLogin(i = 0, prefix = '') {
-      const { statusCode } = await tryLoginWithEmail(
-        `${prefix}${user.email}${' '.repeat(i)}`
+      const { statusCode } = await tryLoginWithUsername(
+        `${prefix}${user.username}${' '.repeat(i)}`
       )
       return statusCode
     }
-    async function tryLoginWithEmail(email) {
+    async function tryLoginWithUsername(username) {
       const {
         response: { statusCode },
         body,
       } = await user.doRequest('POST', {
         url: Settings.enableLegacyLogin ? '/login/legacy' : '/login',
         json: {
-          email,
+          username,
           password: 'wrong-password',
           'g-recaptcha-response': 'valid',
         },
@@ -175,7 +165,7 @@ describe('Authentication', function () {
         expect(statusCode).to.equal(429)
       }
     })
-    it('ignore extra spaces in email address', async function () {
+    it('ignore extra spaces in username', async function () {
       for (let i = 0; i < RATE_LIMIT; i++) {
         const statusCode = await tryLogin(i)
         expect(statusCode).to.equal(401)
@@ -185,7 +175,7 @@ describe('Authentication', function () {
         expect(statusCode).to.equal(429)
       }
     })
-    it('normalizes the email address', async function () {
+    it('normalizes the username', async function () {
       for (let i = 0; i < RATE_LIMIT / 2; i++) {
         const statusCode = await tryLogin(i, 'x') // lower
         expect(statusCode).to.equal(401)
@@ -200,12 +190,12 @@ describe('Authentication', function () {
         expect(statusCode).to.equal(429)
       }
     })
-    it('should return 400 with bad email (missing @)', async function () {
-      const { statusCode } = await tryLoginWithEmail('foo')
+    it('should return 400 with bad username (too short)', async function () {
+      const { statusCode } = await tryLoginWithUsername('fo')
       expect(statusCode).to.equal(400)
     })
-    it('should return 400 with bad email (number)', async function () {
-      const { statusCode } = await tryLoginWithEmail(1)
+    it('should return 400 with bad username (number)', async function () {
+      const { statusCode } = await tryLoginWithUsername(1)
       expect(statusCode).to.equal(400)
     })
   })

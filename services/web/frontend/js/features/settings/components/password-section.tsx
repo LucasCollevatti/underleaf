@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import {
   getUserFacingMessage,
-  getErrorMessageKey,
   postJSON,
 } from '../../../infrastructure/fetch-json'
 import getMeta from '../../../utils/meta'
@@ -27,25 +26,11 @@ function PasswordSection() {
     <>
       <h3>{t('change_password')}</h3>
       {hideChangePassword ? (
-        <CanOnlyLogInThroughSSO />
+        <p>Ask your administrator to reset your password.</p>
       ) : (
         <PasswordInnerSection />
       )}
     </>
-  )
-}
-
-function CanOnlyLogInThroughSSO() {
-  return (
-    <p>
-      <Trans
-        i18nKey="you_cant_add_or_change_password_due_to_sso"
-        components={[
-          // eslint-disable-next-line react/jsx-key, jsx-a11y/anchor-has-content
-          <a href="https://docs.overleaf.com/accounts-and-security/email-address-and-login-options/logging-in-with-group-sso" />,
-        ]}
-      />
-    </p>
   )
 }
 
@@ -160,36 +145,7 @@ function PasswordForm() {
           <div className="notification-list">
             <Notification
               type="error"
-              content={
-                getErrorMessageKey(error) === 'password-must-be-strong' ? (
-                  <>
-                    <Trans
-                      i18nKey="password_was_detected_on_a_public_list_of_known_compromised_passwords"
-                      components={[
-                        /* eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-key */
-                        <a
-                          href="https://haveibeenpwned.com/passwords"
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        />,
-                      ]}
-                    />
-                    {t('use_a_different_password')}.
-                  </>
-                ) : getErrorMessageKey(error) === 'password-contains-email' ? (
-                  <>
-                    {t('invalid_password_contains_email')}{' '}
-                    {t('use_a_different_password')}.
-                  </>
-                ) : getErrorMessageKey(error) === 'password-too-similar' ? (
-                  <>
-                    {t('invalid_password_too_similar')}{' '}
-                    {t('use_a_different_password')}.
-                  </>
-                ) : (
-                  (getUserFacingMessage(error) ?? '')
-                )
-              }
+              content={getUserFacingMessage(error) ?? ''}
             />
           </div>
         </OLFormGroup>

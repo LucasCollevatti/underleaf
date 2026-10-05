@@ -15,11 +15,7 @@ import passport from 'passport'
 import NotificationsBuilder from '../Notifications/NotificationsBuilder.mjs'
 import UrlHelper from '../Helpers/UrlHelper.mjs'
 import AsyncFormHelper from '../Helpers/AsyncFormHelper.mjs'
-import {
-  getRawReqInput,
-  parseReq,
-  z,
-} from '../../infrastructure/Validation.mjs'
+import { getRawReqInput } from '../../infrastructure/Validation.mjs'
 import _ from 'lodash'
 import UserAuditLogHandler from '../User/UserAuditLogHandler.mjs'
 import AnalyticsRegistrationSourceHelper from '../Analytics/AnalyticsRegistrationSourceHelper.mjs'
@@ -31,12 +27,6 @@ import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import UnderleafUserManager from '../Underleaf/UnderleafUserManager.mjs'
 
 const { hasAdminAccess } = AdminAuthorizationHelper
-
-// middleware schema is non-strict: it validates only the field this
-// middleware consumes; the route schema stays responsible for strictness
-const zipUrlQuerySchema = z.object({
-  query: z.object({ zipUrl: z.string().optional() }),
-})
 
 function send401WithChallenge(res) {
   res.setHeader('WWW-Authenticate', 'OverleafLogin')
@@ -148,7 +138,9 @@ const AuthenticationController = {
         ) {
           return cb(null, false)
         }
-        const sessionUser = { ...user, ...current }
+        // Passport stores the serialized object in req.session.passport.user.
+        // Refresh that same object: middleware and sockets read the session too.
+        const sessionUser = Object.assign(user, current)
         delete sessionUser.email
         delete sessionUser.emails
         cb(null, sessionUser)
@@ -231,10 +223,6 @@ const AuthenticationController = {
 
     if (results.some(result => result && result.doNotFinish)) {
       return
-    }
-
-    if (!Settings.underleaf && user.must_reconfirm) {
-      return AuthenticationController._redirectToReconfirmPage(req, res, user)
     }
 
     const redir =
@@ -456,38 +444,6 @@ const AuthenticationController = {
     }
   },
 
-  validateAdmin(req, res, next) {
-    if (Settings.underleaf) return next()
-    const adminDomains = Settings.adminDomains
-    if (
-      !adminDomains ||
-      !(Array.isArray(adminDomains) && adminDomains.length)
-    ) {
-      return next()
-    }
-    const user = SessionManager.getSessionUser(req.session)
-    if (!hasAdminAccess(user)) {
-      return next()
-    }
-    const email = user.email
-    if (email == null) {
-      return next(
-        new OError('[ValidateAdmin] Admin user without email address', {
-          userId: user._id,
-        })
-      )
-    }
-    if (!adminDomains.find(domain => email.endsWith(`@${domain}`))) {
-      return next(
-        new OError('[ValidateAdmin] Admin user with invalid email domain', {
-          email,
-          userId: user._id,
-        })
-      )
-    }
-    return next()
-  },
-
   checkCredentials,
 
   requireBasicAuth: function (userDetails) {
@@ -543,19 +499,7 @@ const AuthenticationController = {
   },
 
   _redirectToLoginOrRegisterPage(req, res) {
-    const { query } = parseReq(req, zipUrlQuerySchema, { logOnly: true })
-    if (Settings.underleaf) {
-      return AuthenticationController._redirectToLoginPage(req, res)
-    }
-    if (
-      query.zipUrl != null ||
-      req.session.sharedProjectData ||
-      req.path === '/user/subscription/new'
-    ) {
-      AuthenticationController._redirectToRegisterPage(req, res)
-    } else {
-      AuthenticationController._redirectToLoginPage(req, res)
-    }
+    return AuthenticationController._redirectToLoginPage(req, res)
   },
 
   _redirectToLoginPage(req, res) {
@@ -567,29 +511,6 @@ const AuthenticationController = {
     // the full query string is re-encoded into the login redirect URL
     // verbatim, never read by name here (case 1: verbatim forwarding)
     const url = `/login?${querystring.stringify(getRawReqInput(req).query)}`
-    res.redirect(url)
-    Metrics.inc('security.login-redirect')
-  },
-
-  _redirectToReconfirmPage(req, res, user) {
-    logger.debug(
-      { url: req.url },
-      'user needs to reconfirm so redirecting to reconfirm page'
-    )
-    req.session.reconfirm_email = user != null ? user.email : undefined
-    const redir = '/user/reconfirm'
-    AsyncFormHelper.redirect(req, res, redir)
-  },
-
-  _redirectToRegisterPage(req, res) {
-    logger.debug(
-      { url: req.url },
-      'user not logged in so redirecting to register page'
-    )
-    AuthenticationController.setRedirectInSession(req)
-    // the full query string is re-encoded into the register redirect URL
-    // verbatim, never read by name here (case 1: verbatim forwarding)
-    const url = `/register?${querystring.stringify(getRawReqInput(req).query)}`
     res.redirect(url)
     Metrics.inc('security.login-redirect')
   },

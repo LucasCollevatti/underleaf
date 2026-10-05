@@ -846,7 +846,7 @@ module.exports = {
     },
     login: {
       ip: { points: 20, subnetPoints: 200, duration: 60 },
-      email: { points: 10, duration: 120 },
+      username: { points: 10, duration: 120 },
     },
   },
 

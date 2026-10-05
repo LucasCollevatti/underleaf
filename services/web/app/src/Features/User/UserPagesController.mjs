@@ -221,48 +221,6 @@ async function logout(req, res) {
   res.render('user/logout')
 }
 
-async function reconfirmAccountPage(req, res) {
-  const pageData = {
-    reconfirm_email: req.session.reconfirm_email,
-  }
-
-  res.render('user/reconfirm', pageData)
-}
-
-async function emailPreferencesPage(req, res) {
-  const userId = SessionManager.getLoggedInUserId(req.session)
-  const user = await UserGetter.promises.getUser(userId, {
-    _id: 1,
-    email: 1,
-    first_name: 1,
-    last_name: 1,
-  })
-
-  if (!user) {
-    throw new Error('User not found')
-  }
-
-  let subscribed = false
-
-  try {
-    const [preferences] = await Modules.promises.hooks.fire(
-      'getSubscriptionPreferences',
-      userId
-    )
-
-    subscribed = Boolean(preferences?.newsletter)
-  } catch (err) {
-    logger.error({ err, userId }, 'Error fetching newsletter subscription')
-  }
-
-  res.render('user/email-preferences', {
-    title: 'newsletter_info_title',
-    customerIoEnabled: true,
-    subscribed,
-    user,
-  })
-}
-
 const loginPageSchema = z.object({
   query: z.object({
     redir: z.string().optional(),
@@ -272,22 +230,6 @@ const loginPageSchema = z.object({
 const UserPagesController = {
   accountSuspended: expressify(accountSuspended),
   logout: expressify(logout),
-
-  registerPage(req, res) {
-    const sharedProjectData = req.session.sharedProjectData || {}
-
-    const newTemplateData = {}
-    if (req.session.templateData != null) {
-      newTemplateData.templateName = req.session.templateData.templateName
-    }
-
-    res.render('user/register', {
-      title: 'register',
-      sharedProjectData,
-      newTemplateData,
-      samlBeta: req.session.samlBeta,
-    })
-  },
 
   loginPage(req, res) {
     const { query } = parseReq(req, loginPageSchema, { logOnly: true })
@@ -317,18 +259,6 @@ const UserPagesController = {
     })
   },
 
-  /**
-   * Landing page for users who may have received one-time login
-   * tokens from the read-only maintenance site.
-   *
-   * We tell them that Overleaf is back up and that they can login normally.
-   */
-  oneTimeLoginPage(req, res, next) {
-    res.render('user/one_time_login')
-  },
-
-  renderReconfirmAccountPage: expressify(reconfirmAccountPage),
-
   settingsPage: expressify(settingsPage),
 
   sessionsPage(req, res, next) {
@@ -355,12 +285,6 @@ const UserPagesController = {
         })
       }
     )
-  },
-
-  emailPreferencesPage: expressify(emailPreferencesPage),
-
-  async compromisedPasswordPage(req, res) {
-    res.render('user/compromised_password')
   },
 
   _restructureThirdPartyIds(user) {

@@ -278,8 +278,6 @@ webRouter.use(function checkIfEditorClosed(req, res, next) {
   }
 })
 
-webRouter.use(AuthenticationController.validateAdmin)
-
 // add security headers using Helmet
 const noCacheMiddleware = noCache()
 webRouter.use((req, res, next) => {

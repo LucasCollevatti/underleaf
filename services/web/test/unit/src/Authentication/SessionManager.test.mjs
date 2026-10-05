@@ -1,113 +1,57 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import sinon from 'sinon'
-import tk from 'timekeeper'
-import mongodb from 'mongodb-legacy'
-const modulePath =
-  '../../../../app/src/Features/Authentication/SessionManager.mjs'
+import { describe, expect, it } from 'vitest'
+import SessionManager from '../../../../app/src/Features/Authentication/SessionManager.mjs'
 
-const { ObjectId } = mongodb
+function account() {
+  return {
+    _id: 'account-id',
+    username: 'alpha',
+    displayName: 'Alpha',
+    identityVersion: 1,
+  }
+}
 
-describe('SessionManager', function () {
-  beforeEach(async function (ctx) {
-    ctx.UserModel = { findOne: sinon.stub() }
-    ctx.SessionManager = (await import(modulePath)).default
-    ctx.user = {
-      _id: new ObjectId(),
-      email: (ctx.email = 'USER@example.com'),
-      first_name: 'bob',
-      last_name: 'brown',
-      referal_id: 1234,
-      isAdmin: false,
+describe('SessionManager username identity', () => {
+  it.each(['user', 'passport'])('reads canonical %s sessions', kind => {
+    const user = account()
+    const session = kind === 'user' ? { user } : { passport: { user } }
+    expect(SessionManager.getSessionUser(session)).toBe(user)
+    expect(SessionManager.getLoggedInUserId(session)).toBe(user._id)
+    expect(SessionManager.isUserLoggedIn(session)).toBe(true)
+  })
+  it.each([
+    undefined,
+    {},
+    { passport: {} },
+    { user: { _id: 'id' } },
+    { user: { ...account(), username: undefined } },
+    { passport: { user: { ...account(), identityVersion: undefined } } },
+  ])('rejects missing or pre-migration identity: %j', session => {
+    expect(SessionManager.getSessionUser(session)).toBeNull()
+    expect(SessionManager.getLoggedInUserId(session)).toBeNull()
+    expect(SessionManager.isUserLoggedIn(session)).toBe(false)
+  })
+  it('strips stale email fields before sharing session data', () => {
+    const session = {
+      passport: {
+        user: { ...account(), email: 'old@example.org', emails: [] },
+      },
     }
-    ctx.session = sinon.stub()
+    expect(SessionManager.getSessionUser(session)).toEqual(account())
   })
-
-  afterEach(function () {
-    tk.reset()
-  })
-
-  describe('isUserLoggedIn', function () {
-    beforeEach(function (ctx) {
-      ctx.stub = sinon.stub(ctx.SessionManager, 'getLoggedInUserId')
+  it('updates display name and identity version on the stored session object', () => {
+    const session = { passport: { user: account() } }
+    SessionManager.setInSessionUser(session, {
+      displayName: 'New name',
+      identityVersion: 2,
     })
-
-    afterEach(function (ctx) {
-      ctx.stub.restore()
-    })
-
-    it('should do the right thing in all cases', function (ctx) {
-      ctx.SessionManager.getLoggedInUserId.returns('some_id')
-      expect(ctx.SessionManager.isUserLoggedIn(ctx.session)).to.equal(true)
-      ctx.SessionManager.getLoggedInUserId.returns(null)
-      expect(ctx.SessionManager.isUserLoggedIn(ctx.session)).to.equal(false)
-      ctx.SessionManager.getLoggedInUserId.returns(false)
-      expect(ctx.SessionManager.isUserLoggedIn(ctx.session)).to.equal(false)
-      ctx.SessionManager.getLoggedInUserId.returns(undefined)
-      expect(ctx.SessionManager.isUserLoggedIn(ctx.session)).to.equal(false)
+    expect(session.passport.user).toMatchObject({
+      displayName: 'New name',
+      identityVersion: 2,
     })
   })
-
-  describe('setInSessionUser', function () {
-    beforeEach(function (ctx) {
-      ctx.user = {
-        _id: 'id',
-        first_name: 'a',
-        last_name: 'b',
-        email: 'c',
-      }
-      ctx.SessionManager.getSessionUser = sinon.stub().returns(ctx.user)
-    })
-
-    it('should update the right properties', function (ctx) {
-      ctx.SessionManager.setInSessionUser(ctx.session, {
-        first_name: 'new_first_name',
-        email: 'new_email',
-      })
-      const expectedUser = {
-        _id: 'id',
-        first_name: 'new_first_name',
-        last_name: 'b',
-        email: 'new_email',
-      }
-      expect(ctx.user).to.deep.equal(expectedUser)
-      expect(ctx.user).to.deep.equal(expectedUser)
-    })
-  })
-
-  describe('getLoggedInUserId', function () {
-    beforeEach(function (ctx) {
-      ctx.req = { session: {} }
-    })
-
-    it('should return the user id from the session', function (ctx) {
-      ctx.user_id = '2134'
-      ctx.session.user = { _id: ctx.user_id }
-      const result = ctx.SessionManager.getLoggedInUserId(ctx.session)
-      expect(result).to.equal(ctx.user_id)
-    })
-
-    it('should return user for passport session', function (ctx) {
-      ctx.user_id = '2134'
-      ctx.session = {
-        passport: {
-          user: {
-            _id: ctx.user_id,
-          },
-        },
-      }
-      const result = ctx.SessionManager.getLoggedInUserId(ctx.session)
-      expect(result).to.equal(ctx.user_id)
-    })
-
-    it('should return null if there is no user on the session', function (ctx) {
-      ctx.session = {}
-      const result = ctx.SessionManager.getLoggedInUserId(ctx.session)
-      expect(result).to.equal(null)
-    })
-
-    it('should return null if there is no session', function (ctx) {
-      const result = ctx.SessionManager.getLoggedInUserId(undefined)
-      expect(result).to.equal(null)
-    })
+  it('does not recreate an unauthenticated session', () => {
+    const session = {}
+    SessionManager.setInSessionUser(session, { username: 'alpha' })
+    expect(session).toEqual({})
   })
 })

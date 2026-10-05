@@ -1,19 +1,15 @@
 import { expect } from 'chai'
-import PasswordResetRouter from '../../../app/src/Features/PasswordReset/PasswordResetRouter.mjs'
 import UserHelper from './helpers/UserHelper.mjs'
 
 describe('PasswordUpdate', function () {
-  let email, password, response, user, userHelper
-  afterEach(async function () {
-    await PasswordResetRouter.rateLimiter.delete('127.0.0.1')
-  })
+  let username, password, response, user, userHelper
   beforeEach(async function () {
     userHelper = new UserHelper()
-    email = 'somecooluser@example.com'
+    username = 'somecooluser'
     password = 'old-password'
-    userHelper = await UserHelper.createUser({ email, password })
+    userHelper = await UserHelper.createUser({ username, password })
     userHelper = await UserHelper.loginUser({
-      email,
+      username,
       password,
     })
     await userHelper.getCsrfToken()
@@ -28,7 +24,7 @@ describe('PasswordUpdate', function () {
           newPassword2: 'new-password',
         }),
       })
-      userHelper = await UserHelper.getUser({ email })
+      userHelper = await UserHelper.getUser({ username })
       user = userHelper.user
     })
     it('should return 200', async function () {
@@ -54,10 +50,10 @@ describe('PasswordUpdate', function () {
             newPassword2: 'new-password',
           }),
         })
-        userHelper = await UserHelper.getUser({ email })
+        userHelper = await UserHelper.getUser({ username })
       })
-      it('should return 500', async function () {
-        expect(response.status).to.equal(500)
+      it('should return 400', async function () {
+        expect(response.status).to.equal(400)
       })
       it('should not update audit log', async function () {
         const auditLog = userHelper.getAuditLogWithoutNoise()
@@ -74,7 +70,7 @@ describe('PasswordUpdate', function () {
             newPassword2: 'new-password',
           }),
         })
-        userHelper = await UserHelper.getUser({ email })
+        userHelper = await UserHelper.getUser({ username })
       })
       it('should return 400', async function () {
         expect(response.status).to.equal(400)
@@ -98,7 +94,7 @@ describe('PasswordUpdate', function () {
             newPassword2: 'oops-password',
           }),
         })
-        userHelper = await UserHelper.getUser({ email })
+        userHelper = await UserHelper.getUser({ username })
       })
       it('should return 400', async function () {
         expect(response.status).to.equal(400)
@@ -126,7 +122,7 @@ describe('PasswordUpdate', function () {
             newPassword2: 'short',
           }),
         })
-        userHelper = await UserHelper.getUser({ email })
+        userHelper = await UserHelper.getUser({ username })
       })
       it('should return 400', async function () {
         expect(response.status).to.equal(400)
@@ -144,9 +140,9 @@ describe('PasswordUpdate', function () {
         expect(auditLog).to.deep.equal([])
       })
     })
-    describe('new password contains part of email', function () {
-      beforeEach(async function () {
-        response = await userHelper.fetch('/user/password/update', {
+    describe('passwords are independent of account names', function () {
+      it('accepts a valid local password containing the username', async function () {
+        const response = await userHelper.fetch('/user/password/update', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -158,54 +154,10 @@ describe('PasswordUpdate', function () {
             newPassword2: 'somecooluser123',
           }),
         })
-        userHelper = await UserHelper.getUser({ email })
-      })
-      it('should return 400', async function () {
-        expect(response.status).to.equal(400)
-      })
-      it('should return error message', async function () {
+        expect(response.status).to.equal(200)
         const body = await response.json()
-        expect(body.message).to.deep.equal({
-          key: 'password-contains-email',
-          type: 'error',
-          text: 'Password cannot contain parts of email address.',
-        })
-      })
-      it('should not update audit log', async function () {
-        const auditLog = userHelper.getAuditLogWithoutNoise()
-        expect(auditLog).to.deep.equal([])
-      })
-    })
-    describe('new password is too similar to email', function () {
-      beforeEach(async function () {
-        response = await userHelper.fetch('/user/password/update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            currentPassword: password,
-            newPassword1: 'coolusersome123',
-            newPassword2: 'coolusersome123',
-          }),
-        })
-        userHelper = await UserHelper.getUser({ email })
-      })
-      it('should return 400', async function () {
-        expect(response.status).to.equal(400)
-      })
-      it('should return error message', async function () {
-        const body = await response.json()
-        expect(body.message).to.deep.equal({
-          key: 'password-too-similar',
-          type: 'error',
-          text: 'Password is too similar to parts of email address.',
-        })
-      })
-      it('should not update audit log', async function () {
-        const auditLog = userHelper.getAuditLogWithoutNoise()
-        expect(auditLog).to.deep.equal([])
+        expect(body.message.username).to.equal(username)
+        expect(body.message).not.to.have.property('email')
       })
     })
   })

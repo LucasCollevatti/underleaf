@@ -7,6 +7,7 @@ import AuthenticationManager from '../../../app/src/Features/Authentication/Auth
 import SessionManager from '../../../app/src/Features/Authentication/SessionManager.mjs'
 import { sanitizeSessionUserForFrontEnd } from '../../../app/src/infrastructure/FrontEndUser.mjs'
 import migration from '../../../../../tools/migrations/20261005100000_underleaf_username_identity.mjs'
+import accountMigration from '../../../../../tools/migrations/20261002100000_underleaf_username_accounts.mjs'
 
 describe('Underleaf username identity', function () {
   let db, collections, hash
@@ -32,6 +33,42 @@ describe('Underleaf username identity', function () {
   afterEach(async function () {
     for (const collection of Object.values(collections))
       await collection.deleteMany({})
+  })
+
+  it('runs both username migrations without creating artificial case conflicts', async function () {
+    const ids = [new Mongoose.Types.ObjectId(), new Mongoose.Types.ObjectId()]
+    await collections.users.insertMany([
+      { _id: ids[0], username: 'Alpha', hashedPassword: hash },
+      { _id: ids[1], email: 'alpha@example.org', hashedPassword: hash },
+    ])
+    await accountMigration.migrate({ db: collections })
+    await migration.migrate({ db: collections })
+    expect(
+      (await collections.users.findOne({ _id: ids[0] })).username
+    ).to.equal('alpha')
+    expect(
+      (await collections.users.findOne({ _id: ids[1] })).username
+    ).to.equal('alpha-1')
+    expect(
+      (await collections.users.indexes()).find(
+        index => index.name === 'username_1'
+      ).sparse
+    ).not.to.equal(true)
+  })
+
+  it('preflights normalized conflicts before the earlier migration writes anything', async function () {
+    await collections.users.insertMany([
+      { username: 'Alpha', email: 'a@example.org', hashedPassword: hash },
+      { username: ' alpha ', email: 'b@example.org', hashedPassword: hash },
+    ])
+    const before = await collections.users.find({}).toArray()
+    try {
+      await accountMigration.migrate({ db: collections })
+      throw new Error('expected conflict')
+    } catch (error) {
+      expect(error.message).to.include('Conflicting username')
+    }
+    expect(await collections.users.find({}).toArray()).to.deep.equal(before)
   })
 
   it('migrates every account, keeps IDs/projects/passwords and removes email indexes', async function () {
@@ -261,6 +298,14 @@ describe('Underleaf username identity', function () {
       )
     )
     expect(current.displayName).to.equal('New display name')
+    expect(session.displayName).to.equal('New display name')
+    const req = { session: { passport: { user: session } } }
+    let continued = false
+    Authentication.requireLogin()(req, {}, () => {
+      continued = true
+    })
+    expect(continued).to.equal(true)
+    expect(req.user.displayName).to.equal('New display name')
     expect(sanitizeSessionUserForFrontEnd(current))
       .to.include({ username: 'session-user', displayName: 'New display name' })
       .and.not.to.have.property('email')

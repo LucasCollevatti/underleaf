@@ -1,3 +1,4 @@
+import Settings from '@overleaf/settings'
 import UserMembershipMiddleware from './UserMembershipMiddleware.mjs'
 import UserMembershipController from './UserMembershipController.mjs'
 import SubscriptionGroupController from '../Subscription/SubscriptionGroupController.mjs'
@@ -18,6 +19,9 @@ const rateLimiters = {
 
 export default {
   apply(webRouter) {
+    // Institutional and subscription memberships depend on email identities.
+    // Underleaf manages accounts and project memberships by username instead.
+    if (Settings.underleaf) return
     // group members routes
     webRouter.get(
       '/manage/groups/:id/members',
