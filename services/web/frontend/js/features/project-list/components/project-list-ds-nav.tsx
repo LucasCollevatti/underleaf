@@ -1,4 +1,3 @@
-import classNames from 'classnames'
 import { useProjectListContext } from '../context/project-list-context'
 import { useTranslation } from 'react-i18next'
 import CurrentPlanWidget from './current-plan-widget/current-plan-widget'
@@ -25,6 +24,7 @@ import CookieBanner from '@/shared/components/cookie-banner'
 import NoProjects from '@/features/project-list/components/no-projects'
 import { useActiveOverallTheme } from '@/shared/hooks/use-active-overall-theme'
 import { useFeatureFlag } from '@/shared/context/split-test-context'
+import { UnderleafAppShell } from '@/shared/components/underleaf/underleaf-app-shell'
 
 export function ProjectListDsNav() {
   const navbarProps = getMeta('ol-navbar')
@@ -68,117 +68,114 @@ export function ProjectListDsNav() {
   )
 
   return (
-    <div
-      className={classNames('project-ds-nav-page', 'website-redesign', {
-        'ds-nav-hides-top-navbar': showTrashHeader,
-      })}
+    <UnderleafAppShell
+      sidebar={<SidebarDsNav activePage="projects" />}
+      header={
+        <DefaultNavbar
+          {...navbarProps}
+          customLogo={
+            activeOverallTheme === 'dark'
+              ? navbarProps.customLogoDark
+              : navbarProps.customLogo
+          }
+          overleafLogo={`/underleaf-lockup${activeOverallTheme === 'dark' ? '-dark' : ''}.svg`}
+          showCloseIcon
+        />
+      }
     >
       <SystemMessages />
-      <DefaultNavbar
-        {...navbarProps}
-        customLogo={
-          activeOverallTheme === 'dark'
-            ? navbarProps.customLogoDark
-            : navbarProps.customLogo
-        }
-        overleafLogo="/underleaf-logo.png"
-        showCloseIcon
-      />
-      <div className="project-list-wrapper">
-        <SidebarDsNav activePage="projects" />
-        <div className="project-ds-nav-content-and-messages">
-          <div className="project-ds-nav-content">
-            <div className="project-ds-nav-main">
-              {error ? <DashApiError /> : ''}
-              <UserNotifications />
-              <main aria-labelledby="main-content">
-                <div className="project-list-header-row">
-                  {showTrashHeader ? (
-                    <h1
-                      id="main-content"
-                      tabIndex={-1}
-                      className="project-list-title text-truncate d-none d-md-block mb-0"
-                    >
-                      {t('trash')}
-                    </h1>
-                  ) : (
-                    <ProjectListTitle
-                      filter={filter}
-                      selectedTag={selectedTag}
-                      selectedTagId={selectedTagId}
-                      className="text-truncate d-none d-md-block"
-                    />
-                  )}
-                  <div className="project-tools">
-                    <div className="d-none d-md-block">
-                      {selectedProjects.length === 0 ? (
-                        showTrashHeader ? null : (
-                          <CurrentPlanWidget />
-                        )
-                      ) : (
-                        <ProjectTools />
-                      )}
-                    </div>
-                    <div className="d-md-none">
-                      {!showTrashHeader && <CurrentPlanWidget />}
-                    </div>
+      <div className="project-ds-nav-content-and-messages">
+        <div className="project-ds-nav-content">
+          <div className="project-ds-nav-main">
+            {error ? <DashApiError /> : ''}
+            <UserNotifications />
+            <main aria-labelledby="main-content">
+              <div className="project-list-header-row">
+                {showTrashHeader ? (
+                  <h1
+                    id="main-content"
+                    tabIndex={-1}
+                    className="project-list-title text-truncate d-none d-md-block mb-0"
+                  >
+                    {t('trash')}
+                  </h1>
+                ) : (
+                  <ProjectListTitle
+                    filter={filter}
+                    selectedTag={selectedTag}
+                    selectedTagId={selectedTagId}
+                    className="text-truncate d-none d-md-block"
+                  />
+                )}
+                <div className="project-tools">
+                  <div className="d-none d-md-block">
+                    {selectedProjects.length === 0 ? (
+                      showTrashHeader ? null : (
+                        <CurrentPlanWidget />
+                      )
+                    ) : (
+                      <ProjectTools />
+                    )}
+                  </div>
+                  <div className="d-md-none">
+                    {!showTrashHeader && <CurrentPlanWidget />}
                   </div>
                 </div>
-                {showTrashHeader && <TrashPageTabs activeTab="projects" />}
-                {isSharedWorkspaceEnabled &&
-                selectedTagId === undefined &&
-                currentFilterProjectsCount === 0 ? (
-                  <>
-                    <ProjectsToolbarMobile />
-                    <NoProjects
-                      activeSection={filter}
-                      showNewProjectButton={showNewProjectButton}
-                    />
-                  </>
-                ) : (
-                  <div className="project-ds-nav-project-list">
-                    <OLRow className="d-none d-md-flex align-items-center">
-                      <OLCol md={8} lg={7}>
-                        <SearchForm
-                          inputValue={searchText}
-                          setInputValue={setSearchText}
-                          filter={filter}
-                          selectedTag={selectedTag}
+              </div>
+              {showTrashHeader && <TrashPageTabs activeTab="projects" />}
+              {isSharedWorkspaceEnabled &&
+              selectedTagId === undefined &&
+              currentFilterProjectsCount === 0 ? (
+                <>
+                  <ProjectsToolbarMobile />
+                  <NoProjects
+                    activeSection={filter}
+                    showNewProjectButton={showNewProjectButton}
+                  />
+                </>
+              ) : (
+                <div className="project-ds-nav-project-list">
+                  <OLRow className="d-none d-md-flex align-items-center">
+                    <OLCol md={8} lg={7}>
+                      <SearchForm
+                        inputValue={searchText}
+                        setInputValue={setSearchText}
+                        filter={filter}
+                        selectedTag={selectedTag}
+                      />
+                    </OLCol>
+                    {showNewProjectButton && (
+                      <OLCol className="ms-auto" xs="auto">
+                        <NewProjectButton
+                          id="new-project-button-projects-table"
+                          showAddAffiliationWidget
+                          align="end"
                         />
                       </OLCol>
-                      {showNewProjectButton && (
-                        <OLCol className="ms-auto" xs="auto">
-                          <NewProjectButton
-                            id="new-project-button-projects-table"
-                            showAddAffiliationWidget
-                            align="end"
-                          />
-                        </OLCol>
-                      )}
-                    </OLRow>
-                    <div className="project-list-sidebar-survey-wrapper d-md-none">
-                      {/* Omit the survey card in mobile view for now */}
-                    </div>
-                    <ProjectsToolbarMobile />
-                    <div className="mt-3">
-                      <TableContainer bordered>
-                        {tableTopArea}
-                        <ProjectListTable />
-                      </TableContainer>
-                    </div>
-                    <div className="mt-3">
-                      <LoadMore />
-                    </div>
+                    )}
+                  </OLRow>
+                  <div className="project-list-sidebar-survey-wrapper d-md-none">
+                    {/* Omit the survey card in mobile view for now */}
                   </div>
-                )}
-              </main>
-            </div>
-            <Footer {...footerProps} />
+                  <ProjectsToolbarMobile />
+                  <div className="mt-3">
+                    <TableContainer bordered>
+                      {tableTopArea}
+                      <ProjectListTable />
+                    </TableContainer>
+                  </div>
+                  <div className="mt-3">
+                    <LoadMore />
+                  </div>
+                </div>
+              )}
+            </main>
           </div>
-          <CookieBanner />
+          <Footer {...footerProps} />
         </div>
+        <CookieBanner />
       </div>
-    </div>
+    </UnderleafAppShell>
   )
 }
 

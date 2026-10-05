@@ -7,8 +7,7 @@ import AddAffiliation, { useAddAffiliation } from '../add-affiliation'
 import { usePersistedResize } from '@/shared/hooks/use-resize'
 import { useScrolled } from '@/features/project-list/components/sidebar/use-scroll'
 import { SurveyWidgetDsNav } from '@/features/project-list/components/survey-widget-ds-nav'
-import { SidebarLowerSection } from '@/shared/components/sidebar/sidebar-lower-section'
-import { DsNavOverleafLogo } from '@/shared/components/sidebar/ds-nav-overleaf-logo'
+import { UnderleafSidebar } from '@/shared/components/underleaf/underleaf-sidebar'
 import { useProjectListContext } from '@/features/project-list/context/project-list-context'
 import importOverleafModules from '../../../../../macros/import-overleaf-module.macro'
 import { ActivePage } from '../../util/navigation-state'
@@ -53,19 +52,14 @@ function SidebarDsNav({
   )
 
   return (
-    <div
-      className="project-list-sidebar-wrapper-react d-none d-md-flex"
+    <UnderleafSidebar
+      activePage="projects"
       {...getTargetProps({
         style: {
           ...(mousePos?.x && { flexBasis: `${mousePos.x}px` }),
         },
       })}
-    >
-      {(activePage === 'library' || isTrashActive) && <DsNavOverleafLogo />}
-      <nav
-        className="flex-grow flex-shrink"
-        aria-label={t('project_categories_tags')}
-      >
+      navigation={
         <div
           className="project-list-sidebar-scroll"
           ref={containerRef}
@@ -75,14 +69,9 @@ function SidebarDsNav({
           {showAddAffiliationWidget && <hr />}
           <AddAffiliation />
         </div>
-      </nav>
-      <div
-        className={classnames(
-          'ds-nav-sidebar-lower',
-          scrolledUp && 'show-shadow'
-        )}
-      >
-        <SidebarLowerSection showThemeToggle>
+      }
+      footer={
+        <div className={classnames(scrolledUp && 'show-shadow')}>
           {DsNavLibraryLink && (
             <DsNavLibraryLink
               active={activePage === 'library' && !trashActive}
@@ -112,21 +101,23 @@ function SidebarDsNav({
           <div className="project-list-sidebar-survey-wrapper">
             <SurveyWidgetDsNav />
           </div>
-        </SidebarLowerSection>
-      </div>
-      <div
-        {...getHandleProps({
-          style: {
-            position: 'absolute',
-            zIndex: 1,
-            top: 0,
-            right: '-2px',
-            height: '100%',
-            width: '4px',
-          },
-        })}
-      />
-    </div>
+        </div>
+      }
+      resizeHandle={
+        <div
+          {...getHandleProps({
+            style: {
+              position: 'absolute',
+              zIndex: 1,
+              top: 0,
+              right: '-2px',
+              height: '100%',
+              width: '4px',
+            },
+          })}
+        />
+      }
+    />
   )
 }
 

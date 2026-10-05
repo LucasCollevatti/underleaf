@@ -3059,6 +3059,14 @@
   "uncategorized_projects": "Uncategorized Projects",
   "unconfirmed": "Unconfirmed",
   "undelete": "Undelete",
+  "underleaf_administration": "Administration",
+  "underleaf_guest_description": "Collaborative LaTeX, self-hosted.",
+  "underleaf_setup_description": "Set up Underleaf",
+  "underleaf_system": "System",
+  "underleaf_theme_dark": "Dark",
+  "underleaf_theme_light": "Light",
+  "underleaf_theme_system": "System",
+  "underleaf_users": "Users",
   "understand_managed_user_accounts": "Understand managed user accounts",
   "understanding_labels": "Understanding labels",
   "undo": "Undo",
@@ -3465,3 +3473,4 @@
   "zotero_upgrade_prompt_content": "Link your Zotero account to search and add your references from Zotero directly in your project—they’ll automatically be added to your .bib file. Or import them as a file into your __appName__ projects.",
   "zotero_upgrade_prompt_title": "Cite from Zotero"
 }
+

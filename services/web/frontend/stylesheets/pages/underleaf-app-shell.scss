@@ -1,0 +1,131 @@
+.underleaf-app-shell {
+  min-height: 100dvh;
+  background-color: var(--bg-primary-themed);
+
+  .underleaf-app-layout {
+    min-height: 0;
+  }
+
+  .underleaf-app-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    overflow: auto;
+    background-color: var(--ds-nav-content-bg-secondary);
+    border-left: 1px solid var(--border-divider-themed);
+
+    > .project-ds-nav-content-and-messages {
+      min-height: 100%;
+    }
+  }
+
+  .underleaf-app-header {
+    @include media-breakpoint-up(md) {
+      display: none;
+    }
+  }
+
+  .underleaf-sidebar {
+    margin-top: 0;
+    padding-top: var(--spacing-06);
+    max-width: 320px;
+
+    .underleaf-sidebar-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-05);
+      padding: 0 var(--spacing-05) var(--spacing-06);
+    }
+
+    .underleaf-sidebar-brand a {
+      min-width: 0;
+    }
+
+    .underleaf-sidebar-menu {
+      display: none;
+    }
+
+    .underleaf-sidebar-sections {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .underleaf-sidebar-navigation {
+      overflow: auto;
+      padding: 0 var(--spacing-05);
+    }
+
+    .underleaf-sidebar-navigation > .project-list-sidebar-scroll {
+      padding: 0;
+      margin: 0;
+    }
+
+    .underleaf-sidebar-description {
+      padding: var(--spacing-05);
+      color: var(--content-secondary-themed);
+    }
+
+    .underleaf-sidebar-administration {
+      padding-top: var(--spacing-05);
+      margin-top: var(--spacing-05);
+      border-top: 1px solid var(--border-divider-themed);
+    }
+
+    .underleaf-sidebar-lower {
+      flex: 0 0 auto;
+      padding-bottom: var(--spacing-05);
+      border-top: 1px solid var(--border-divider-themed);
+
+      nav {
+        flex: 0 0 auto;
+      }
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    .underleaf-app-layout {
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    .underleaf-app-content {
+      flex: 1 0 auto;
+      overflow: visible;
+      border-left: none;
+    }
+
+    .underleaf-sidebar {
+      flex: 0 0 auto;
+      min-width: 0;
+      max-width: none;
+      width: 100%;
+
+      .underleaf-sidebar-menu {
+        display: inline-flex;
+      }
+
+      .underleaf-sidebar-sections {
+        display: none;
+      }
+
+      &.underleaf-sidebar-expanded .underleaf-sidebar-sections {
+        display: flex;
+      }
+    }
+  }
+}
+
+.underleaf-brand {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.theme-toggle-radio input:focus-visible + label {
+  outline: 2px solid var(--content-primary-themed);
+  outline-offset: 2px;
+}

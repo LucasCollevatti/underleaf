@@ -38,3 +38,34 @@ O processo CLSI atual permanece dentro da imagem da aplicação para preservar o
 snapshot importado. `apps/compiler/` registra o destino de um serviço dedicado;
 as rotas do editor e de download não precisarão mudar quando essa migração
 acontecer.
+
+## Shell compartilhado da aplicação
+
+`services/web/frontend/js/shared/components/underleaf/` contém o
+`UnderleafAppShell`, a `UnderleafSidebar` e o `UnderleafBrand`. O shell reutiliza
+os estilos e tokens do dashboard Overleaf. A sidebar possui variantes
+`authenticated`, `unauthenticated` e `setup`, navegação administrativa conforme
+o acesso informado pelo servidor e menu expansível em telas pequenas.
+
+Páginas React novas devem usar `UnderleafAppProviders` e `UnderleafAppShell`.
+Páginas que já possuem `SplitTestProvider`, `UserSettingsProvider` e
+`DsNavStyleProvider` usam o shell diretamente para manter um único estado.
+Cada página fornece seu próprio landmark `main` e destino `#main-content`.
+Os slots `navigation`, `footer` e `resizeHandle` preservam os filtros, tags,
+lixeira e redimensionamento existentes de Projects; `header` acomoda a navbar
+existente em telas pequenas.
+
+O seletor original `ThemeToggle` agora vive em `shared/components/sidebar/` e
+continua usando `useSetOverallTheme`, `UserSettingsProvider` e `useThemedPage`.
+Os valores permanecem `system`, `light-` e `''` (escuro), sem um segundo estado
+de tema. Contas autenticadas usam a preferência do servidor e o endpoint
+`/user/settings`. Visitantes persistem a mesma preferência no navegador sem
+chamar esse endpoint. Seletores adicionais compartilham o mesmo provider.
+
+Os SVGs públicos `underleaf-mark`, `underleaf-wordmark` e `underleaf-lockup`
+possuem variantes claras e escuras. `UnderleafBrand` seleciona a variante
+usando o tema ativo, incluindo mudanças no tema do sistema operacional.
+
+Nesta etapa, o dashboard com projetos usa o shell. A migração de Login/Welcome,
+do dashboard vazio, de Admin/Users/Settings e de Status/erros ocorre nas fases
+seguintes; o editor mantém seu layout próprio.

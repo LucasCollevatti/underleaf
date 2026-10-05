@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { UserSettings } from '../../../../types/user-settings'
 import getMeta from '@/utils/meta'
+import { readBrowserOverallTheme } from '@/shared/utils/overall-theme-preference'
 
 export const defaultSettings: UserSettings = {
   pdfViewer: 'pdfjs',
@@ -62,9 +63,15 @@ export const UserSettingsContext = createContext<
 export const UserSettingsProvider: FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const [userSettings, setUserSettings] = useState<UserSettings>(
-    () => getMeta('ol-userSettings') || defaultSettings
-  )
+  const [userSettings, setUserSettings] = useState<UserSettings>(() => {
+    const settings = { ...defaultSettings, ...getMeta('ol-userSettings') }
+    // Authenticated account settings stay authoritative; guests use the same
+    // preference values locally until an account is available.
+    if (!getMeta('ol-user_id') && !getMeta('ol-navbar')?.sessionUser) {
+      settings.overallTheme = readBrowserOverallTheme() ?? 'system'
+    }
+    return settings
+  })
 
   const value = useMemo<UserSettingsContextValue>(
     () => ({

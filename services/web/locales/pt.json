@@ -810,6 +810,14 @@
   "unable_to_extract_the_supplied_zip_file": "Abrir este conteúdo no Overleaf falhou porque o arquivo zip não pôde ser extraído. Por favor, certifique-se de que é um arquivo zip válido. Se isso continuar acontecendo para links em um site específico, informe isso a eles.",
   "uncategorized": "Sem Categoria",
   "unconfirmed": "Não confirmado",
+  "underleaf_administration": "Administração",
+  "underleaf_guest_description": "LaTeX colaborativo no seu servidor.",
+  "underleaf_setup_description": "Configure o Underleaf",
+  "underleaf_system": "Sistema",
+  "underleaf_theme_dark": "Escuro",
+  "underleaf_theme_light": "Claro",
+  "underleaf_theme_system": "Sistema",
+  "underleaf_users": "Usuários",
   "university": "Universidade",
   "unlimited": "Ilimitado",
   "unlimited_collaborators_per_project": "Colaboradores ilimitados por projeto",
@@ -911,3 +919,4 @@
   "zotero_reference_loading_error_forbidden": "Não foi possível carregar as referências do Zotero, por favor, revincule sua conta e tente novamente",
   "zotero_sync_description": "A integração Zotero permite você importar as referências do zotero para seus projetos no __appName__."
 }
+
