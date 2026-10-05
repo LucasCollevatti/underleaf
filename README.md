@@ -23,7 +23,11 @@ make build
 make up
 ```
 
-Acesse <http://localhost:8080>. Para parar os containers, use `make down`.
+Acesse <http://localhost:8080>. Em uma instalação nova, conclua o Welcome para
+criar o primeiro administrador e entrar automaticamente em Projects.
+Instalações já configuradas continuam usando `/login`. A CLI de criação de
+administrador fica disponível para recuperação ou automação.
+Para parar os containers, use `make down`.
 Volumes nomeados preservam projetos, histórico, cache, banco e saídas entre
 reinicializações.
 

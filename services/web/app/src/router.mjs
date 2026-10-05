@@ -67,6 +67,7 @@ import ClsiCacheController from './Features/Compile/ClsiCacheController.mjs'
 import AsyncLocalStorage from './infrastructure/AsyncLocalStorage.mjs'
 import UnderleafAdminController from './Features/Underleaf/UnderleafAdminController.mjs'
 import UnderleafSharingRouter from './Features/Underleaf/UnderleafSharingRouter.mjs'
+import UnderleafWelcomeRouter from './Features/Underleaf/UnderleafWelcomeRouter.mjs'
 import {
   getRawReqInput,
   parseReq,
@@ -220,6 +221,8 @@ const statusCompilerSchema = z.object({
 async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   webRouter.use(unsupportedBrowserMiddleware)
 
+  if (Settings.underleaf) UnderleafWelcomeRouter.apply(webRouter)
+
   if (!Settings.allowPublicAccess) {
     webRouter.all('*', AuthenticationController.requireGlobalLogin)
   }
@@ -256,7 +259,9 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   webRouter.post(
     '/login',
     RateLimiterMiddleware.rateLimit(overleafLoginRateLimiter), // rate limit IP (20 / 60s)
-    RateLimiterMiddleware.loginRateLimitEmail(), // rate limit email (10 / 120s)
+    RateLimiterMiddleware.loginRateLimitEmail(
+      Settings.underleaf ? 'username' : 'email'
+    ), // account limit (10 / 120s)
     CaptchaMiddleware.validateCaptcha('login'),
     AuthenticationController.passportLogin
   )

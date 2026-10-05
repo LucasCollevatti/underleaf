@@ -147,17 +147,33 @@ commercial plans or feature tiers.
 
 ## First administrator
 
-The first account must be created explicitly from the application container.
-The command refuses to create another administrator after one exists:
+Open the installation URL after `docker compose up`. An empty installation
+redirects to `/welcome`, where you create the first administrator. Creation
+and initialization commit together in MongoDB; the existing session login
+flow then signs you in and redirects to `/project`.
+
+The persistent singleton `underleafInstallations/installation` is stored in
+the MongoDB volume and must be included in backups. Once initialized, Welcome
+redirects to `/login` or `/project` and rejects further bootstrap writes.
+Existing installations with any user are adopted as initialized automatically;
+no users or projects are rewritten. Deleting users does not reopen setup.
+The supported Compose replica set is required for bootstrap transactions.
+
+For operator recovery or automation only:
 
 ```bash
 ./scripts/create-admin.sh
 ```
 
-Enter the username, password and password confirmation when prompted. Password
-input is hidden in an interactive terminal and is never stored in plaintext.
-After the account is created, sign in at `/login` and use `/admin/users` to
-manage the remaining accounts.
+The CLI uses the same transactional bootstrap lock and refuses to create an
+administrator if any already exists, including disabled administrators. It can
+restore an administrator to an initialized installation without reopening web
+setup. Password input is hidden in an interactive terminal; automation uses
+stdin rather than process arguments. Use `/admin/users` for ordinary account
+management.
+
+Complete Welcome before making a fresh installation publicly reachable: the
+first person who completes it becomes the administrator.
 
 ## Security
 

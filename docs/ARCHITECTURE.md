@@ -66,6 +66,31 @@ Os SVGs públicos `underleaf-mark`, `underleaf-wordmark` e `underleaf-lockup`
 possuem variantes claras e escuras. `UnderleafBrand` seleciona a variante
 usando o tema ativo, incluindo mudanças no tema do sistema operacional.
 
-Nesta etapa, o dashboard com projetos usa o shell. A migração de Login/Welcome,
-do dashboard vazio, de Admin/Users/Settings e de Status/erros ocorre nas fases
+O dashboard com projetos, Login e Welcome usam o shell. A migração do
+dashboard vazio, de Admin/Users/Settings e de Status/erros ocorre nas fases
 seguintes; o editor mantém seu layout próprio.
+
+## Inicialização da instalação
+
+`UnderleafInstallationManager` mantém o singleton
+`underleafInstallations/installation` no mesmo MongoClient do modelo User.
+Todos os escritores de bootstrap (Welcome e CLI) incrementam sua revisão
+antes de consultar usuários dentro de uma transação. Conflitos são repetidos
+pelo driver; só uma criação inicial pode concluir. Senhas e nomes passam pelas
+regras de `UnderleafUserManager`; senha e estado persistente nunca são gravados
+em separado. Instalações anteriores com qualquer usuário são adotadas sem
+reescrever dados. A inicialização é permanente mesmo se todas as contas forem
+removidas; a recuperação exige a CLI com acesso ao servidor.
+
+`UnderleafWelcomeRouter` é montado depois de sessão e CSRF, antes do login
+obrigatório. Ele encaminha páginas de uma instalação vazia para `/welcome`.
+Arquivos estáticos, healthchecks e APIs internas mantêm seus routers existentes.
+Após o commit do administrador, o controller reutiliza `finishLogin`, incluindo
+regeneração da sessão, auditoria e rotação do CSRF. Falha nessa etapa não
+reverte a instalação e oferece acesso por `/login`.
+
+`pages/underleaf-auth` renderiza Welcome e Login com o mesmo shell. Welcome
+avança por Welcome, Administrator e Ready, depois abre `/project`
+automaticamente. Login usa username/password e preserva os redirects seguros
+do fluxo existente. Preferências de tema de visitantes continuam locais;
+contas autenticadas continuam usando a preferência do servidor.

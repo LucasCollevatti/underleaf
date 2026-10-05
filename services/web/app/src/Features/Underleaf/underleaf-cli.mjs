@@ -1,8 +1,7 @@
 import readline from 'node:readline/promises'
 import process from 'node:process'
 import Mongoose from '../../infrastructure/Mongoose.mjs'
-import { User } from '../../models/User.mjs'
-import UnderleafUserManager from './UnderleafUserManager.mjs'
+import UnderleafInstallationManager from './UnderleafInstallationManager.mjs'
 
 const COMMAND_NAME = 'create-admin'
 
@@ -76,30 +75,16 @@ function readPipedInput() {
   })
 }
 
-async function ensureNoAdminExists() {
-  const existingAdmin = await User.exists({
-    $or: [{ role: 'admin' }, { isAdmin: true }],
-  })
-  if (existingAdmin) {
-    throw new Error(
-      'An administrator already exists. Use the admin panel to manage accounts.'
-    )
-  }
-}
-
 async function createAdmin() {
-  await ensureNoAdminExists()
-
   const { username, password, confirmation } = await askCredentials()
 
   if (password !== confirmation) {
     throw new Error('Passwords do not match.')
   }
 
-  const user = await UnderleafUserManager.createUser({
+  const user = await UnderleafInstallationManager.recoverAdministrator({
     username,
     password,
-    role: 'admin',
   })
   console.log(`Administrator ${user.username} created.`)
 }

@@ -1,0 +1,93 @@
+.underleaf-auth-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-08) var(--spacing-06);
+  color: var(--content-primary-themed);
+}
+
+.underleaf-auth-panel {
+  width: 100%;
+  max-width: 420px;
+
+  h1 {
+    margin-bottom: var(--spacing-06);
+    font-size: 2rem;
+    color: var(--content-primary-themed);
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  > p {
+    margin-bottom: var(--spacing-07);
+    color: var(--content-secondary-themed);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-06);
+  }
+
+  .form-label {
+    color: var(--content-primary-themed);
+  }
+
+  input.form-control {
+    color: var(--content-primary-themed);
+    background-color: var(--bg-primary-themed);
+    border-color: var(--border-primary-themed);
+
+    &:focus,
+    &:focus-visible {
+      color: var(--content-primary-themed);
+      background-color: var(--bg-primary-themed);
+      border-color: var(--border-hover-themed);
+    }
+
+    &:disabled {
+      background-color: var(--bg-disabled-themed);
+      color: var(--content-disabled-themed);
+    }
+  }
+
+  .underleaf-auth-help {
+    margin: var(--spacing-03) 0 0;
+    font-size: 0.875rem;
+    color: var(--content-secondary-themed);
+  }
+
+  .underleaf-auth-submit {
+    width: 100%;
+    margin-top: var(--spacing-03);
+  }
+}
+
+.underleaf-setup-label {
+  margin: var(--spacing-05) 0;
+  color: var(--content-secondary-themed);
+}
+
+.underleaf-setup-steps {
+  padding: 0;
+  list-style: none;
+  color: var(--content-secondary-themed);
+
+  li {
+    display: flex;
+    gap: var(--spacing-04);
+    align-items: center;
+    padding: var(--spacing-04) 0;
+  }
+
+  [aria-current='step'] {
+    color: var(--content-primary-themed);
+    font-weight: 600;
+  }
+
+  .underleaf-step-dot {
+    width: 1rem;
+    text-align: center;
+  }
+}

@@ -272,8 +272,10 @@ const AuthenticationController = {
    */
   async _doPassportLogin(req, username, password) {
     if (Settings.underleaf) {
-      const { user, reason } =
-        await UnderleafUserManager.authenticate(username, password)
+      const { user, reason } = await UnderleafUserManager.authenticate(
+        username,
+        password
+      )
       if (user) {
         AuthenticationController.setAuditInfo(req, {
           method: 'Username password login',
@@ -741,7 +743,10 @@ function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
     const userId = user._id
     logger.warn({ err, userId }, 'error cleaning up split-tests on login')
   })
-  LoginRateLimiter.recordSuccessfulLogin(user.email, () => {})
+  LoginRateLimiter.recordSuccessfulLogin(
+    Settings.underleaf ? user.username : user.email,
+    () => {}
+  )
   AuthenticationController._recordSuccessfulLogin(user._id, () => {})
   AuthenticationController.ipMatchCheck(req, user)
   Analytics.recordEventForMongoUserInBackground(user, 'user-logged-in', {

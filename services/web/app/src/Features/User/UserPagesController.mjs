@@ -304,7 +304,9 @@ const UserPagesController = {
     if (Object.keys(getRawReqInput(req).query).length !== 0) {
       metadata.robotsNoindexNofollow = true
     }
-    res.render('user/login', {
+    if (Settings.underleaf) res.set('Cache-Control', 'no-store')
+    res.render(Settings.underleaf ? 'underleaf/auth' : 'user/login', {
+      authPage: 'login',
       title: Settings.nav?.login_support_title || 'login',
       login_support_title: Settings.nav?.login_support_title,
       login_support_text: Settings.nav?.login_support_text,

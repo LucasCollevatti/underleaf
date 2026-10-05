@@ -21,13 +21,12 @@ make build
 make up
 ```
 
-Abra <http://localhost:8080>. Crie o primeiro administrador em outro terminal:
+Abra <http://localhost:8080>. Uma instalação nova abre `/welcome`: avance em
+**Começar**, crie o administrador e aguarde o login automático em `/project`.
+O Welcome e o Login usam a mesma sidebar e o seletor de tema. Não há credenciais
+padrão nem cadastro público de contas adicionais.
 
-```bash
-./scripts/create-admin.sh
-```
-
-Depois, entre em `/login`. O stack local usa a porta 8080 e preserva os dados
+O stack local usa a porta 8080 e preserva os dados
 em volumes Docker nomeados. `make down` para os containers sem apagar esses
 volumes.
 
@@ -60,12 +59,20 @@ e grava seu estado nos volumes `underleaf_proxy_data` e
 certificado local e o navegador pode mostrar um aviso; não use esse modo como
 certificado público.
 
-Crie o administrador usando os mesmos arquivos Compose:
+Abra o domínio configurado e conclua o Welcome. Em uma instalação existente,
+o bootstrap permanece fechado e o acesso continua por `/login`.
+
+A CLI fica disponível para automação ou recuperação quando não existe nenhum
+administrador. Use os mesmos arquivos Compose:
 
 ```bash
 UNDERLEAF_COMPOSE_FILES="compose.yaml -f infra/compose/compose.production.yaml" \
   ./scripts/create-admin.sh
 ```
+
+A CLI recusa a criação se já existir administrador, inclusive desabilitado.
+Ela não reabre o Welcome. Senhas são informadas pelo terminal (entrada oculta)
+ou pelo stdin na automação, nunca por argumentos de processo.
 
 ## Operação diária
 

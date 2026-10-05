@@ -1,0 +1,19 @@
+extends ../layout-react
+
+block entrypointVar
+	- entrypoint = 'pages/underleaf-auth'
+
+block vars
+	- isWebsiteRedesign = true
+	- suppressNavbar = true
+	- suppressFooter = true
+	- suppressPugCookieBanner = true
+	- suppressSkipToContent = false
+
+block append meta
+	meta(name='ol-underleafAuthPage' content=authPage)
+
+block content
+	#underleaf-auth-root
+		noscript
+			p #{translate('underleaf_auth_requires_js')}

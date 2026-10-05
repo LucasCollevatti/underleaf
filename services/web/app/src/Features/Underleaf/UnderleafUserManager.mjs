@@ -60,7 +60,10 @@ async function findById(userId) {
   return await User.findById(userId).exec()
 }
 
-async function createUser({ username, password, displayName, role = 'user' }) {
+async function createUser(
+  { username, password, displayName, role = 'user' },
+  { session = null } = {}
+) {
   const normalizedUsername = validateUsername(username)
   validatePassword(password)
   if (!['admin', 'user'].includes(role)) {
@@ -68,10 +71,14 @@ async function createUser({ username, password, displayName, role = 'user' }) {
   }
 
   const existingUser = await User.findOne({ username: normalizedUsername })
+    .session(session)
     .select({ _id: 1 })
     .lean()
   if (existingUser) {
-    throw new UnderleafUserError('username_taken', 'Username is already in use.')
+    throw new UnderleafUserError(
+      'username_taken',
+      'Username is already in use.'
+    )
   }
 
   const now = new Date()
@@ -102,7 +109,7 @@ async function createUser({ username, password, displayName, role = 'user' }) {
     labsProgram: false,
     holdingAccount: false,
   })
-  return await user.save()
+  return await user.save({ session })
 }
 
 async function authenticate(username, password) {
@@ -188,7 +195,10 @@ async function updateUser(userId, changes) {
   }
   if (changes.role != null) {
     if (!['admin', 'user'].includes(changes.role)) {
-      throw new UnderleafUserError('invalid_role', 'Role must be admin or user.')
+      throw new UnderleafUserError(
+        'invalid_role',
+        'Role must be admin or user.'
+      )
     }
     update.$set.role = changes.role
     update.$set.isAdmin = changes.role === 'admin'
@@ -268,9 +278,7 @@ async function countOwnedProjects(userId) {
 }
 
 function isActiveAdmin(user) {
-  return (
-    user.status !== 'disabled' && (user.role === 'admin' || user.isAdmin)
-  )
+  return user.status !== 'disabled' && (user.role === 'admin' || user.isAdmin)
 }
 
 async function countActiveAdmins() {

@@ -72,6 +72,7 @@ import { SharingPermissions } from '../../../modules/sharing-permissions/app/src
 import { FullHistoryFailure } from '@ol-types/history/projectHistory'
 
 export interface Meta {
+  'ol-underleafAuthPage': 'welcome' | 'login'
   'ol-ExposedSettings': ExposedSettings
   'ol-adminCapabilities': AdminCapability[]
   'ol-adminSubscription': AdminSubscription

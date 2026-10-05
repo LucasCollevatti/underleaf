@@ -3,6 +3,9 @@ import { callbackify } from '@overleaf/promise-utils'
 import Settings from '@overleaf/settings'
 import EmailHelper from '../Helpers/EmailHelper.mjs'
 import { InvalidRequestError } from '@overleaf/validation-tools'
+import { z } from '../../infrastructure/Validation.mjs'
+
+const usernameSchema = z.string().trim().toLowerCase().min(1).max(32)
 
 const rateLimiterLoginEmail = new RateLimiter(
   'login',
@@ -14,13 +17,15 @@ const rateLimiterLoginEmail = new RateLimiter(
 
 async function processLoginRequest(email) {
   try {
-    email = EmailHelper.emailSchema.parse(email)
+    email = (
+      Settings.underleaf ? usernameSchema : EmailHelper.emailSchema
+    ).parse(email)
   } catch (err) {
     throw new InvalidRequestError(err)
   }
   try {
     await rateLimiterLoginEmail.consume(email, 1, {
-      method: 'email',
+      method: Settings.underleaf ? 'username' : 'email',
     })
     return true
   } catch (err) {

@@ -7,7 +7,22 @@ da rede.
 
 ## Autenticação e sessão
 
-- O primeiro usuário é criado explicitamente com `scripts/create-admin.sh`.
+- Em uma instalação vazia, `/welcome` cria o primeiro administrador sem
+  credenciais padrão. Conclua essa etapa antes de expor o serviço publicamente:
+  a primeira pessoa que concluir o Welcome se torna administradora.
+- O bootstrap exige CSRF e limita tentativas por IP. Criação do administrador
+  e inicialização persistente usam uma única transação com confirmação majority
+  no replica set do MongoDB. Tentativas concorrentes disputam o mesmo registro.
+- Instalações com qualquer usuário existente são adotadas como inicializadas.
+  O estado não depende de manter um administrador ativo e não reabre quando
+  contas são removidas. GET `/welcome` redireciona depois da inicialização e
+  POST rejeita novas criações.
+- `scripts/create-admin.sh` fica como fallback de automação/recuperação com
+  acesso ao servidor. Usa a mesma trava e recusa outro admin se já existir um,
+  inclusive desabilitado. Não há rota web de recuperação do bootstrap.
+- O login automático reutiliza o fluxo existente de auditoria e regeneração
+  da sessão/CSRF. Se ele falhar após o commit, a conta permanece criada e o
+  usuário pode entrar pelo Login; o bootstrap permanece fechado.
 - O modo Underleaf desabilita cadastro público, reset de senha por e-mail e
   convites por e-mail. Contas adicionais são administradas por um usuário com
   privilégio administrativo.
