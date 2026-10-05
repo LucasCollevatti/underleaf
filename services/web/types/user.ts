@@ -43,7 +43,10 @@ export type FeatureUsage = {
 export type User = {
   id: UserId
   isAdmin?: boolean
-  email: string
+  username: string
+  role?: 'admin' | 'user'
+  status?: 'active' | 'disabled'
+  displayName?: string
   allowedFreeTrial?: boolean
   hasPaidSubscription?: boolean
   first_name?: string
@@ -74,7 +77,8 @@ export type User = {
 
 export type LoggedOutUser = {
   id: null
-  email?: undefined
+  username?: undefined
+  displayName?: undefined
   first_name?: undefined
   last_name?: undefined
   signUpDate?: undefined

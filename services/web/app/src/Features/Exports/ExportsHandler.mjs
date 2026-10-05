@@ -59,7 +59,8 @@ export default ExportsHandler = {
       user = await UserGetter.promises.getUser(userId, {
         first_name: 1,
         last_name: 1,
-        email: 1,
+        username: 1,
+        displayName: 1,
         overleaf: 1,
       })
       await ProjectHistoryHandler.promises.ensureHistoryExistsForProject(
@@ -100,7 +101,8 @@ export default ExportsHandler = {
         id: userId,
         firstName: user.first_name,
         lastName: user.last_name,
-        email: user.email,
+        username: user.username,
+        displayName: user.displayName,
         orcidId: null, // until v2 gets ORCID
         v1UserId: user.overleaf != null ? user.overleaf.id : undefined,
       },

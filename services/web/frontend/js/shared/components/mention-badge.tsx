@@ -18,7 +18,7 @@ export const MentionBadge: FC<{ userId: UserId }> = ({ userId }) => {
   return (
     <OLTooltip
       id={`mention-${id}`}
-      description={user.email}
+      description={user.username}
       overlayProps={{ placement: 'bottom' }}
       tooltipProps={{ className: 'review-panel-tooltip' }}
     >

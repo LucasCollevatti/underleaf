@@ -559,7 +559,8 @@ async function _enrichLabel(label) {
   const user = await UserGetter.promises.getUser(label.user_id, {
     first_name: 1,
     last_name: 1,
-    email: 1,
+    username: 1,
+    displayName: 1,
   })
   newLabel.user_display_name = _displayNameForUser(user)
   return newLabel
@@ -587,7 +588,8 @@ async function _enrichLabels(labels) {
   const rawUsers = await UserGetter.promises.getUsers(Array.from(uniqueUsers), {
     first_name: 1,
     last_name: 1,
-    email: 1,
+    username: 1,
+    displayName: 1,
   })
   const users = new Map(
     rawUsers.map(/** @param {any} user */ user => [String(user._id), user])
@@ -609,6 +611,7 @@ function _displayNameForUser(user) {
   if (user == null) {
     return 'Anonymous'
   }
+  if (user.displayName) return user.displayName
   if (user.name) {
     return user.name
   }
@@ -617,7 +620,7 @@ function _displayNameForUser(user) {
     .join(' ')
     .trim()
   if (name === '') {
-    name = user.email.split('@')[0]
+    name = user.displayName || user.username
   }
   if (!name) {
     return '?'

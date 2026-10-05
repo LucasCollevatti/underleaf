@@ -6,7 +6,8 @@ async function getPersonalInfo(userId) {
     _id: true,
     first_name: true,
     last_name: true,
-    email: true,
+    username: true,
+    displayName: true,
   })
 }
 

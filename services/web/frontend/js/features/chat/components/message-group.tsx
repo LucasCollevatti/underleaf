@@ -20,8 +20,8 @@ function MessageGroup({ messages, user, fromSelf }: MessageGroupProps) {
           {!fromSelf && (
             <div className="message-author">
               <span>
-                {user?.id && user.email
-                  ? user.first_name || user.email
+                {user?.id && user.username
+                  ? user.displayName || user.first_name || user.username
                   : t('deleted_user')}
               </span>
             </div>

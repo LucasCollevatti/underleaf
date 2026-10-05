@@ -48,7 +48,6 @@ async function findUserByUsername(username, { activeOnly = true } = {}) {
       username: 1,
       displayName: 1,
       role: 1,
-      email: 1,
     },
   })
 }
@@ -150,11 +149,10 @@ async function removeUserByUsername(req, res, next) {
   const user = await findUserByUsername(params.username, { activeOnly: false })
   if (!user) return respondUserNotFound(res)
 
-  const projectAccess =
-    await CollaboratorsGetter.promises.getProjectAccess(params.Project_id)
-  if (
-    projectAccess.privilegeLevelForUser(user._id) === PrivilegeLevels.OWNER
-  ) {
+  const projectAccess = await CollaboratorsGetter.promises.getProjectAccess(
+    params.Project_id
+  )
+  if (projectAccess.privilegeLevelForUser(user._id) === PrivilegeLevels.OWNER) {
     return respondOwnerConflict(res)
   }
 

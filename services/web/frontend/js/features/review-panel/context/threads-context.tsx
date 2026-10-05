@@ -181,7 +181,12 @@ export const ThreadsProvider: FC<React.PropsWithChildren> = ({ children }) => {
     useCallback(
       (
         threadId: ThreadId,
-        user: { email: string; first_name: string; id: UserId }
+        user: {
+          username: string
+          displayName?: string
+          first_name: string
+          id: UserId
+        }
       ) => {
         setData(value => {
           if (value) {

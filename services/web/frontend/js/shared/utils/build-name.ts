@@ -1,17 +1,17 @@
 export const buildName = (user: {
   first_name?: string
   last_name?: string
-  email?: string
+  username?: string
+  displayName?: string
 }) => {
+  if (user.displayName?.trim()) return user.displayName.trim()
   const name = [user.first_name, user.last_name].filter(Boolean).join(' ')
 
   if (name) {
     return name
   }
 
-  if (user.email) {
-    return user.email.split('@')[0]
-  }
+  if (user.username) return user.username
 
   return 'Unknown'
 }

@@ -26,7 +26,7 @@ function ErrorMessage({ error }: Pick<ShareProjectContextValue, 'error'>) {
       return <>{t('invite_resend_limit_hit')}</>
 
     default:
-      return <>{t('generic_something_went_wrong')}</>
+      return <>{error || t('generic_something_went_wrong')}</>
   }
 }
 

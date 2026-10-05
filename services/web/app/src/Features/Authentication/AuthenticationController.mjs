@@ -1,4 +1,4 @@
-import AuthenticationManager from './AuthenticationManager.mjs'
+import { User } from '../../models/User.mjs'
 import SessionManager from './SessionManager.mjs'
 import OError from '@overleaf/o-error'
 import LoginRateLimiter from '../Security/LoginRateLimiter.mjs'
@@ -9,7 +9,6 @@ import querystring from 'node:querystring'
 import Settings from '@overleaf/settings'
 import basicAuth from 'basic-auth'
 import tsscmp from 'tsscmp'
-import UserHandler from '../User/UserHandler.mjs'
 import UserSessionsManager from '../User/UserSessionsManager.mjs'
 import Analytics from '../Analytics/AnalyticsManager.mjs'
 import passport from 'passport'
@@ -28,8 +27,6 @@ import { acceptsJson } from '../../infrastructure/RequestContentTypeDetection.mj
 import AdminAuthorizationHelper from '../Helpers/AdminAuthorizationHelper.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import { expressify, promisify } from '@overleaf/promise-utils'
-import { handleAuthenticateErrors } from './AuthenticationErrors.mjs'
-import EmailHelper from '../Helpers/EmailHelper.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import UnderleafUserManager from '../Underleaf/UnderleafUserManager.mjs'
 
@@ -103,7 +100,7 @@ function _classifyOauthError(err) {
 // TODO: Finish making these methods async
 const AuthenticationController = {
   serializeUser(user, callback) {
-    if (!user._id || (!user.email && !user.username)) {
+    if (!user._id || !user.username) {
       const err = new Error('serializeUser called with non-user object')
       logger.warn({ user }, err.message)
       return callback(err)
@@ -114,13 +111,12 @@ const AuthenticationController = {
       displayName: user.displayName,
       role: user.role,
       status: user.status,
+      identityVersion: user.identityVersion,
       first_name: user.first_name,
       last_name: user.last_name || '',
-      email: user.email || '',
       referal_id: user.referal_id,
       session_created: new Date().toISOString(),
       ip_address: user._login_req_ip,
-      must_reconfirm: user.must_reconfirm,
       v1_id: user.overleaf != null ? user.overleaf.id : undefined,
       analyticsId: user.analyticsId || user._id,
       alphaProgram: user.alphaProgram || undefined, // only store if set
@@ -136,7 +132,27 @@ const AuthenticationController = {
   },
 
   deserializeUser(user, cb) {
-    cb(null, user)
+    if (!user?.username || user.identityVersion === undefined)
+      return cb(null, false)
+    User.findById(
+      user._id,
+      'username displayName role status isAdmin identityVersion first_name last_name'
+    )
+      .lean()
+      .exec()
+      .then(current => {
+        if (
+          !current ||
+          current.status !== 'active' ||
+          current.identityVersion !== user.identityVersion
+        ) {
+          return cb(null, false)
+        }
+        const sessionUser = { ...user, ...current }
+        delete sessionUser.email
+        delete sessionUser.emails
+        cb(null, sessionUser)
+      }, cb)
   },
 
   passportLogin(req, res, next) {
@@ -160,7 +176,7 @@ const AuthenticationController = {
             // We could investigate whether this can be done together with 'preFinishLogin' instead of being its own hook
             await Modules.promises.hooks.fire(
               'saasLogin',
-              { email: user.email },
+              { username: user.username },
               req
             )
             await AuthenticationController.promises.finishLogin(user, req, res)
@@ -217,7 +233,7 @@ const AuthenticationController = {
       return
     }
 
-    if (user.must_reconfirm) {
+    if (!Settings.underleaf && user.must_reconfirm) {
       return AuthenticationController._redirectToReconfirmPage(req, res, user)
     }
 
@@ -271,115 +287,37 @@ const AuthenticationController = {
    * @returns {Promise<{ user: any, info: any}>}
    */
   async _doPassportLogin(req, username, password) {
-    if (Settings.underleaf) {
-      const { user, reason } = await UnderleafUserManager.authenticate(
-        username,
-        password
-      )
-      if (user) {
-        AuthenticationController.setAuditInfo(req, {
-          method: 'Username password login',
-        })
-        return { user, info: undefined }
-      }
-
-      if (reason === 'disabled') {
-        return {
-          user: false,
-          info: {
-            type: 'error',
-            text: 'This account is disabled.',
-            status: 403,
-          },
-        }
-      }
-
-      Metrics.inc('login_failure_reason', 1, { status: 'password_invalid' })
-      AuthenticationController._recordFailedLogin()
-      return {
-        user: false,
-        info: {
-          type: 'error',
-          text: 'Invalid username or password.',
-          status: 401,
-        },
-      }
-    }
-
-    const email = EmailHelper.parseEmail(username)
-    if (!email) {
-      Metrics.inc('login_failure_reason', 1, { status: 'invalid_email' })
-      return {
-        user: null,
-        info: {
-          status: 400,
-          type: 'error',
-          text: req.i18n.translate('email_address_is_invalid'),
-        },
-      }
-    }
-    AuthenticationController.setAuditInfo(req, { method: 'Password login' })
-
-    const { fromKnownDevice } = AuthenticationController.getAuditInfo(req)
-    const auditLog = {
-      ipAddress: req.ip,
-      info: { method: 'Password login', fromKnownDevice },
-    }
-
-    let user, isPasswordReused
-    try {
-      ;({ user, isPasswordReused } =
-        await AuthenticationManager.promises.authenticate(
-          { email },
-          password,
-          auditLog,
-          {
-            enforceHIBPCheck: !fromKnownDevice,
-          }
-        ))
-    } catch (error) {
-      return {
-        user: false,
-        info: handleAuthenticateErrors(error, req),
-      }
-    }
-
-    if (user && AuthenticationController.captchaRequiredForLogin(req, user)) {
-      Metrics.inc('login_failure_reason', 1, { status: 'captcha_missing' })
-      return {
-        user: false,
-        info: {
-          text: req.i18n.translate('cannot_verify_user_not_robot'),
-          type: 'error',
-          errorReason: 'cannot_verify_user_not_robot',
-          status: 400,
-        },
-      }
-    } else if (user) {
-      if (
-        isPasswordReused &&
-        AuthenticationController.getRedirectFromSession(req) == null
-      ) {
-        AuthenticationController.setRedirectInSession(
-          req,
-          '/compromised-password'
-        )
-      }
-
-      // async actions
+    const { user, reason } = await UnderleafUserManager.authenticate(
+      username,
+      password
+    )
+    if (user) {
+      AuthenticationController.setAuditInfo(req, {
+        method: 'Username password login',
+      })
       return { user, info: undefined }
-    } else {
-      Metrics.inc('login_failure_reason', 1, { status: 'password_invalid' })
-      AuthenticationController._recordFailedLogin()
-      logger.debug({ email }, 'failed log in')
+    }
+
+    if (reason === 'disabled') {
       return {
         user: false,
         info: {
           type: 'error',
-          key: 'invalid-password-retry-or-reset',
-          status: 401,
+          text: 'This account is disabled.',
+          status: 403,
         },
       }
+    }
+
+    Metrics.inc('login_failure_reason', 1, { status: 'password_invalid' })
+    AuthenticationController._recordFailedLogin()
+    return {
+      user: false,
+      info: {
+        type: 'error',
+        text: 'Invalid username or password.',
+        status: 401,
+      },
     }
   },
 
@@ -409,7 +347,7 @@ const AuthenticationController = {
   },
 
   ipMatchCheck(req, user) {
-    if (req.ip !== user.lastLoginIp) {
+    if (!Settings.underleaf && req.ip !== user.lastLoginIp) {
       NotificationsBuilder.ipMatcherAffiliation(user._id.toString()).create(
         req.ip,
         () => {}
@@ -519,6 +457,7 @@ const AuthenticationController = {
   },
 
   validateAdmin(req, res, next) {
+    if (Settings.underleaf) return next()
     const adminDomains = Settings.adminDomains
     if (
       !adminDomains ||
@@ -722,7 +661,7 @@ function _afterLoginSessionSetup(req, user, callback) {
         // Captcha disabled or SSO-based login.
         return callback()
       }
-      req.deviceHistory.add(user.email)
+      req.deviceHistory.add(user.username)
       req.deviceHistory
         .serialize(req.res)
         .catch(err => {
@@ -736,23 +675,17 @@ function _afterLoginSessionSetup(req, user, callback) {
 const _afterLoginSessionSetupAsync = promisify(_afterLoginSessionSetup)
 
 function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
-  UserHandler.promises.populateTeamInvites(user).catch(err => {
-    logger.warn({ err }, 'error setting up login data')
-  })
   SplitTestHandler.promises.userMaintenanceOnLogin(user).catch(err => {
     const userId = user._id
     logger.warn({ err, userId }, 'error cleaning up split-tests on login')
   })
-  LoginRateLimiter.recordSuccessfulLogin(
-    Settings.underleaf ? user.username : user.email,
-    () => {}
-  )
+  LoginRateLimiter.recordSuccessfulLogin(user.username, () => {})
   AuthenticationController._recordSuccessfulLogin(user._id, () => {})
   AuthenticationController.ipMatchCheck(req, user)
   Analytics.recordEventForMongoUserInBackground(user, 'user-logged-in', {
     source: req.session.saml
       ? 'saml'
-      : req.user_info?.auth_provider || 'email-password',
+      : req.user_info?.auth_provider || 'username-password',
   })
   Analytics.identifyUser(
     user._id,
@@ -762,7 +695,7 @@ function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
   )
 
   logger.debug(
-    { email: user.email, userId: user._id.toString() },
+    { username: user.username, userId: user._id.toString() },
     'successful log in'
   )
 

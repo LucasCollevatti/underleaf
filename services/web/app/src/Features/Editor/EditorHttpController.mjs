@@ -1,3 +1,4 @@
+import { User } from '../../models/User.mjs'
 import ProjectDeleter from '../Project/ProjectDeleter.mjs'
 import EditorController from './EditorController.mjs'
 import ProjectGetter from '../Project/ProjectGetter.mjs'
@@ -37,6 +38,7 @@ export const joinProjectSchema = z.object({
     // Router.js/WebsocketController.js), otherwise a genuine user id
     userId: zz.objectId().or(z.literal('anonymous-user')),
     anonymousAccessToken: z.string().optional(),
+    identityVersion: z.number().int().positive().optional(),
   }),
 })
 
@@ -49,6 +51,7 @@ const joinProjectFallbackSchema = z.object({
   body: z.object({
     userId: z.string(),
     anonymousAccessToken: z.string().optional(),
+    identityVersion: z.number().int().positive().optional(),
   }),
 })
 
@@ -60,6 +63,17 @@ async function joinProject(req, res, next) {
   let userId = body.userId
   if (userId === 'anonymous-user') {
     userId = null
+  } else if (Settings.underleaf) {
+    const account = await User.findById(userId, 'status identityVersion')
+      .lean()
+      .exec()
+    if (
+      !account ||
+      account.status !== 'active' ||
+      account.identityVersion !== body.identityVersion
+    ) {
+      return res.sendStatus(403)
+    }
   }
   Metrics.inc('editor.join-project')
   const {

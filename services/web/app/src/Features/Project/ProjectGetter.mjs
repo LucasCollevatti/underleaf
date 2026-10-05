@@ -133,7 +133,7 @@ const ProjectGetter = {
       fields
     )
       .limit(500)
-      .populate('owner_ref', ['email', 'name'])
+      .populate('owner_ref', ['username', 'displayName'])
       .exec()
   },
 

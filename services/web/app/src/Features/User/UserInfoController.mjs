@@ -25,8 +25,10 @@ function getLoggedInUsersPersonalInfo(req, res, next) {
       first_name: true,
       last_name: true,
       role: true,
+      status: true,
       institution: true,
-      email: true,
+      username: true,
+      displayName: true,
       signUpDate: true,
     },
     function (error, user) {
@@ -54,7 +56,13 @@ function getPersonalInfo(req, res, next) {
 
   UserGetter.getUser(
     query,
-    { _id: true, first_name: true, last_name: true, email: true },
+    {
+      _id: true,
+      first_name: true,
+      last_name: true,
+      username: true,
+      displayName: true,
+    },
     function (error, user) {
       if (error) {
         return next(error)
@@ -80,9 +88,11 @@ function formatPersonalInfo(user) {
   for (const key of [
     'first_name',
     'last_name',
-    'email',
+    'username',
+    'displayName',
     'signUpDate',
     'role',
+    'status',
     'institution',
   ]) {
     if (user[key]) {

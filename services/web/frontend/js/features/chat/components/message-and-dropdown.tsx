@@ -51,8 +51,8 @@ export function MessageAndDropdown({
       {!fromSelf && isLast ? (
         <div className="message-avatar">
           <div className="avatar" style={getAvatarStyle(message.user)}>
-            {message.user?.id && message.user.email ? (
-              firstCharacter(message.user.first_name || message.user.email)
+            {message.user?.id && message.user.username ? (
+              firstCharacter(message.user.first_name || message.user.username)
             ) : (
               <MaterialIcon
                 type="delete"

@@ -209,7 +209,7 @@ async function projectListPage(req, res, next) {
 
   const user = await User.findById(
     userId,
-    `email isAdmin emails features alphaProgram betaProgram lastPrimaryEmailCheck lastActive signUpDate ace refProviders${
+    `username displayName isAdmin features alphaProgram betaProgram lastActive signUpDate ace refProviders${
       isSaas
         ? ' enrollment writefull completedTutorials aiFeatures labsProgram'
         : ''
@@ -280,7 +280,8 @@ async function projectListPage(req, res, next) {
     if (
       user &&
       UserPrimaryEmailCheckHandler.requiresPrimaryEmailCheck({
-        email: user.email,
+        username: user.username,
+        displayName: user.displayName,
         emails: user.emails,
         lastPrimaryEmailCheck: user.lastPrimaryEmailCheck,
         signUpDate: user.signUpDate,
@@ -908,7 +909,8 @@ async function _injectProjectUsers(projects) {
   const projection = {
     first_name: 1,
     last_name: 1,
-    email: 1,
+    username: 1,
+    displayName: 1,
   }
   /** @type {Record<string, UserRef>} */
   const users = {}
@@ -916,7 +918,8 @@ async function _injectProjectUsers(projects) {
     const userId = user._id.toString()
     users[userId] = {
       id: userId,
-      email: user.email,
+      username: user.username,
+      displayName: user.displayName,
       firstName: user.first_name,
       lastName: user.last_name,
     }

@@ -76,7 +76,9 @@ describe('UnderleafWelcomeController', function () {
     Installation.getState.mockResolvedValue({ initialized: true })
     await Controller.welcome(req, res, next)
     expect(res.redirect).toHaveBeenLastCalledWith('/login')
-    req.session.passport = { user: { _id: 'admin-id' } }
+    req.session.passport = {
+      user: { _id: 'admin-id', username: 'admin', identityVersion: 1 },
+    }
     await Controller.welcome(req, res, next)
     expect(res.redirect).toHaveBeenLastCalledWith('/project')
   })

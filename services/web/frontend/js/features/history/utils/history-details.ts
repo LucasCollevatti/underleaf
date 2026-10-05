@@ -2,13 +2,14 @@ import { User } from '../services/types/shared'
 import { LoadedUpdate, ProjectOp, Version } from '../services/types/update'
 import { Selection } from '../services/types/selection'
 
-export const formatUserName = (user: User) => {
+export const formatUserName = (user: Partial<User>) => {
+  if (user.displayName?.trim()) return user.displayName.trim()
   let name = [user.first_name, user.last_name]
     .filter(n => n != null)
     .join(' ')
     .trim()
   if (name === '') {
-    name = user.email.split('@')[0]
+    name = user.username
   }
   if (name == null || name === '') {
     return '?'

@@ -22,7 +22,8 @@ export default HttpController = {
       user_id: userId,
       first_name: firstName,
       last_name: lastName,
-      email,
+      username,
+      displayName,
       connected_time: connectedTime,
     } = ioClient.ol_context
     const client = {
@@ -31,7 +32,8 @@ export default HttpController = {
       user_id: userId,
       first_name: firstName,
       last_name: lastName,
-      email,
+      username,
+      displayName,
       connected_time: connectedTime,
     }
     client.rooms = Object.keys(ioClient.manager.roomClients[clientId] || {})

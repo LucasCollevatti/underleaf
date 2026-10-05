@@ -50,6 +50,11 @@ async function loadModulesImpl() {
     await import(settingsCheckModule)
   }
   for (const moduleName of Settings.moduleImportSequence || []) {
+    if (
+      Settings.underleaf &&
+      ['user-activate', 'launchpad'].includes(moduleName)
+    )
+      continue
     const typescriptModule = Path.join(
       MODULE_BASE_PATH,
       moduleName,

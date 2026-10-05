@@ -19,7 +19,7 @@ import { isValidEmail } from '@/shared/utils/email'
 import { useShareProjectContext } from '@/features/share-project-modal/components/share-project-modal'
 
 export type ContactItem = {
-  email: string
+  username: string
   display: string
   type: string
 }
@@ -36,8 +36,8 @@ const INPUT_ERRORS = {
 } as const
 
 type InputError = {
-  key: `${InputError['email']}:${(typeof INPUT_ERRORS)[keyof typeof INPUT_ERRORS]}`
-  email: string
+  key: `${InputError['username']}:${(typeof INPUT_ERRORS)[keyof typeof INPUT_ERRORS]}`
+  username: string
   message: string
 }
 
@@ -72,12 +72,12 @@ export default function SelectCollaborators({
   const [inputErrors, setInputErrors] = useState<InputError[]>([])
 
   const selectedEmails = useMemo(
-    () => selectedItems.map(item => item.email),
+    () => selectedItems.map(item => item.username),
     [selectedItems]
   )
 
   const unselectedOptions = useMemo(
-    () => options.filter(option => !selectedEmails.includes(option.email)),
+    () => options.filter(option => !selectedEmails.includes(option.username)),
     [options, selectedEmails]
   )
 
@@ -111,7 +111,7 @@ export default function SelectCollaborators({
   const isValidInput = useMemo(() => {
     if (inputValue.includes('@')) {
       for (const selectedItem of selectedItems) {
-        if (selectedItem.email === inputValue) {
+        if (selectedItem.username === inputValue) {
           return false
         }
       }
@@ -135,7 +135,7 @@ export default function SelectCollaborators({
     selectedItem: null,
     defaultHighlightedIndex: 0,
     items: filteredOptions,
-    itemToString: item => (item && item.name) || '',
+    itemToString: item => (item && item.display) || '',
     onStateChange: ({ type, selectedItem }) => {
       switch (type) {
         // add a selected item on Enter (keypress), click or blur
@@ -152,8 +152,8 @@ export default function SelectCollaborators({
   })
 
   const addNewItem = useCallback(
-    (_email: string, focus = true) => {
-      const email = _email.replace(matchAllSpaces, '')
+    (_username: string, focus = true) => {
+      const email = _username.replace(matchAllSpaces, '')
 
       if (
         isValidInput &&
@@ -161,7 +161,7 @@ export default function SelectCollaborators({
         !selectedEmails.includes(email)
       ) {
         addSelectedItem({
-          email,
+          username: email,
           display: email,
           type: 'user',
         })
@@ -175,10 +175,12 @@ export default function SelectCollaborators({
         ) => {
           const key = `${email}:${errorType}` as const
           return [
-            ...inputErrors.filter(e => !(e.email === email && e.key === key)),
+            ...inputErrors.filter(
+              e => !(e.username === email && e.key === key)
+            ),
             {
               key,
-              email,
+              username: email,
               message,
             },
           ]
@@ -231,7 +233,9 @@ export default function SelectCollaborators({
   }, [reset, isOpen, filteredOptions.length])
 
   useEffect(() => {
-    setInputErrors(prev => prev.filter(e => selectedEmails.includes(e.email)))
+    setInputErrors(prev =>
+      prev.filter(e => selectedEmails.includes(e.username))
+    )
   }, [selectedEmails])
 
   useEffect(() => {
@@ -243,12 +247,12 @@ export default function SelectCollaborators({
       {isSharingUpdatesEnabled ? (
         // eslint-disable-next-line jsx-a11y/label-has-for
         <OLFormLabel {...getLabelProps()}>
-          {t('enter_emails_separated_by_commas')}
+          {t('enter_usernames_separated_by_commas')}
         </OLFormLabel>
       ) : (
         // eslint-disable-next-line jsx-a11y/label-has-for
         <OLFormLabel className="small" {...getLabelProps()}>
-          {t('add_email_address')}
+          {t('add_username_address')}
           {loading && <OLSpinner size="sm" className="ms-2" />}
         </OLFormLabel>
       )}
@@ -279,7 +283,7 @@ export default function SelectCollaborators({
                   index={index}
                   getSelectedItemProps={getSelectedItemProps}
                   hasIssue={inputErrors.some(
-                    ({ email }) => email === selectedItem.email
+                    ({ username }) => username === selectedItem.username
                   )}
                 />
               ))}
@@ -375,7 +379,7 @@ export default function SelectCollaborators({
                 {isOpen &&
                   filteredOptions.map((item, index) => (
                     <Option
-                      key={item.email}
+                      key={item.username}
                       index={index}
                       item={item}
                       selected={index === highlightedIndex}

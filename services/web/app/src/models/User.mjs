@@ -4,8 +4,6 @@ import TokenGenerator from '../Features/TokenGenerator/TokenGenerator.mjs'
 const { Schema } = mongoose
 const { ObjectId } = Schema
 
-// See https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address/574698#574698
-const MAX_EMAIL_LENGTH = 254
 const MAX_NAME_LENGTH = 255
 const refProviderSettingsSchema = {
   enabled: { type: Boolean, default: true },
@@ -27,7 +25,10 @@ export const UserSchema = new Schema(
       type: String,
       trim: true,
       lowercase: true,
+      required: true,
+      minlength: 3,
       maxlength: 32,
+      match: /^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$/,
     },
     passwordHash: String,
     displayName: {
@@ -53,23 +54,7 @@ export const UserSchema = new Schema(
       },
     },
     lastLoginAt: { type: Date },
-    email: { type: String, default: '', maxlength: MAX_EMAIL_LENGTH },
-    emails: [
-      {
-        email: { type: String, default: '', maxlength: MAX_EMAIL_LENGTH },
-        reversedHostname: { type: String, default: '' },
-        createdAt: {
-          type: Date,
-          default() {
-            return new Date()
-          },
-        },
-        confirmedAt: { type: Date },
-        samlProviderId: { type: String },
-        affiliationUnchecked: { type: Boolean },
-        reconfirmedAt: { type: Date },
-      },
-    ],
+    identityVersion: { type: Number, default: 1 },
     first_name: {
       type: String,
       default: '',
@@ -80,9 +65,8 @@ export const UserSchema = new Schema(
       default: '',
       maxlength: MAX_NAME_LENGTH,
     },
-    role: { type: String, default: '' },
+    role: { type: String, enum: ['admin', 'user'], default: 'user' },
     institution: { type: String, default: '' },
-    hashedPassword: String,
     enrollment: {
       sso: [
         {
@@ -113,7 +97,6 @@ export const UserSchema = new Schema(
     lastFailedLogin: { type: Date },
     lastLoggedIn: { type: Date },
     lastLoginIp: { type: String, default: '' },
-    lastPrimaryEmailCheck: { type: Date },
     lastTrial: { type: Date },
     loginCount: { type: Number, default: 0 },
     holdingAccount: { type: Boolean, default: false },
@@ -224,7 +207,6 @@ export const UserSchema = new Schema(
     featuresEpoch: {
       type: String,
     },
-    must_reconfirm: { type: Boolean, default: false },
     referal_id: {
       type: String,
       default() {
@@ -267,7 +249,6 @@ export const UserSchema = new Schema(
       enrolledAt: { type: Date },
       secretEncrypted: { type: String },
     },
-    onboardingEmailSentAt: { type: Date },
     splitTests: Schema.Types.Mixed,
     analyticsId: { type: String, required: true },
     completedTutorials: Schema.Types.Mixed,
@@ -301,6 +282,6 @@ function formatSplitTestsSchema(next) {
 }
 UserSchema.pre('save', formatSplitTestsSchema)
 
-UserSchema.index({ username: 1 }, { unique: true, sparse: true })
+UserSchema.index({ username: 1 }, { unique: true, name: 'username_1' })
 
 export const User = mongoose.model('User', UserSchema)

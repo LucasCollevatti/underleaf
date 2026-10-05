@@ -16,7 +16,7 @@ export default {
     }
     return {
       id: user._id,
-      email: user.email,
+      username: user.username,
       first_name: user.name,
       last_name: user.name,
     }

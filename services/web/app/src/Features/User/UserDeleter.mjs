@@ -64,7 +64,7 @@ async function deleteUser(userId, options) {
     await _createDeletedUser(user, options)
     logger.info({ userId }, 'deleting user projects')
     await ProjectDeleter.promises.deleteUsersProjects(user._id)
-    if (options.skipEmail) {
+    if (options.skipEmail || !user.email) {
       logger.info({ userId }, 'skipping sending deletion email to user')
     } else {
       logger.info({ userId }, 'sending deletion email to user')

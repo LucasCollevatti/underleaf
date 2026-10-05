@@ -4,7 +4,12 @@ const SessionManager = {
   getSessionUser(session) {
     const sessionUser = _.get(session, ['user'])
     const sessionPassportUser = _.get(session, ['passport', 'user'])
-    return sessionUser || sessionPassportUser || null
+    const user = sessionUser || sessionPassportUser || null
+    // Reject sessions from before the identity migration (including Redis/socket sessions).
+    if (!user?.username || user.identityVersion === undefined) return null
+    delete user.email
+    delete user.emails
+    return user
   },
 
   setInSessionUser(session, props) {

@@ -1,31 +1,34 @@
 import { RateLimiter } from '../../infrastructure/RateLimiter.mjs'
 import { callbackify } from '@overleaf/promise-utils'
 import Settings from '@overleaf/settings'
-import EmailHelper from '../Helpers/EmailHelper.mjs'
 import { InvalidRequestError } from '@overleaf/validation-tools'
 import { z } from '../../infrastructure/Validation.mjs'
 
-const usernameSchema = z.string().trim().toLowerCase().min(1).max(32)
+const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(32)
+  .regex(/^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$/)
 
-const rateLimiterLoginEmail = new RateLimiter(
+const rateLimiterLoginUsername = new RateLimiter(
   'login',
-  Settings.rateLimit?.login?.email || {
+  Settings.rateLimit?.login?.username || {
     points: 10,
     duration: 120,
   }
 )
 
-async function processLoginRequest(email) {
+async function processLoginRequest(username) {
   try {
-    email = (
-      Settings.underleaf ? usernameSchema : EmailHelper.emailSchema
-    ).parse(email)
+    username = usernameSchema.parse(username)
   } catch (err) {
     throw new InvalidRequestError(err)
   }
   try {
-    await rateLimiterLoginEmail.consume(email, 1, {
-      method: Settings.underleaf ? 'username' : 'email',
+    await rateLimiterLoginUsername.consume(username, 1, {
+      method: 'username',
     })
     return true
   } catch (err) {
@@ -37,8 +40,8 @@ async function processLoginRequest(email) {
   }
 }
 
-async function recordSuccessfulLogin(email) {
-  await rateLimiterLoginEmail.delete(email)
+async function recordSuccessfulLogin(username) {
+  await rateLimiterLoginUsername.delete(username)
 }
 
 const LoginRateLimiter = {

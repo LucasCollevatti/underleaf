@@ -33,7 +33,7 @@ const { ObjectId } = mongodb
 /**
  * @typedef LoadedProjectMember
  * @property {PrivilegeLevel} privilegeLevel
- * @property {{_id: ObjectId, email: string, features: any, first_name: string, last_name: string, signUpDate: Date}} user
+ * @property {{_id: ObjectId, username: string, displayName: string, features: any, first_name: string, last_name: string, signUpDate: Date}} user
  * @property {boolean} [pendingEditor]
  * @property {boolean} [pendingReviewer]
  */
@@ -167,7 +167,8 @@ class ProjectAccess {
     const users = new Map()
     for (const user of await UserGetter.promises.getUsers(userIds, {
       _id: 1,
-      email: 1,
+      username: 1,
+      displayName: 1,
       first_name: 1,
       last_name: 1,
     })) {
@@ -198,7 +199,8 @@ class ProjectAccess {
     const loaded = await this.loadAccessRequests()
     return loaded.map(r => ({
       _id: r.user._id,
-      email: r.user.email,
+      username: r.user.username,
+      displayName: r.user.displayName,
       first_name: r.user.first_name,
       last_name: r.user.last_name,
       privilegeLevel: r.privilegeLevel,
@@ -787,7 +789,8 @@ async function _loadMembers(members) {
   const users = new Map()
   for (const user of await UserGetter.promises.getUsers(userIds, {
     _id: 1,
-    email: 1,
+    username: 1,
+    displayName: 1,
     features: 1,
     first_name: 1,
     last_name: 1,

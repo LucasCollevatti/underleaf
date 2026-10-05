@@ -1,3 +1,4 @@
+import Settings from '@overleaf/settings'
 import _ from 'lodash'
 import Path from 'node:path'
 let ProjectEditorHandler
@@ -85,7 +86,8 @@ export default ProjectEditorHandler = {
       _id: user._id,
       first_name: user.first_name,
       last_name: user.last_name,
-      email: user.email,
+      username: user.username,
+      displayName: user.displayName,
       privileges: member.privilegeLevel,
       signUpDate: user.signUpDate,
       pendingEditor: member.pendingEditor,
@@ -124,6 +126,7 @@ export default ProjectEditorHandler = {
   },
 
   buildInvitesView(invites) {
+    if (Settings.underleaf) return []
     if (invites == null) {
       return []
     }

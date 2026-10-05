@@ -62,13 +62,7 @@ function PasswordInnerSection() {
   }
 
   if (!hasPassword) {
-    return (
-      <p>
-        <a href="/user/password/reset" target="_blank">
-          {t('no_existing_password')}
-        </a>
-      </p>
-    )
+    return <p>Ask your administrator to set a password for your account.</p>
   }
 
   return <PasswordForm />

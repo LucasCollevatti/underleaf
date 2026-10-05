@@ -20,7 +20,7 @@ export const RequireAcceptScreen: FC<{
     return (
       <Invite
         projectName={requireAcceptData.projectName || 'This project'}
-        email={user?.email || ''}
+        username={user?.username || ''}
         submitHandler={() => sendPostRequest(true)}
       />
     )
@@ -45,7 +45,7 @@ export const RequireAcceptScreen: FC<{
                     {user && (
                       <>
                         <br />
-                        {t('as_email', { email: user.email })}
+                        {`as @${user.username}`}
                       </>
                     )}
                   </p>
@@ -55,9 +55,8 @@ export const RequireAcceptScreen: FC<{
               <div className="row row-spaced text-center">
                 <div className="col-md-12">
                   <p>
-                    {t(
-                      'your_name_and_email_address_will_be_visible_to_the_project_owner_and_other_editors'
-                    )}
+                    Your display name and username will be visible to the
+                    project owner and other editors.
                   </p>
                 </div>
               </div>

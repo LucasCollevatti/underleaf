@@ -28,6 +28,7 @@ async function joinProject(projectId, user) {
       },
       json: {
         userId,
+        identityVersion: user.identityVersion,
         anonymousAccessToken: user.anonymousAccessToken,
       },
     })

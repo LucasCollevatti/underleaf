@@ -446,7 +446,12 @@ async function injectUserDetails(data) {
 
   userIds = Array.from(userIds)
   v1UserIds = Array.from(v1UserIds)
-  const projection = { first_name: 1, last_name: 1, email: 1 }
+  const projection = {
+    first_name: 1,
+    last_name: 1,
+    username: 1,
+    displayName: 1,
+  }
   const usersArray = await UserGetter.promises.getUsers(userIds, projection)
   const users = {}
   for (const user of usersArray) {
@@ -475,8 +480,20 @@ async function injectUserDetails(data) {
 }
 
 function _userView(user) {
-  const { _id, first_name: firstName, last_name: lastName, email } = user
-  return { first_name: firstName, last_name: lastName, email, id: _id }
+  const {
+    _id,
+    first_name: firstName,
+    last_name: lastName,
+    username,
+    displayName,
+  } = user
+  return {
+    first_name: firstName,
+    last_name: lastName,
+    username,
+    displayName,
+    id: _id,
+  }
 }
 
 const loadGlobalBlobsPromise = loadGlobalBlobs()

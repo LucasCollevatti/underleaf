@@ -73,6 +73,7 @@ function _emailInReconfirmNotificationPeriod(
 }
 
 async function getUserFullEmails(userId) {
+  if (settings.underleaf) return []
   const store = AsyncLocalStorage.storage.getStore()
   if (store?.userFullEmails?.[userId]) {
     return store.userFullEmails[userId]
@@ -126,6 +127,7 @@ async function getUserFeatures(userId) {
 }
 
 async function getUserConfirmedEmails(userId) {
+  if (settings.underleaf) return []
   const user = await UserGetter.promises.getUser(userId, {
     emails: 1,
   })

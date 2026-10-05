@@ -73,7 +73,7 @@ function emitError(err: Error, src: string) {
   resetCaptcha()
 }
 
-export async function canSkipCaptcha(email: string): Promise<boolean> {
+export async function canSkipCaptcha(username: string): Promise<boolean> {
   let timer: ReturnType<typeof setTimeout> | undefined
   let canSkip: boolean
   try {
@@ -84,7 +84,7 @@ export async function canSkipCaptcha(email: string): Promise<boolean> {
     }, 1000)
     canSkip = await postJSON<boolean>('/login/can-skip-captcha', {
       signal,
-      body: { email },
+      body: { username },
       swallowAbortError: false,
     })
   } catch (e) {

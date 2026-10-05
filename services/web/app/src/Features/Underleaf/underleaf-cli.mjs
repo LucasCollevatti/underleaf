@@ -2,6 +2,8 @@ import readline from 'node:readline/promises'
 import process from 'node:process'
 import Mongoose from '../../infrastructure/Mongoose.mjs'
 import UnderleafInstallationManager from './UnderleafInstallationManager.mjs'
+import UnderleafUserManager from './UnderleafUserManager.mjs'
+import { User } from '../../models/User.mjs'
 
 const COMMAND_NAME = 'create-admin'
 
@@ -98,11 +100,28 @@ async function disconnectMongo() {
 }
 
 async function main() {
-  if (process.argv[2] !== COMMAND_NAME) {
-    throw new Error(`Usage: underleaf ${COMMAND_NAME}`)
+  if (process.argv[2] === COMMAND_NAME) {
+    return await createAdmin()
   }
-
-  await createAdmin()
+  if (
+    process.argv[2] !== 'reset-password' ||
+    process.argv.slice(3).some(arg => arg !== '--activate')
+  ) {
+    throw new Error(
+      `Usage: underleaf ${COMMAND_NAME} | reset-password [--activate]`
+    )
+  }
+  const { username, password, confirmation } = await askCredentials()
+  if (password !== confirmation) throw new Error('Passwords do not match.')
+  const account = await User.findOne({
+    username: UnderleafUserManager.validateUsername(username),
+  }).exec()
+  if (!account) throw new Error('User not found.')
+  await UnderleafUserManager.updateUser(account._id, {
+    password,
+    ...(process.argv.includes('--activate') ? { status: 'active' } : {}),
+  })
+  console.log(`Password reset for @${account.username}.`)
 }
 
 try {

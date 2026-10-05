@@ -1,52 +1,30 @@
 import minimist from 'minimist'
-import { db } from '../../../app/src/infrastructure/mongodb.mjs'
-import UserRegistrationHandler from '../../../app/src/Features/User/UserRegistrationHandler.mjs'
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
+import UserManager from '../../../app/src/Features/Underleaf/UnderleafUserManager.mjs'
+import InstallationManager from '../../../app/src/Features/Underleaf/UnderleafInstallationManager.mjs'
 
 const filename = fileURLToPath(import.meta.url)
 
 export default async function main() {
   const argv = minimist(process.argv.slice(2), {
-    string: ['email'],
+    string: ['username', 'display-name'],
     boolean: ['admin'],
   })
-
-  const { admin, email } = argv
-  if (!email) {
-    console.error(`Usage: node ${filename} [--admin] --email=joe@example.com`)
-    process.exit(1)
-  }
-
-  await new Promise((resolve, reject) => {
-    UserRegistrationHandler.registerNewUserAndSendActivationEmail(
-      email,
-      (error, user, setNewPasswordUrl) => {
-        if (error) {
-          return reject(error)
-        }
-        db.users.updateOne(
-          { _id: user._id },
-          { $set: { isAdmin: admin } },
-          error => {
-            if (error) {
-              return reject(error)
-            }
-
-            console.log('')
-            console.log(`\
-Successfully created ${email} as ${admin ? 'an admin' : 'a'} user.
-
-Please visit the following URL to set a password for ${email} and log in:
-
-  ${setNewPasswordUrl}
-
-`)
-            resolve()
-          }
-        )
-      }
+  const password = process.env.UNDERLEAF_PASSWORD
+  if (!argv.username || !password) {
+    throw new Error(
+      `Usage: UNDERLEAF_PASSWORD='<password>' node ${filename} [--admin] --username=account [--display-name='Name']`
     )
-  })
+  }
+  const details = {
+    username: argv.username,
+    displayName: argv['display-name'],
+    password,
+  }
+  const user = argv.admin
+    ? await InstallationManager.recoverAdministrator(details)
+    : await UserManager.createUser(details)
+  console.log(`Created ${user.role} account @${user.username}.`)
 }
 
 if (filename === process.argv[1]) {
@@ -54,7 +32,7 @@ if (filename === process.argv[1]) {
     await main()
     process.exit(0)
   } catch (error) {
-    console.error({ error })
+    console.error(error.message)
     process.exit(1)
   }
 }

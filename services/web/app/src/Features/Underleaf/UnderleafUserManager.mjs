@@ -8,7 +8,6 @@ import { db } from '../../infrastructure/mongodb.mjs'
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])?$/
 const MIN_USERNAME_LENGTH = 3
 const MAX_USERNAME_LENGTH = 32
-const TECHNICAL_EMAIL_DOMAIN = 'underleaf.local'
 
 export class UnderleafUserError extends Error {
   constructor(code, message) {
@@ -42,7 +41,7 @@ function validatePassword(password) {
   if (typeof password !== 'string') {
     throw new UnderleafUserError('invalid_password', 'Password is required.')
   }
-  const validationError = AuthenticationManager.validatePassword(password, '')
+  const validationError = AuthenticationManager.validatePassword(password)
   if (validationError) {
     throw new UnderleafUserError(
       validationError.info?.code || 'invalid_password',
@@ -50,10 +49,6 @@ function validatePassword(password) {
     )
   }
   return password
-}
-
-function technicalEmailForUsername(username) {
-  return `${username}@${TECHNICAL_EMAIL_DOMAIN}`
 }
 
 async function findById(userId) {
@@ -84,11 +79,15 @@ async function createUser(
   const now = new Date()
   const hash = await AuthenticationManager.promises.hashPassword(password)
   const safeDisplayName = (displayName || normalizedUsername).trim()
-  const technicalEmail = technicalEmailForUsername(normalizedUsername)
+  if (!safeDisplayName || safeDisplayName.length > 255) {
+    throw new UnderleafUserError(
+      'invalid_display_name',
+      'Display name must contain 1-255 characters.'
+    )
+  }
   const user = new User({
     username: normalizedUsername,
     passwordHash: hash,
-    hashedPassword: hash,
     displayName: safeDisplayName,
     first_name: safeDisplayName,
     last_name: '',
@@ -97,14 +96,6 @@ async function createUser(
     status: 'active',
     createdAt: now,
     updatedAt: now,
-    email: technicalEmail,
-    emails: [
-      {
-        email: technicalEmail,
-        createdAt: now,
-        confirmedAt: now,
-      },
-    ],
     analyticsId: crypto.randomUUID(),
     labsProgram: false,
     holdingAccount: false,
@@ -113,6 +104,12 @@ async function createUser(
 }
 
 async function authenticate(username, password) {
+  if (
+    typeof password !== 'string' ||
+    !password ||
+    Buffer.byteLength(password, 'utf8') > 72
+  )
+    return { user: null, reason: 'invalid_credentials' }
   const normalizedUsername = normalizeUsername(username)
   const user = await User.findOne({ username: normalizedUsername }).exec()
   if (!user) return { user: null, reason: 'invalid_credentials' }
@@ -121,7 +118,7 @@ async function authenticate(username, password) {
     return { user: null, reason: 'disabled' }
   }
 
-  const storedHash = user.passwordHash || user.hashedPassword
+  const storedHash = user.passwordHash
   const passwordMatches = storedHash
     ? await bcrypt.compare(password || '', storedHash)
     : false
@@ -173,14 +170,6 @@ async function updateUser(userId, changes) {
       )
     }
     update.$set.username = username
-    update.$set.email = technicalEmailForUsername(username)
-    update.$set.emails = [
-      {
-        email: technicalEmailForUsername(username),
-        createdAt: user.createdAt || new Date(),
-        confirmedAt: new Date(),
-      },
-    ]
   }
   if (changes.displayName != null) {
     const displayName = changes.displayName.trim()
@@ -219,10 +208,16 @@ async function updateUser(userId, changes) {
       changes.password
     )
     update.$set.passwordHash = hash
-    update.$set.hashedPassword = hash
   }
 
-  await User.updateOne({ _id: user._id }, update).exec()
+  if (
+    ['username', 'password', 'role', 'status'].some(key => changes[key] != null)
+  ) {
+    update.$inc = { identityVersion: 1 }
+  }
+  await User.updateOne({ _id: user._id }, update, {
+    runValidators: true,
+  }).exec()
   return await findById(user._id)
 }
 
@@ -317,6 +312,7 @@ async function deleteUser(userId, { deleterUser, ipAddress, deleteProjects }) {
   await UserDeleter.promises.deleteUser(user._id, {
     deleterUser: deleterUser || user,
     ipAddress: ipAddress || '127.0.0.1',
+    skipEmail: true,
   })
 }
 

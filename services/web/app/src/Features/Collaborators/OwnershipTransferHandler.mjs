@@ -35,7 +35,7 @@ async function transferAllProjectsToUser({ fromUserId, toUserId, ipAddress }) {
   // - Verify that both users exist
   const fromUser = await UserGetter.promises.getUser(fromUserId, {
     _id: 1,
-    email: 1,
+    username: 1,
   })
   const toUser = await UserGetter.promises.getUser(toUserId, { _id: 1 })
   if (!fromUser) throw new OError('missing source user', { fromUserId })
@@ -55,7 +55,7 @@ async function transferAllProjectsToUser({ fromUserId, toUserId, ipAddress }) {
   // - Create new tag on toUserId
   const newTag = await TagsHandler.promises.createTag(
     toUserId,
-    `transferred-from-${fromUser.email}`,
+    `transferred-from-${fromUser.username}`,
     TAG_COLOR_BLUE,
     { truncate: true }
   )
@@ -162,7 +162,7 @@ async function transferOwnership(projectId, newOwnerId, options = {}) {
   await TpdsProjectFlusher.promises.flushProjectToTpds(projectId)
 
   // Send confirmation emails
-  if (!skipEmails) {
+  if (!skipEmails && newOwner.email) {
     const previousOwner = await UserGetter.promises.getUser(previousOwnerId)
     await _sendEmails(project, previousOwner, newOwner)
   }

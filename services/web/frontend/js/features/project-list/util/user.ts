@@ -8,14 +8,15 @@ export function getUserName(user: UserRef) {
   }
 
   if (user) {
-    const { firstName, lastName, email } = user
+    const { firstName, lastName, username, displayName } = user
 
+    if (displayName) return displayName
     if (firstName || lastName) {
       return [firstName, lastName].filter(n => n != null).join(' ')
     }
 
-    if (email) {
-      return email
+    if (username) {
+      return username
     }
   }
 

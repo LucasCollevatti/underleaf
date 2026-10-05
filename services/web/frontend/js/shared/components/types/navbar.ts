@@ -51,4 +51,4 @@ export type NavbarItemData =
   | NavbarLinkItemData
   | NavbarTextItemData
 
-export type NavbarSessionUser = { email: string }
+export type NavbarSessionUser = { username: string; displayName?: string }

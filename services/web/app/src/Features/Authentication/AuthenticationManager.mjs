@@ -2,36 +2,21 @@ import Settings from '@overleaf/settings'
 import { User } from '../../models/User.mjs'
 import { db, ObjectId } from '../../infrastructure/mongodb.mjs'
 import bcrypt from 'bcrypt'
-import EmailHelper from '../Helpers/EmailHelper.mjs'
 import { sanitizeControlCharacters } from '../../infrastructure/Sanitize.mjs'
 
 import {
-  InvalidEmailError,
   InvalidPasswordError,
   ParallelLoginError,
   PasswordMustBeDifferentError,
-  PasswordReusedError,
 } from './AuthenticationErrors.mjs'
 
 import { callbackify, callbackifyMultiResult } from '@overleaf/promise-utils'
-import HaveIBeenPwned from './HaveIBeenPwned.mjs'
 import UserAuditLogHandler from '../User/UserAuditLogHandler.mjs'
 import logger from '@overleaf/logger'
-import DiffHelper from '../Helpers/DiffHelper.mjs'
 import Metrics from '@overleaf/metrics'
 
 const BCRYPT_ROUNDS = Settings.security.bcryptRounds || 12
 const BCRYPT_MINOR_VERSION = Settings.security.bcryptMinorVersion || 'a'
-const MAX_SIMILARITY = 0.7
-
-function _exceedsMaximumLengthRatio(password, maxSimilarity, value) {
-  const passwordLength = password.length
-  const lengthBoundSimilarity = (maxSimilarity / 2) * passwordLength
-  const valueLength = value.length
-  return (
-    passwordLength >= 10 * valueLength && valueLength < lengthBoundSimilarity
-  )
-}
 
 const _checkWriteResult = function (result) {
   // for MongoDB
@@ -39,8 +24,8 @@ const _checkWriteResult = function (result) {
 }
 
 function _validatePasswordNotTooLong(password) {
-  // bcrypt has a hard limit of 72 characters.
-  if (password.length > 72) {
+  // bcrypt has a hard limit of 72 bytes.
+  if (Buffer.byteLength(password, 'utf8') > 72) {
     return new InvalidPasswordError({
       message: 'password is too long',
       info: { code: 'too_long' },
@@ -62,42 +47,52 @@ const AuthenticationManager = {
     // Using Mongoose for legacy reasons here. The returned User instance
     // gets serialized into the session and there may be subtle differences
     // between the user returned by Mongoose vs mongodb (such as default values)
+    if (
+      typeof password !== 'string' ||
+      !password ||
+      Buffer.byteLength(password, 'utf8') > 72
+    ) {
+      return { user: null, match: null }
+    }
+    if (!query?._id && typeof query?.username !== 'string') {
+      return { user: null, match: null }
+    }
     const user = await User.findOne(query).exec()
 
-    if (!user || !user.hashedPassword) {
+    if (!user || !user.passwordHash || user.status !== 'active') {
       return { user: null, match: null }
     }
 
     let rounds = 0
     try {
-      rounds = bcrypt.getRounds(user.hashedPassword)
+      rounds = bcrypt.getRounds(user.passwordHash)
     } catch (err) {
       let prefix, suffix, length
-      if (typeof user.hashedPassword === 'string') {
-        length = user.hashedPassword.length
-        if (user.hashedPassword.length > 50) {
+      if (typeof user.passwordHash === 'string') {
+        length = user.passwordHash.length
+        if (user.passwordHash.length > 50) {
           // A full bcrypt hash is 60 characters long.
-          prefix = user.hashedPassword.slice(0, '$2a$12$x'.length)
-          suffix = user.hashedPassword.slice(-4)
-        } else if (user.hashedPassword.length > 20) {
-          prefix = user.hashedPassword.slice(0, 4)
-          suffix = user.hashedPassword.slice(-4)
+          prefix = user.passwordHash.slice(0, '$2a$12$x'.length)
+          suffix = user.passwordHash.slice(-4)
+        } else if (user.passwordHash.length > 20) {
+          prefix = user.passwordHash.slice(0, 4)
+          suffix = user.passwordHash.slice(-4)
         } else {
-          prefix = user.hashedPassword.slice(0, 4)
+          prefix = user.passwordHash.slice(0, 4)
         }
       }
       logger.warn(
         {
           err,
           userId: user._id,
-          hashedPassword: {
-            type: typeof user.hashedPassword,
+          passwordHash: {
+            type: typeof user.passwordHash,
             length,
             prefix,
             suffix,
           },
         },
-        'unexpected user.hashedPassword value'
+        'unexpected user.passwordHash value'
       )
     }
     Metrics.inc('bcrypt', 1, {
@@ -105,7 +100,7 @@ const AuthenticationManager = {
       path: rounds,
     })
 
-    const match = await bcrypt.compare(password, user.hashedPassword)
+    const match = await bcrypt.compare(password, user.passwordHash)
 
     if (match) {
       _metricsForSuccessfulPasswordMatch(password)
@@ -114,7 +109,7 @@ const AuthenticationManager = {
     return { user, match }
   },
 
-  async authenticate(query, password, auditLog, { enforceHIBPCheck = true }) {
+  async authenticate(query, password, auditLog) {
     if (typeof password === 'string') {
       password = sanitizeControlCharacters(password)
     }
@@ -163,35 +158,15 @@ const AuthenticationManager = {
         return { user: null }
       }
     }
-    await AuthenticationManager.checkRounds(user, user.hashedPassword, password)
+    await AuthenticationManager.checkRounds(user, user.passwordHash, password)
 
-    let isPasswordReused
-    try {
-      isPasswordReused =
-        await HaveIBeenPwned.promises.checkPasswordForReuse(password)
-    } catch (err) {
-      logger.err({ err }, 'cannot check password for re-use')
-    }
-
-    if (isPasswordReused && enforceHIBPCheck) {
-      throw new PasswordReusedError()
-    }
-
-    return { user, isPasswordReused }
-  },
-
-  validateEmail(email) {
-    const parsed = EmailHelper.parseEmail(email)
-    if (!parsed) {
-      return new InvalidEmailError({ message: 'email not valid' })
-    }
-    return null
+    return { user, isPasswordReused: false }
   },
 
   // validates a password based on a similar set of rules previously used by `passfield.js` on the frontend
   // note that `passfield.js` enforced more rules than this, but these are the most commonly set.
   // returns null on success, or an error object.
-  validatePassword(password, email) {
+  validatePassword(password) {
     if (password == null) {
       return new InvalidPasswordError({
         message: 'password not set',
@@ -243,36 +218,7 @@ const AuthenticationManager = {
         info: { code: 'invalid_character' },
       })
     }
-    if (typeof email === 'string' && email !== '') {
-      const startOfEmail = email.split('@')[0]
-      if (
-        password.includes(email) ||
-        password.includes(startOfEmail) ||
-        email.includes(password)
-      ) {
-        return new InvalidPasswordError({
-          message: 'password contains part of email address',
-          info: { code: 'contains_email' },
-        })
-      }
-      try {
-        const passwordTooSimilarError =
-          AuthenticationManager._validatePasswordNotTooSimilar(password, email)
-        if (passwordTooSimilarError) {
-          Metrics.inc('password-too-similar-to-email')
-          return new InvalidPasswordError({
-            message: 'password is too similar to email address',
-            info: { code: 'too_similar' },
-          })
-        }
-      } catch (error) {
-        logger.error(
-          { error },
-          'error while checking password similarity to email'
-        )
-      }
-      // TODO: remove this check once the password-too-similar checks are active?
-    }
+
     return null
   },
 
@@ -280,17 +226,21 @@ const AuthenticationManager = {
     return await AuthenticationManager.setUserPasswordInV2(user, password)
   },
 
-  async checkRounds(user, hashedPassword, password) {
+  async checkRounds(user, passwordHash, password) {
     // Temporarily disable this function, TODO: re-enable this
     if (Settings.security.disableBcryptRoundsUpgrades) {
       Metrics.inc('bcrypt_check_rounds', 1, { status: 'disabled' })
       return
     }
     // check current number of rounds and rehash if necessary
-    const currentRounds = bcrypt.getRounds(hashedPassword)
+    const currentRounds = bcrypt.getRounds(passwordHash)
     if (currentRounds < BCRYPT_ROUNDS) {
       Metrics.inc('bcrypt_check_rounds', 1, { status: 'upgrade' })
-      return await AuthenticationManager._setUserPasswordInMongo(user, password)
+      return await AuthenticationManager._setUserPasswordInMongo(
+        user,
+        password,
+        { invalidateSessions: false }
+      )
     } else {
       Metrics.inc('bcrypt_check_rounds', 1, { status: 'success' })
     }
@@ -313,11 +263,11 @@ const AuthenticationManager = {
   },
 
   async setUserPasswordInV2(user, password) {
-    if (!user || !user.email || !user._id) {
+    if (!user || !user.username || !user._id) {
       throw new Error('invalid user object')
     }
     password = sanitizeControlCharacters(password)
-    const validationError = this.validatePassword(password, user.email)
+    const validationError = this.validatePassword(password)
     if (validationError) {
       throw validationError
     }
@@ -332,30 +282,23 @@ const AuthenticationManager = {
       throw new PasswordMustBeDifferentError()
     }
 
-    let isPasswordReused
-    try {
-      isPasswordReused =
-        await HaveIBeenPwned.promises.checkPasswordForReuse(password)
-    } catch (error) {
-      logger.err({ error }, 'cannot check password for re-use')
-    }
-
-    if (isPasswordReused) {
-      throw new PasswordReusedError()
-    }
-
-    // password is strong enough or the validation with the service did not happen
     return await this._setUserPasswordInMongo(user, password)
   },
 
-  async _setUserPasswordInMongo(user, password) {
+  async _setUserPasswordInMongo(
+    user,
+    password,
+    { invalidateSessions = true } = {}
+  ) {
     const hash = await this.hashPassword(password)
     const result = await db.users.updateOne(
       { _id: new ObjectId(user._id.toString()) },
       {
         $set: {
-          hashedPassword: hash,
+          passwordHash: hash,
+          updatedAt: new Date(),
         },
+        ...(invalidateSessions ? { $inc: { identityVersion: 1 } } : {}),
         $unset: {
           password: true,
         },
@@ -394,31 +337,6 @@ const AuthenticationManager = {
     return true
   },
 
-  /**
-   * Check if the password is similar to (parts of) the email address.
-   * For now, this merely sends a metric when the password and
-   * email address are deemed to be too similar to each other.
-   * Later we will reject passwords that fail this check.
-   *
-   * This logic was borrowed from the django project:
-   * https://github.com/django/django/blob/fa3afc5d86f1f040922cca2029d6a34301597a70/django/contrib/auth/password_validation.py#L159-L214
-   */
-  _validatePasswordNotTooSimilar(password, email) {
-    password = password.toLowerCase()
-    email = email.toLowerCase()
-    const stringsToCheck = [email]
-      .concat(email.split(/\W+/))
-      .concat(email.split(/@/))
-    for (const emailPart of stringsToCheck) {
-      if (!_exceedsMaximumLengthRatio(password, MAX_SIMILARITY, emailPart)) {
-        const similarity = DiffHelper.stringSimilarity(password, emailPart)
-        if (similarity > MAX_SIMILARITY) {
-          return new Error('password is too similar to email')
-        }
-      }
-    }
-  },
-
   getMessageForInvalidPasswordError(error, req) {
     const errorCode = error?.info?.code
     const message = {
@@ -432,14 +350,6 @@ const AuthenticationManager = {
       case 'invalid_character':
         message.key = 'password-invalid-character'
         message.text = req.i18n.translate('invalid_password_invalid_character')
-        break
-      case 'contains_email':
-        message.key = 'password-contains-email'
-        message.text = req.i18n.translate('invalid_password_contains_email')
-        break
-      case 'too_similar':
-        message.key = 'password-too-similar'
-        message.text = req.i18n.translate('invalid_password_too_similar')
         break
       case 'too_short':
         message.key = 'password-too-short'
@@ -463,9 +373,6 @@ const AuthenticationManager = {
 }
 
 export default {
-  _validatePasswordNotTooSimilar:
-    AuthenticationManager._validatePasswordNotTooSimilar, // Private function exported for tests
-  validateEmail: AuthenticationManager.validateEmail,
   validatePassword: AuthenticationManager.validatePassword,
   getMessageForInvalidPasswordError:
     AuthenticationManager.getMessageForInvalidPasswordError,

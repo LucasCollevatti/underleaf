@@ -1,4 +1,4 @@
-import UserHandler from './UserHandler.mjs'
+import Settings from '@overleaf/settings'
 import UserDeleter from './UserDeleter.mjs'
 import UserGetter from './UserGetter.mjs'
 import { User } from '../../models/User.mjs'
@@ -24,6 +24,7 @@ import Modules from '../../infrastructure/Modules.mjs'
 import OneTimeTokenHandler from '../Security/OneTimeTokenHandler.mjs'
 
 async function _sendSecurityAlertClearedSessions(user) {
+  if (Settings.underleaf) return
   const emailOptions = {
     to: user.email,
     actionDescribed: `active sessions were cleared on your account ${user.email}`,
@@ -41,6 +42,7 @@ async function _sendSecurityAlertClearedSessions(user) {
 }
 
 function _sendSecurityAlertPasswordChanged(user) {
+  if (Settings.underleaf) return
   const emailOptions = {
     to: user.email,
     actionDescribed: `your password has been changed on your account ${user.email}`,
@@ -67,15 +69,15 @@ async function _ensureAffiliation(userId, emailData) {
 
 const changePasswordSchema = z.object({
   body: z.strictObject({
-    currentPassword: z.string().optional(),
-    newPassword1: z.string().optional(),
-    newPassword2: z.string().optional(),
+    currentPassword: z.string(),
+    newPassword1: z.string(),
+    newPassword2: z.string(),
   }),
 })
 
 async function changePassword(req, res, next) {
   metrics.inc('user.password-change')
-  const { body } = parseReq(req, changePasswordSchema, { logOnly: true })
+  const { body } = parseReq(req, changePasswordSchema)
   const userId = SessionManager.getLoggedInUserId(req.session)
 
   const { user } = await AuthenticationManager.promises.authenticate(
@@ -135,6 +137,9 @@ async function changePassword(req, res, next) {
     req.ip
   )
 
+  SessionManager.setInSessionUser(req.session, {
+    identityVersion: user.identityVersion + 1,
+  })
   // no need to wait, errors are logged and not passed back
   _sendSecurityAlertPasswordChanged(user)
 
@@ -151,7 +156,7 @@ async function changePassword(req, res, next) {
   return res.json({
     message: {
       type: 'success',
-      email: user.email,
+      username: user.username,
       text: req.i18n.translate('password_change_successful'),
     },
   })
@@ -160,7 +165,7 @@ async function changePassword(req, res, next) {
 async function clearSessions(req, res, next) {
   metrics.inc('user.clear-sessions')
   const userId = SessionManager.getLoggedInUserId(req.session)
-  const user = await UserGetter.promises.getUser(userId, { email: 1 })
+  const user = await UserGetter.promises.getUser(userId, { username: 1 })
   const sessions = await UserSessionsManager.promises.getAllUserSessions(user, [
     req.sessionID,
   ])
@@ -369,25 +374,12 @@ const refProviderSettingsSchema = z
   })
   .optional()
 
-// Rollout-temporary fallback (pre-refinement schema from main); delete
-// when this route's REQ_VALIDATION_MODE instrumentation is removed.
-const refProviderSettingsFallbackSchema = z
-  .object({
-    enabled: z.boolean().optional(),
-    groups: z.array(z.object({ id: z.string() })).optional(),
-    disablePersonalLibrary: z.boolean().optional(),
-  })
-  .optional()
-
 const updateUserSettingsSchema = z.object({
   // the frontend posts one changed setting at a time (`{[key]: value}`), so
   // every field here is optional
   body: z.strictObject({
-    first_name: z.string().max(255).nullish(),
-    last_name: z.string().max(255).nullish(),
-    role: z.string().optional(),
     institution: z.string().optional(),
-    email: z.string().optional(),
+    displayName: z.string().trim().min(1).max(255).optional(),
     mode: z.string().optional(),
     editorTheme: z.string().optional(),
     editorLightTheme: z.string().optional(),
@@ -418,24 +410,8 @@ const updateUserSettingsSchema = z.object({
   }),
 })
 
-// Rollout-temporary fallback (pre-refinement schema from main); delete
-// when this route's REQ_VALIDATION_MODE instrumentation is removed.
-const updateUserSettingsFallbackSchema = z.object({
-  body: z
-    .object({
-      first_name: z.string().max(255).nullish(),
-      last_name: z.string().max(255).nullish(),
-      zotero: refProviderSettingsFallbackSchema,
-      mendeley: refProviderSettingsFallbackSchema,
-      papers: refProviderSettingsFallbackSchema,
-    })
-    .passthrough(),
-})
-
 async function updateUserSettings(req, res, next) {
-  const { body } = parseReq(req, updateUserSettingsSchema, {
-    fallbackSchema: updateUserSettingsFallbackSchema,
-  })
+  const { body } = parseReq(req, updateUserSettingsSchema)
   const userId = SessionManager.getLoggedInUserId(req.session)
   req.logger.addFields({ userId })
 
@@ -444,14 +420,10 @@ async function updateUserSettings(req, res, next) {
     throw new OError('problem updating user settings', { userId })
   }
 
-  if (typeof body.first_name === 'string') {
-    user.first_name = sanitizeControlCharacters(body.first_name).trim()
-  }
-  if (typeof body.last_name === 'string') {
-    user.last_name = sanitizeControlCharacters(body.last_name).trim()
-  }
-  if (typeof body.role === 'string') {
-    user.role = sanitizeControlCharacters(body.role).trim()
+  if (typeof body.displayName === 'string') {
+    user.displayName = sanitizeControlCharacters(body.displayName).trim()
+    user.first_name = user.displayName
+    user.last_name = ''
   }
   if (typeof body.institution === 'string') {
     user.institution = sanitizeControlCharacters(body.institution).trim()
@@ -529,64 +501,15 @@ async function updateUserSettings(req, res, next) {
   if (body.papers != null) {
     user.ace.papers = { ...user.ace.papers, ...body.papers }
   }
+  user.updatedAt = new Date()
   await user.save()
 
-  const newEmail = body.email?.trim().toLowerCase()
-  if (
-    newEmail == null ||
-    newEmail === user.email ||
-    req.externalAuthenticationSystemUsed()
-  ) {
-    // end here, don't update email
-    SessionManager.setInSessionUser(req.session, {
-      first_name: user.first_name,
-      last_name: user.last_name,
-    })
-    res.sendStatus(200)
-  } else if (newEmail.indexOf('@') === -1) {
-    // email invalid
-    res.sendStatus(400)
-  } else {
-    // update the user email
-    const auditLog = {
-      initiatorId: userId,
-      ipAddress: req.ip,
-    }
-
-    try {
-      await UserUpdater.promises.changeEmailAddress(userId, newEmail, auditLog)
-    } catch (err) {
-      if (err instanceof Errors.EmailExistsError) {
-        const translation = req.i18n.translate('email_already_registered')
-        return HttpErrorHandler.conflict(req, res, translation)
-      } else {
-        return HttpErrorHandler.legacyInternal(
-          req,
-          res,
-          req.i18n.translate('problem_changing_email_address'),
-          OError.tag(err, 'problem_changing_email_address', {
-            userId,
-            newEmail,
-          })
-        )
-      }
-    }
-
-    const user = await User.findById(userId).exec()
-    SessionManager.setInSessionUser(req.session, {
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-    })
-
-    try {
-      await UserHandler.promises.populateTeamInvites(user)
-    } catch (err) {
-      logger.error({ err }, 'error populateTeamInvites')
-    }
-
-    res.sendStatus(200)
-  }
+  SessionManager.setInSessionUser(req.session, {
+    displayName: user.displayName,
+    first_name: user.first_name,
+    last_name: user.last_name,
+  })
+  return res.sendStatus(200)
 }
 
 async function doLogout(req) {

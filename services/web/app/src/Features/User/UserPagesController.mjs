@@ -146,7 +146,10 @@ async function settingsPage(req, res) {
     user: {
       id: user._id,
       isAdmin: user.isAdmin,
-      email: user.email,
+      username: user.username,
+      displayName: user.displayName,
+      role: user.role,
+      status: user.status,
       allowedFreeTrial: user.allowedFreeTrial,
       first_name: user.first_name,
       last_name: user.last_name,
@@ -169,7 +172,7 @@ async function settingsPage(req, res) {
     },
     showAiFeatures: Boolean(user.aiFeatures?.enabled),
     labsExperiments: user.labsExperiments ?? [],
-    hasPassword: !!user.hashedPassword,
+    hasPassword: !!user.passwordHash,
     shouldAllowEditingDetails,
     oauthProviders: UserPagesController._translateProviderDescriptions(
       oauthProviders,

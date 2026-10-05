@@ -1,14 +1,14 @@
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import OLRow from '@/shared/components/ol/ol-row'
 import OLCol from '@/shared/components/ol/ol-col'
 import OLButton from '@/shared/components/ol/ol-button'
 import getMeta from '@/utils/meta'
 
 type InviteNotValidProps = {
-  email?: string
+  username?: string
 }
 
-function InviteNotValid({ email }: InviteNotValidProps) {
+function InviteNotValid({ username }: InviteNotValidProps) {
   const { t } = useTranslation()
   const { appName } = getMeta('ol-ExposedSettings')
 
@@ -24,7 +24,7 @@ function InviteNotValid({ email }: InviteNotValidProps) {
             <div className="mb-4">
               {t('the_link_may_be_broken_or_you_may_not_have_access_rights')}
             </div>
-            {email && (
+            {username && (
               <>
                 <OLButton
                   variant="primary"
@@ -36,13 +36,8 @@ function InviteNotValid({ email }: InviteNotValidProps) {
                 </OLButton>
                 <div>
                   <small>
-                    <Trans
-                      i18nKey="you_are_currently_logged_in_as_x_you_might_need_to_log_in_with_different_email"
-                      components={[<b />]} // eslint-disable-line react/jsx-key
-                      values={{ email }}
-                      shouldUnescape
-                      tOptions={{ interpolation: { escapeValue: true } }}
-                    />
+                    You are logged in as <b>@{username}</b>. You may need to log
+                    in with another account.
                   </small>
                 </div>
               </>

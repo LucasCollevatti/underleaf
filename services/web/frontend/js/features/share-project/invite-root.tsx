@@ -77,13 +77,13 @@ export default function InviteRoot() {
   }
 
   if ((!token && !hashToken) || !validateResponse.valid) {
-    return <InviteNotValid email={user?.email} />
+    return <InviteNotValid username={user?.username} />
   }
 
   return (
     <Invite
       projectName={validateResponse.projectName || projectName}
-      email={user.email}
+      username={user.username}
       submitHandler={handleSubmit}
       isLoading={isLoading}
     />

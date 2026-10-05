@@ -409,7 +409,12 @@ const _ProjectController = {
     if (!SessionManager.isUserLoggedIn(req.session)) {
       return res.json({ redir: '/register' })
     }
-    const { first_name: firstName, last_name: lastName, email } = currentUser
+    const {
+      first_name: firstName,
+      last_name: lastName,
+      username,
+      displayName,
+    } = currentUser
     try {
       const project = await ProjectDuplicator.promises.duplicate(
         currentUser,
@@ -432,7 +437,8 @@ const _ProjectController = {
         owner: {
           first_name: firstName,
           last_name: lastName,
-          email,
+          username,
+          displayName,
           _id: currentUser._id,
         },
       })
@@ -461,7 +467,8 @@ const _ProjectController = {
     const {
       first_name: firstName,
       last_name: lastName,
-      email,
+      username,
+      displayName,
       _id: userId,
     } = currentUser
     const { body } = parseReq(req, newProjectSchema, { logOnly: true })
@@ -489,7 +496,8 @@ const _ProjectController = {
       owner: {
         first_name: firstName,
         last_name: lastName,
-        email,
+        username,
+        displayName,
         _id: userId,
       },
     })
@@ -656,7 +664,7 @@ const _ProjectController = {
           user: (async () => {
             const user = await User.findById(
               userId,
-              'email first_name last_name referal_id signUpDate featureSwitches features featuresEpoch refProviders alphaProgram betaProgram isAdmin ace labsProgram labsExperiments completedTutorials writefull aiFeatures'
+              'username displayName first_name last_name referal_id signUpDate featureSwitches features featuresEpoch refProviders alphaProgram betaProgram isAdmin ace labsProgram labsExperiments completedTutorials writefull aiFeatures'
             ).exec()
             // Handle case of deleted user
             if (!user) {
@@ -1111,7 +1119,8 @@ const _ProjectController = {
           splitTestAssignments['png2pdf']?.variant === 'enabled',
         user: {
           id: userId,
-          email: user.email,
+          username: user.username,
+          displayName: user.displayName,
           first_name: user.first_name,
           last_name: user.last_name,
           referal_id: user.referal_id,

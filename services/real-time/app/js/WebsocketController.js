@@ -93,7 +93,8 @@ export default WebsocketController = {
         client.ol_context.owner_id = project.owner && project.owner._id
         client.ol_context.first_name = user.first_name
         client.ol_context.last_name = user.last_name
-        client.ol_context.email = user.email
+        client.ol_context.username = user.username
+        client.ol_context.displayName = user.displayName
         client.ol_context.connected_time = new Date()
         client.ol_context.signup_date = user.signUpDate
         client.ol_context.login_count = user.loginCount
@@ -385,7 +386,8 @@ export default WebsocketController = {
       project_id: projectId,
       first_name: firstName,
       last_name: lastName,
-      email,
+      username,
+      displayName,
       user_id: userId,
     } = client.ol_context
     logger.debug(
@@ -408,8 +410,9 @@ export default WebsocketController = {
         if (userId) {
           cursorData.user_id = userId
         }
-        if (email) {
-          cursorData.email = email
+        if (username) {
+          cursorData.username = username
+          cursorData.displayName = displayName
         }
         // Don't store anonymous users in redis to avoid influx
         if (!userId || userId === 'anonymous-user') {
@@ -418,16 +421,18 @@ export default WebsocketController = {
           setTimeout(callback)
         } else {
           cursorData.name =
-            firstName && lastName
-              ? `${firstName} ${lastName}`
-              : firstName || lastName || ''
+            displayName ||
+            [firstName, lastName].filter(Boolean).join(' ') ||
+            username ||
+            ''
           ConnectedUsersManager.updateUserPosition(
             projectId,
             client.publicId,
             {
               first_name: firstName,
               last_name: lastName,
-              email,
+              username,
+              displayName,
               _id: userId,
             },
             {

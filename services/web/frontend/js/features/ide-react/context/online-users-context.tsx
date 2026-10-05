@@ -23,7 +23,8 @@ import { useEditorOpenDocContext } from '@/features/ide-react/context/editor-ope
 export type OnlineUser = {
   id: string
   user_id: string
-  email: string
+  username: string
+  displayName?: string
   name: string
   initial?: string
   doc_id?: string
@@ -35,7 +36,8 @@ export type OnlineUser = {
 type ConnectedUser = {
   client_id: string
   user_id: string
-  email: string
+  username: string
+  displayName?: string
   first_name: string
   last_name: string
   cursorData?: {
@@ -99,13 +101,13 @@ export const OnlineUsersProvider: FC<React.PropsWithChildren> = ({
           decoratedUser.doc = findDocEntityById(fileTreeData, docId)
         }
 
-        // If the user's name is empty use their email as display name
+        // If the user's name is empty use their username as display name
         // Otherwise they're probably an anonymous user
-        if (user.name === null || user.name.trim().length === 0) {
-          decoratedUser.name = user.email ? user.email.trim() : 'Anonymous'
+        if (!user.name?.trim()) {
+          decoratedUser.name = user.displayName || user.username || 'Anonymous'
         }
 
-        decoratedUser.initial = user.name?.[0]
+        decoratedUser.initial = decoratedUser.name?.[0]
         if (!decoratedUser.initial || decoratedUser.initial === ' ') {
           decoratedUser.initial = '?'
         }
@@ -180,8 +182,9 @@ export const OnlineUsersProvider: FC<React.PropsWithChildren> = ({
             newOnlineUsers[user.client_id] = {
               id: user.client_id,
               user_id: user.user_id,
-              email: user.email,
-              name: `${user.first_name} ${user.last_name}`,
+              username: user.username,
+              displayName: user.displayName,
+              name: user.displayName || `${user.first_name} ${user.last_name}`,
               doc_id: user.cursorData?.doc_id,
               row: user.cursorData?.row,
               column: user.cursorData?.column,

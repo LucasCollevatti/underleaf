@@ -70,8 +70,17 @@ export default {
     )
     multi.hset(
       Keys.connectedUser({ project_id: projectId, client_id: clientId }),
-      'email',
-      user.email || ''
+      'username',
+      user.username || ''
+    )
+    multi.hset(
+      Keys.connectedUser({ project_id: projectId, client_id: clientId }),
+      'displayName',
+      user.displayName || ''
+    )
+    multi.hdel(
+      Keys.connectedUser({ project_id: projectId, client_id: clientId }),
+      'email'
     )
 
     if (cursorData) {

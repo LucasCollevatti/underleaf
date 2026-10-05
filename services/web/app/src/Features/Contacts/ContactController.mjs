@@ -7,7 +7,8 @@ import { expressify } from '@overleaf/promise-utils'
 function _formatContact(contact) {
   return {
     id: contact._id?.toString(),
-    email: contact.email || '',
+    username: contact.username,
+    displayName: contact.displayName || contact.username,
     first_name: contact.first_name || '',
     last_name: contact.last_name || '',
     type: 'user',
@@ -25,7 +26,8 @@ async function getContacts(req, res) {
   )
 
   let contacts = await UserGetter.promises.getUsers(contactIds, {
-    email: 1,
+    username: 1,
+    displayName: 1,
     first_name: 1,
     last_name: 1,
     holdingAccount: 1,

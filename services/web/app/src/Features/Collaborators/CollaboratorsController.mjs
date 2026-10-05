@@ -61,7 +61,7 @@ async function removeUserFromProject(req, res, next) {
 
   const removedUser = await UserGetter.promises.getUser(
     { _id: userId },
-    { email: 1 }
+    { username: 1 }
   )
 
   ProjectAuditLogHandler.addEntryInBackground(
@@ -71,7 +71,7 @@ async function removeUserFromProject(req, res, next) {
     req.ip,
     {
       userId,
-      collaboratorEmail: removedUser?.email,
+      collaboratorUsername: removedUser?.username,
     }
   )
 

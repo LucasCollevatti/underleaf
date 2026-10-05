@@ -213,7 +213,7 @@ export default function EditMember({
           unfilled
         />
         <div className="px-2">
-          {member.email}
+          {member.username}
           {member.pendingEditor && (
             <div className="small fw-normal">{t('view_only_downgraded')}</div>
           )}
@@ -368,7 +368,7 @@ export default function EditMember({
               }
             />
             <div className="email-warning">
-              {member.email}
+              {member.username}
               {member.pendingEditor && (
                 <div className="subtitle">{t('view_only_downgraded')}</div>
               )}

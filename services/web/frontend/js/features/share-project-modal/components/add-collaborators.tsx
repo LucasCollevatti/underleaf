@@ -1,80 +1,83 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useMultipleSelection } from 'downshift'
-import SelectCollaborators, { ContactItem } from './select-collaborators'
-import { useUserContacts } from '../hooks/use-user-contacts'
+import { useState } from 'react'
 import { useProjectContext } from '@/shared/context/project-context'
+import { useShareProjectContext } from './share-project-modal'
+import { getUserFacingMessage, putJSON } from '@/infrastructure/fetch-json'
 import OLForm from '@/shared/components/ol/ol-form'
-import OLFormText from '@/shared/components/ol/ol-form-text'
 import OLFormGroup from '@/shared/components/ol/ol-form-group'
-import AddCollaboratorsSelect from '@/features/share-project-modal/components/add-collaborators-select'
-import { useFeatureFlag } from '@/shared/context/split-test-context'
+import OLFormLabel from '@/shared/components/ol/ol-form-label'
+import OLFormControl from '@/shared/components/ol/ol-form-control'
+import OLFormText from '@/shared/components/ol/ol-form-text'
+import OLButton from '@/shared/components/ol/ol-button'
 
 export default function AddCollaborators({ readOnly }: { readOnly?: boolean }) {
-  const isSharingUpdatesEnabled = useFeatureFlag('sharing-updates')
-  const { data: contacts } = useUserContacts()
-
-  const { t } = useTranslation()
-
-  const { project } = useProjectContext()
-  const { members } = project || {}
-
-  const currentMemberEmails = useMemo(
-    () => (members || []).map(member => member.email.toLowerCase()).sort(),
-    [members]
-  )
-
-  const nonMemberContacts = useMemo(() => {
-    if (!contacts) {
-      return null
-    }
-
-    return contacts.filter(
-      contact => !currentMemberEmails.includes(contact.email.toLowerCase())
-    )
-  }, [contacts, currentMemberEmails])
-
-  const multipleSelectionProps = useMultipleSelection<ContactItem>({
-    initialActiveIndex: 0,
-    initialSelectedItems: [],
-  })
+  const { projectId } = useProjectContext()
+  const { setInFlight, setError } = useShareProjectContext()
+  const [username, setUsername] = useState('')
+  const [permission, setPermission] = useState<'editor' | 'viewer'>('editor')
+  const [busy, setBusy] = useState(false)
 
   return (
-    <OLForm className="add-collabs">
-      {isSharingUpdatesEnabled ? (
-        <SelectCollaborators
-          loading={!nonMemberContacts}
-          options={nonMemberContacts || []}
-          multipleSelectionProps={multipleSelectionProps}
-          currentMemberEmails={currentMemberEmails}
-          readOnly={readOnly}
-          size="lg"
+    <OLForm
+      className="add-collabs"
+      onSubmit={async event => {
+        event.preventDefault()
+        setBusy(true)
+        setInFlight(true)
+        setError(undefined)
+        try {
+          await putJSON(`/project/${projectId}/users/by-username`, {
+            body: {
+              username: username.trim().toLowerCase(),
+              permission: readOnly ? 'viewer' : permission,
+            },
+          })
+          setUsername('')
+        } catch (error) {
+          setError(
+            getUserFacingMessage(error) ||
+              'Could not add this user. Check their username.'
+          )
+        } finally {
+          setBusy(false)
+          setInFlight(false)
+        }
+      }}
+    >
+      <OLFormGroup controlId="collaborator-username">
+        <OLFormLabel>Username</OLFormLabel>
+        <OLFormControl
+          value={username}
+          onChange={event => setUsername(event.target.value)}
+          required
+          minLength={3}
+          maxLength={32}
+          autoComplete="off"
         />
-      ) : (
-        <>
-          <OLFormGroup>
-            <SelectCollaborators
-              loading={!nonMemberContacts}
-              options={nonMemberContacts || []}
-              multipleSelectionProps={multipleSelectionProps}
-              currentMemberEmails={currentMemberEmails}
-              readOnly={readOnly}
-            />
-            <OLFormText id="add-collaborator-help-text">
-              {t('add_comma_separated_emails_help')}
-            </OLFormText>
-          </OLFormGroup>
-          <OLFormGroup>
-            <div className="float-end add-collaborator-controls add-collaborator-controls-legacy">
-              <AddCollaboratorsSelect
-                readOnly={readOnly}
-                multipleSelectionProps={multipleSelectionProps}
-                currentMemberEmails={currentMemberEmails}
-              />
-            </div>
-          </OLFormGroup>
-        </>
-      )}
+        <OLFormText>Add an existing Underleaf account.</OLFormText>
+      </OLFormGroup>
+      <OLFormGroup controlId="collaborator-permission">
+        <OLFormLabel>Permission</OLFormLabel>
+        <select
+          id="collaborator-permission"
+          className="form-select"
+          value={readOnly ? 'viewer' : permission}
+          disabled={readOnly}
+          onChange={event =>
+            setPermission(event.target.value as 'editor' | 'viewer')
+          }
+        >
+          <option value="editor">Editor</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </OLFormGroup>
+      <OLButton
+        type="submit"
+        variant="primary"
+        disabled={busy || !username.trim()}
+        isLoading={busy}
+      >
+        Add collaborator
+      </OLButton>
     </OLForm>
   )
 }

@@ -146,7 +146,8 @@ function AccessRequestRow({
         if (!currentMembers.some(m => m._id === request._id)) {
           const stub: ProjectMember = {
             _id: request._id,
-            email: request.email,
+            username: request.username,
+            displayName: request.displayName,
             first_name: request.first_name,
             last_name: request.last_name,
             privileges: privilege,
@@ -164,7 +165,7 @@ function AccessRequestRow({
     privilege,
     projectId,
     request._id,
-    request.email,
+    request.username,
     request.first_name,
     request.last_name,
     setSuccessActionMessage,
@@ -178,7 +179,7 @@ function AccessRequestRow({
         <div className="d-flex justify-content-between align-items-center gap-2">
           <div className="d-inline-flex align-items-center h5 m-0 gap-2">
             <MaterialIcon type="person" unfilled />
-            <div className="px-2">{request.email}</div>
+            <div className="px-2">{request.username}</div>
           </div>
           <OLDropdown
             align="end"

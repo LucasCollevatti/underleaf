@@ -37,6 +37,14 @@ export default function (io, sessionStore, cookieParser, cookieName) {
           metrics.inc('session.cookie', 1, { status: 'missing' })
           return next(missingSessionError, socket)
         }
+        const user = session.user || session.passport?.user
+        if (user && (!user.username || user.identityVersion === undefined)) {
+          return next(null, socket, null)
+        }
+        if (user) {
+          delete user.email
+          delete user.emails
+        }
         metrics.inc('session.cookie', 1, { status: 'signed' })
         next(null, socket, session)
       })

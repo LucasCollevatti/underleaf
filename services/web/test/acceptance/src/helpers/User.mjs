@@ -30,6 +30,8 @@ class User {
       },
     ]
     this.email = this.emails[0].email
+    this.username = options.username || `acceptance-test-${count}`
+    this.displayName = options.displayName || this.username
     this.password = `a-terrible-secret-${count}`
     count++
     this.jar = request.jar()
@@ -338,7 +340,7 @@ class User {
   }
 
   login(callback) {
-    this.loginWith(this.email, callback)
+    this.loginWith(this.username, callback)
   }
 
   loginWith(email, callback) {
@@ -346,15 +348,15 @@ class User {
       if (error != null) {
         return callback(error)
       }
-      this.loginWithEmailPassword(email, this.password, callback)
+      this.loginWithUsernamePassword(email, this.password, callback)
     })
   }
 
   loginNoUpdate(callback) {
-    this.loginWithEmailPassword(this.email, this.password, callback)
+    this.loginWithUsernamePassword(this.username, this.password, callback)
   }
 
-  loginWithEmailPassword(email, password, callback) {
+  loginWithUsernamePassword(username, password, callback) {
     this.getCsrfToken(error => {
       if (error != null) {
         return callback(error)
@@ -363,7 +365,7 @@ class User {
         {
           url: settings.enableLegacyLogin ? '/login/legacy' : '/login',
           json: {
-            email,
+            username,
             password,
             'g-recaptcha-response': 'valid',
           },
@@ -398,7 +400,7 @@ class User {
     if (this._id) {
       return callback()
     } // already exists
-    const filter = { email: this.email }
+    const filter = { username: this.username }
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
     AuthenticationManager.hashPassword(
@@ -412,8 +414,12 @@ class User {
           filter,
           {
             $set: {
-              hashedPassword,
-              emails: this.emails,
+              passwordHash: hashedPassword,
+              username: this.username,
+              displayName: this.displayName,
+              role: this.isAdmin ? 'admin' : 'user',
+              status: 'active',
+              identityVersion: 1,
               signUpDate: this.signUpDate,
               labsProgram: this.labsProgram,
               analyticsId: this.analyticsId,

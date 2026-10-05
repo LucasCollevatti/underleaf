@@ -28,7 +28,7 @@ export function AccountMenuItems({
   return (
     <>
       <OLDropdownItem as="li" disabled role="menuitem">
-        {sessionUser.email}
+        {sessionUser.username}
       </OLDropdownItem>
       <NavDropdownDivider />
       <NavDropdownLinkItem href="/user/settings">

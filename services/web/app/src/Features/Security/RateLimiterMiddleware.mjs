@@ -59,20 +59,20 @@ function rateLimit(rateLimiter, opts = {}) {
   }
 }
 
-function loginRateLimitEmail(emailField = 'email') {
+function loginRateLimitUsername() {
   return function (req, res, next) {
-    const email = getRawReqInput(req).body[emailField]
-    if (!email) {
+    const username = getRawReqInput(req).body.username
+    if (!username) {
       return next()
     }
-    LoginRateLimiter.processLoginRequest(email, (err, isAllowed) => {
+    LoginRateLimiter.processLoginRequest(username, (err, isAllowed) => {
       if (err) {
         return next(err)
       }
       if (isAllowed) {
         next()
       } else {
-        logger.warn({ email }, 'rate limit exceeded')
+        logger.warn({ username }, 'rate limit exceeded')
         res.status(429) // Too many requests
         res.json({
           message: {
@@ -88,7 +88,7 @@ function loginRateLimitEmail(emailField = 'email') {
 
 const RateLimiterMiddleware = {
   rateLimit,
-  loginRateLimitEmail,
+  loginRateLimitUsername,
 }
 
 export default RateLimiterMiddleware

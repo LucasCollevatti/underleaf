@@ -17,7 +17,8 @@ async function injectUserInfoIntoThreads(threads) {
     _id: true,
     first_name: true,
     last_name: true,
-    email: true,
+    username: true,
+    displayName: true,
   }
   const users = await UserGetter.promises.getUsers(userIds, projection)
   const usersById = new Map()

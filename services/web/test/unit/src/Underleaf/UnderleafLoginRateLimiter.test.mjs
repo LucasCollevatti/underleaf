@@ -74,14 +74,10 @@ describe('Underleaf username login rate limiting', function () {
     expect(remove).toHaveBeenCalledWith('first-admin')
   })
 
-  it('preserves email validation outside Underleaf mode', async function () {
-    settings.underleaf = false
-    expect(await limiter.processLoginRequest('user@example.com')).toBe(true)
-    expect(consume).toHaveBeenCalledWith('user@example.com', 1, {
-      method: 'email',
-    })
-    await expect(limiter.processLoginRequest('first-admin')).rejects.toThrow(
-      'Invalid request'
-    )
+  it('never treats email as an account identifier', async function () {
+    await expect(
+      limiter.processLoginRequest('user@example.com')
+    ).rejects.toThrow('Invalid request')
+    expect(consume).not.toHaveBeenCalled()
   })
 })

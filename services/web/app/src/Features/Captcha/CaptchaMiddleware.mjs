@@ -6,7 +6,7 @@ import OError from '@overleaf/o-error'
 import DeviceHistory from './DeviceHistory.mjs'
 import AuthenticationController from '../Authentication/AuthenticationController.mjs'
 import { expressify } from '@overleaf/promise-utils'
-import EmailsHelper from '../Helpers/EmailHelper.mjs'
+import { normalizeUsername } from '../Underleaf/UnderleafUserManager.mjs'
 import {
   z,
   parseReq,
@@ -19,7 +19,7 @@ import {
 // here isn't this middleware's job.
 const captchaBodySchema = z.object({
   body: z.object({
-    email: z.string().optional(),
+    username: z.string().optional(),
     // Google reCAPTCHA verification token: an opaque, third-party-defined
     // string (its format is a Google implementation detail, not documented
     // or guaranteed stable), so this stays a bare string rather than a
@@ -54,15 +54,16 @@ async function canSkipCaptcha(req, res) {
   const { body: reqBody } = parseReq(req, captchaBodySchema, {
     logOnly: true,
   })
+  const username = normalizeUsername(reqBody.username)
   const trustedUser =
-    reqBody.email &&
-    (Settings.recaptcha.trustedUsers.includes(reqBody.email) ||
-      Settings.recaptcha.trustedUsersRegex?.test(reqBody.email))
+    username &&
+    (Settings.recaptcha?.trustedUsers?.includes(username) ||
+      Settings.recaptcha?.trustedUsersRegex?.test(username))
   if (trustedUser) {
     return res.json(true)
   }
   await initializeDeviceHistory(req)
-  const canSkip = req.deviceHistory.has(reqBody.email)
+  const canSkip = req.deviceHistory.has(username)
   Metrics.inc('captcha_pre_flight', 1, {
     status: canSkip ? 'skipped' : 'missing',
   })
@@ -83,11 +84,11 @@ function validateCaptcha(action) {
       logOnly: true,
     })
     stripRecaptchaField(req)
-    const email = EmailsHelper.parseEmail(reqBody.email)
+    const username = normalizeUsername(reqBody.username)
     const trustedUser =
-      email &&
-      (Settings.recaptcha.trustedUsers.includes(email) ||
-        Settings.recaptcha.trustedUsersRegex?.test(email))
+      username &&
+      (Settings.recaptcha?.trustedUsers?.includes(username) ||
+        Settings.recaptcha?.trustedUsersRegex?.test(username))
     if (!Settings.recaptcha?.siteKey || Settings.recaptcha.disabled[action]) {
       if (action === 'login') {
         AuthenticationController.setAuditInfo(req, { captcha: 'disabled' })
@@ -105,7 +106,7 @@ function validateCaptcha(action) {
     const reCaptchaResponse = reqBody['g-recaptcha-response']
     if (action === 'login') {
       await initializeDeviceHistory(req)
-      const fromKnownDevice = req.deviceHistory.has(email)
+      const fromKnownDevice = req.deviceHistory.has(username)
       AuthenticationController.setAuditInfo(req, { fromKnownDevice })
       if (!reCaptchaResponse && fromKnownDevice) {
         // The user has previously logged in from this device, which required

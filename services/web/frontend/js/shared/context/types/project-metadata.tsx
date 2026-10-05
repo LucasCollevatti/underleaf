@@ -7,7 +7,8 @@ import { ExtractStrict } from '../../../../../types/utils'
 export type ProjectMember = {
   _id: UserId
   privileges: 'readOnly' | 'readAndWrite' | 'review'
-  email: string
+  username: string
+  displayName?: string
   first_name: string
   last_name: string
   pendingEditor?: boolean
@@ -16,7 +17,8 @@ export type ProjectMember = {
 
 export type ProjectOwner = {
   _id: UserId
-  email: string
+  username: string
+  displayName?: string
   first_name: string
   last_name: string
   privileges: string
@@ -33,7 +35,8 @@ export type RequestedPrivilegeLevel = ExtractStrict<
 
 export type EditAccessRequest = {
   _id: UserId
-  email: string
+  username: string
+  displayName?: string
   first_name: string
   last_name: string
   privilegeLevel: RequestedPrivilegeLevel

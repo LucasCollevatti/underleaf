@@ -6,12 +6,17 @@ import getMeta from '@/utils/meta'
 
 type InviteProps = {
   projectName: string
-  email: string
+  username: string
   submitHandler: () => void
   isLoading?: boolean
 }
 
-function Invite({ projectName, email, submitHandler, isLoading }: InviteProps) {
+function Invite({
+  projectName,
+  username,
+  submitHandler,
+  isLoading,
+}: InviteProps) {
   const { t } = useTranslation()
   const { appName } = getMeta('ol-ExposedSettings')
 
@@ -22,12 +27,10 @@ function Invite({ projectName, email, submitHandler, isLoading }: InviteProps) {
           <div className="project-join-container">
             <img src="/underleaf-logo.png" alt={appName} />
             <h1 className="h4 mb-2">
-              {t('youre_joining_x_as_y', { projectName, email })}
+              {`You’re joining ${projectName} as @${username}`}
             </h1>
             <div className="mb-4">
-              {t(
-                'your_name_and_email_address_will_be_visible_to_project_editors'
-              )}
+              Your display name and username will be visible to project editors.
             </div>
             <OLButton
               variant="primary"

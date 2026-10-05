@@ -37,7 +37,7 @@ block append meta
 			showSubscriptionLink: nav.showSubscriptionLink,
 			showSignUpLink: showSignUpLink,
 			currentUrl: currentUrl,
-			sessionUser: sessionUser ? {email: sessionUser.email} : undefined,
+			sessionUser: sessionUser ? {username: sessionUser.username, displayName: sessionUser.displayName} : undefined,
 			adminUrl: settings.adminUrl,
 			items: cloneAndTranslateText(nav.header_extras),
 		}

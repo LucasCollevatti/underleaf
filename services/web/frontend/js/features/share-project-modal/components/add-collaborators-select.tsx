@@ -117,7 +117,7 @@ function AddCollaboratorsSelect({
         break
       }
 
-      const email = contact.type === 'user' ? contact.email : contact.display
+      const email = contact.type === 'user' ? contact.username : contact.display
       const normalisedEmail = email.toLowerCase()
 
       if (currentMemberEmails.includes(normalisedEmail)) {
@@ -127,7 +127,9 @@ function AddCollaboratorsSelect({
       let data
 
       try {
-        const invite = invites?.find(invite => invite.email === normalisedEmail)
+        const invite = invites?.find(
+          invite => invite.username === normalisedEmail
+        )
 
         if (invite) {
           data = await resendInvite(projectId, invite)

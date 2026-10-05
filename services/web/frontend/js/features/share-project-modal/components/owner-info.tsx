@@ -15,7 +15,7 @@ export default function OwnerInfo() {
     <ShareProjectModalRow>
       <div className="d-inline-flex align-items-center h5 m-0 gap-2">
         <MaterialIcon type="person" unfilled />
-        <div className="px-2">{project?.owner.email}</div>
+        <div className="px-2">{project?.owner.username}</div>
       </div>
       <div className="h5 m-0 px-4 fw-semibold">
         <div className="form-control-plaintext border-0">{t('owner')}</div>
@@ -26,7 +26,7 @@ export default function OwnerInfo() {
       <OLCol xs={8}>
         <div className="project-member-email-icon">
           <MaterialIcon type="person" />
-          <div className="email-warning">{project?.owner.email}</div>
+          <div className="email-warning">{project?.owner.username}</div>
         </div>
       </OLCol>
       <OLCol xs={4} className="text-end">

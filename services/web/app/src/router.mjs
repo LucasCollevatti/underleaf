@@ -259,9 +259,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   webRouter.post(
     '/login',
     RateLimiterMiddleware.rateLimit(overleafLoginRateLimiter), // rate limit IP (20 / 60s)
-    RateLimiterMiddleware.loginRateLimitEmail(
-      Settings.underleaf ? 'username' : 'email'
-    ), // account limit (10 / 120s)
+    RateLimiterMiddleware.loginRateLimitUsername(), // account limit (10 / 120s)
     CaptchaMiddleware.validateCaptcha('login'),
     AuthenticationController.passportLogin
   )
@@ -286,7 +284,7 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     webRouter.post(
       '/login/legacy',
       RateLimiterMiddleware.rateLimit(overleafLoginRateLimiter), // rate limit IP (20 / 60s)
-      RateLimiterMiddleware.loginRateLimitEmail(), // rate limit email (10 / 120s)
+      RateLimiterMiddleware.loginRateLimitUsername(), // rate limit email (10 / 120s)
       CaptchaMiddleware.validateCaptcha('login'),
       AuthenticationController.passportLogin
     )
@@ -319,6 +317,9 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
         '/user/reconfirm',
         '/user/emails',
         '/user/email-preferences',
+        '/user/newsletter',
+        '/user/activate',
+        '/register/activate',
       ],
       (req, res) => res.sendStatus(404)
     )
@@ -327,6 +328,20 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   EditorRouter.apply(webRouter, privateApiRouter)
   if (Settings.underleaf) {
     UnderleafSharingRouter.apply(webRouter)
+  }
+  if (Settings.underleaf) {
+    webRouter.post('/project/:Project_id/invite', (req, res) =>
+      res.sendStatus(404)
+    )
+    webRouter.get(
+      '/project/:Project_id/invites',
+      AuthenticationController.requireLogin(),
+      (req, res) => res.json({ invites: [] })
+    )
+    webRouter.post(
+      '/project/:Project_id/invite/:invite_id/resend',
+      (req, res) => res.sendStatus(404)
+    )
   }
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
   SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
@@ -374,97 +389,99 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     PermissionsController.requirePermission('change-password'),
     UserController.changePassword
   )
-  webRouter.get(
-    '/user/emails',
-    AuthenticationController.requireLogin(),
-    AsyncLocalStorage.middleware,
-    PermissionsController.useCapabilities(),
-    UserController.ensureAffiliationMiddleware,
-    UserEmailsController.list
-  )
-  webRouter.get(
-    '/user/emails/confirm',
-    AuthenticationController.requireLogin(),
-    UserEmailsController.showConfirm
-  )
-  webRouter.post(
-    '/user/emails/confirm',
-    AuthenticationController.requireLogin(),
-    RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
-    UserEmailsController.confirm
-  )
-
-  webRouter.post(
-    '/user/emails/send-confirmation-code',
-    AuthenticationController.requireLogin(),
-    RateLimiterMiddleware.rateLimit(rateLimiters.sendConfirmation),
-    await Modules.middleware('confirmationEmailMiddleware'),
-    UserEmailsController.sendExistingEmailConfirmationCode
-  )
-
-  webRouter.post(
-    '/user/emails/resend-confirmation-code',
-    AuthenticationController.requireLogin(),
-    RateLimiterMiddleware.rateLimit(rateLimiters.resendConfirmation),
-    UserEmailsController.resendExistingSecondaryEmailConfirmationCode
-  )
-
-  webRouter.post(
-    '/user/emails/confirm-code',
-    AuthenticationController.requireLogin(),
-    RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
-    UserEmailsController.checkExistingEmailConfirmationCode
-  )
-
-  webRouter.get(
-    '/user/emails/primary-email-check',
-    AuthenticationController.requireLogin(),
-    UserEmailsController.primaryEmailCheckPage
-  )
-
-  webRouter.post(
-    '/user/emails/primary-email-check',
-    AuthenticationController.requireLogin(),
-    PermissionsController.useCapabilities(),
-    UserEmailsController.primaryEmailCheck
-  )
-
-  if (Features.hasFeature('affiliations')) {
-    webRouter.post(
-      '/user/emails/delete',
-      AuthenticationController.requireLogin(),
-      RateLimiterMiddleware.rateLimit(rateLimiters.deleteEmail),
-      await Modules.middleware('userDeleteEmail'),
-      UserEmailsController.remove
-    )
-    webRouter.post(
-      '/user/emails/default',
-      AuthenticationController.requireLogin(),
-      UserEmailsController.setDefault
-    )
-    webRouter.post(
-      '/user/emails/endorse',
-      AuthenticationController.requireLogin(),
-      PermissionsController.requirePermission('endorse-email'),
-      RateLimiterMiddleware.rateLimit(rateLimiters.endorseEmail),
-      UserEmailsController.endorse
-    )
-  }
-
-  if (Features.hasFeature('saas')) {
+  if (!Settings.underleaf) {
     webRouter.get(
-      '/user/emails/add-secondary',
+      '/user/emails',
       AuthenticationController.requireLogin(),
-      PermissionsController.requirePermission('add-secondary-email'),
-      UserEmailsController.addSecondaryEmailPage
+      AsyncLocalStorage.middleware,
+      PermissionsController.useCapabilities(),
+      UserController.ensureAffiliationMiddleware,
+      UserEmailsController.list
+    )
+    webRouter.get(
+      '/user/emails/confirm',
+      AuthenticationController.requireLogin(),
+      UserEmailsController.showConfirm
+    )
+    webRouter.post(
+      '/user/emails/confirm',
+      AuthenticationController.requireLogin(),
+      RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
+      UserEmailsController.confirm
+    )
+
+    webRouter.post(
+      '/user/emails/send-confirmation-code',
+      AuthenticationController.requireLogin(),
+      RateLimiterMiddleware.rateLimit(rateLimiters.sendConfirmation),
+      await Modules.middleware('confirmationEmailMiddleware'),
+      UserEmailsController.sendExistingEmailConfirmationCode
+    )
+
+    webRouter.post(
+      '/user/emails/resend-confirmation-code',
+      AuthenticationController.requireLogin(),
+      RateLimiterMiddleware.rateLimit(rateLimiters.resendConfirmation),
+      UserEmailsController.resendExistingSecondaryEmailConfirmationCode
+    )
+
+    webRouter.post(
+      '/user/emails/confirm-code',
+      AuthenticationController.requireLogin(),
+      RateLimiterMiddleware.rateLimit(rateLimiters.confirmEmail),
+      UserEmailsController.checkExistingEmailConfirmationCode
     )
 
     webRouter.get(
-      '/user/emails/confirm-secondary',
+      '/user/emails/primary-email-check',
       AuthenticationController.requireLogin(),
-      PermissionsController.requirePermission('add-secondary-email'),
-      UserEmailsController.confirmSecondaryEmailPage
+      UserEmailsController.primaryEmailCheckPage
     )
+
+    webRouter.post(
+      '/user/emails/primary-email-check',
+      AuthenticationController.requireLogin(),
+      PermissionsController.useCapabilities(),
+      UserEmailsController.primaryEmailCheck
+    )
+
+    if (Features.hasFeature('affiliations')) {
+      webRouter.post(
+        '/user/emails/delete',
+        AuthenticationController.requireLogin(),
+        RateLimiterMiddleware.rateLimit(rateLimiters.deleteEmail),
+        await Modules.middleware('userDeleteEmail'),
+        UserEmailsController.remove
+      )
+      webRouter.post(
+        '/user/emails/default',
+        AuthenticationController.requireLogin(),
+        UserEmailsController.setDefault
+      )
+      webRouter.post(
+        '/user/emails/endorse',
+        AuthenticationController.requireLogin(),
+        PermissionsController.requirePermission('endorse-email'),
+        RateLimiterMiddleware.rateLimit(rateLimiters.endorseEmail),
+        UserEmailsController.endorse
+      )
+    }
+
+    if (Features.hasFeature('saas')) {
+      webRouter.get(
+        '/user/emails/add-secondary',
+        AuthenticationController.requireLogin(),
+        PermissionsController.requirePermission('add-secondary-email'),
+        UserEmailsController.addSecondaryEmailPage
+      )
+
+      webRouter.get(
+        '/user/emails/confirm-secondary',
+        AuthenticationController.requireLogin(),
+        PermissionsController.requirePermission('add-secondary-email'),
+        UserEmailsController.confirmSecondaryEmailPage
+      )
+    }
   }
 
   webRouter.get(
@@ -497,11 +514,13 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     UserController.subscribe
   )
 
-  webRouter.get(
-    '/user/email-preferences',
-    AuthenticationController.requireLogin(),
-    UserPagesController.emailPreferencesPage
-  )
+  if (!Settings.underleaf) {
+    webRouter.get(
+      '/user/email-preferences',
+      AuthenticationController.requireLogin(),
+      UserPagesController.emailPreferencesPage
+    )
+  }
 
   webRouter.post(
     '/user/delete',
@@ -527,10 +546,12 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     UserInfoController.getUserFeatures
   )
 
-  webRouter.get(
-    '/user/reconfirm',
-    UserPagesController.renderReconfirmAccountPage
-  )
+  if (!Settings.underleaf) {
+    webRouter.get(
+      '/user/reconfirm',
+      UserPagesController.renderReconfirmAccountPage
+    )
+  }
   // for /user/reconfirm POST, see password router
 
   webRouter.get(

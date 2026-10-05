@@ -29,7 +29,8 @@ export type GetProjectsRequestBody = {
 
 export type UserRef = {
   id: string
-  email: string
+  username: string
+  displayName?: string
   firstName: string
   lastName: string
 }
@@ -72,7 +73,8 @@ export type ClonedProject = {
   lastUpdated: string
   owner: {
     _id: string
-    email: string
+    username: string
+    displayName?: string
     first_name: string
     last_name: string
   }

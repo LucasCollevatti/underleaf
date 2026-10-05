@@ -15,7 +15,8 @@ import { captureException } from '@/infrastructure/error-reporter'
 
 export type ChangesUser = {
   id: UserId
-  email: string
+  username: string
+  displayName?: string
   first_name?: string
   last_name?: string
 }

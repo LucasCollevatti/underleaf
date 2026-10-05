@@ -23,18 +23,13 @@ export function useUserContacts() {
 }
 
 function buildContact(contact: Omit<Contact, 'name' | 'display'>): Contact {
-  const [emailPrefix] = contact.email.split('@')
-
-  // the name is not just the default "email prefix as first name"
-  const hasName = contact.last_name || contact.first_name !== emailPrefix
-
-  const name = hasName
-    ? [contact.first_name, contact.last_name].filter(Boolean).join(' ')
-    : ''
+  const name =
+    contact.displayName ||
+    [contact.first_name, contact.last_name].filter(Boolean).join(' ')
 
   return {
     ...contact,
     name,
-    display: name ? `${name} <${contact.email}>` : contact.email,
+    display: name ? `${name} (@${contact.username})` : contact.username,
   }
 }

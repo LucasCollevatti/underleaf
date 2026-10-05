@@ -213,7 +213,7 @@ passport.use(
   new LocalStrategy(
     {
       passReqToCallback: true,
-      usernameField: Settings.underleaf ? 'username' : 'email',
+      usernameField: 'username',
       passwordField: 'password',
     },
     AuthenticationController.doPassportLogin
