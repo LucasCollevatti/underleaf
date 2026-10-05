@@ -1,710 +1,218 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import assert from 'node:assert'
-import sinon from 'sinon'
-import {
-  InvalidRequestError,
-  setReqValidationModeForTests,
-} from '@overleaf/validation-tools'
-import MockResponse from '../helpers/MockResponse.mjs'
-import MockRequest from '../helpers/MockRequest.mjs'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const modulePath = '../../../../app/src/Features/User/UserPagesController'
-
-describe('UserPagesController', function () {
-  beforeEach(async function (ctx) {
-    ctx.settings = {
-      apis: {
-        v1: {
-          url: 'some.host',
-          user: 'one',
-          pass: 'two',
-        },
-      },
+const mocks = vi.hoisted(() => ({
+  getUser: vi.fn(),
+  sessions: vi.fn(),
+  removeSessions: vi.fn(),
+  hooks: vi.fn(),
+  redirect: vi.fn(),
+  getRedirect: vi.fn(),
+}))
+vi.mock('@overleaf/settings', () => ({
+  default: { underleaf: true, nav: {}, enableGitBridge: true },
+}))
+vi.mock('@overleaf/logger', () => ({
+  default: { debug: vi.fn(), error: vi.fn() },
+}))
+vi.mock('@overleaf/o-error', () => ({
+  default: class extends Error {
+    static tag(error) {
+      return error
     }
-    ctx.user = {
-      _id: (ctx.user_id = 'kwjewkl'),
-      features: {},
-      email: 'joe@example.com',
-      ip_address: '1.1.1.1',
-      session_created: 'timestamp',
-      thirdPartyIdentifiers: [
-        {
-          providerId: 'google',
-          externalUserId: 'testId',
-        },
-      ],
-      refProviders: {
-        mendeley: { encrypted: 'aaaa' },
-        zotero: { encrypted: 'bbbb' },
-        papers: { encrypted: 'cccc' },
-      },
-    }
-    ctx.adminEmail = 'group-admin-email@overleaf.com'
-    ctx.subscriptionViewModel = {
-      memberGroupSubscriptions: [],
-    }
-
-    ctx.UserGetter = {
-      getUser: sinon.stub(),
-      promises: { getUser: sinon.stub() },
-    }
-    ctx.UserSessionsManager = { getAllUserSessions: sinon.stub() }
-    ctx.dropboxStatus = {}
-    ctx.ErrorController = { notFound: sinon.stub() }
-    ctx.SessionManager = {
-      getLoggedInUserId: sinon.stub().returns(ctx.user._id),
-      getSessionUser: sinon.stub().returns(ctx.user),
-    }
-    ctx.AuthenticationController = {
-      getRedirectFromSession: sinon.stub(),
-      setRedirectInSession: sinon.stub(),
-    }
-    ctx.Features = {
-      hasFeature: sinon.stub().returns(false),
-    }
-    ctx.PersonalAccessTokenManager = {
-      listTokens: sinon.stub().returns([]),
-    }
-    ctx.SubscriptionLocator = {
-      promises: {
-        getAdminEmail: sinon.stub().returns(ctx.adminEmail),
-        getMemberSubscriptions: sinon.stub().resolves(),
-      },
-    }
-    ctx.SplitTestHandler = {
-      promises: {
-        getAssignment: sinon.stub().returns('default'),
-      },
-    }
-    ctx.Modules = {
-      promises: {
-        hooks: {
-          fire: sinon.stub().resolves(),
-        },
-      },
-    }
-
-    vi.doMock('@overleaf/settings', () => ({
-      default: ctx.settings,
-    }))
-
-    vi.doMock('../../../../app/src/Features/User/UserGetter', () => ({
-      default: ctx.UserGetter,
-    }))
-
-    vi.doMock('../../../../app/src/Features/User/UserSessionsManager', () => ({
-      default: ctx.UserSessionsManager,
-    }))
-
-    vi.doMock('../../../../app/src/Features/Errors/ErrorController', () => ({
-      default: ctx.ErrorController,
-    }))
-
-    vi.doMock(
-      '../../../../app/src/Features/Authentication/AuthenticationController',
-      () => ({
-        default: ctx.AuthenticationController,
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/Subscription/SubscriptionLocator',
-      () => ({
-        default: ctx.SubscriptionLocator,
-      })
-    )
-
-    vi.doMock('../../../../app/src/infrastructure/Features', () => ({
-      default: ctx.Features,
-    }))
-
-    vi.doMock(
-      '../../../../modules/oauth2-server/app/src/OAuthPersonalAccessTokenManager',
-      () => ({
-        default: ctx.PersonalAccessTokenManager,
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/Authentication/SessionManager',
-      () => ({
-        default: ctx.SessionManager,
-      })
-    )
-
-    vi.doMock(
-      '../../../../app/src/Features/SplitTests/SplitTestHandler',
-      () => ({
-        default: ctx.SplitTestHandler,
-      })
-    )
-
-    vi.doMock('../../../../app/src/infrastructure/Modules', () => ({
-      default: ctx.Modules,
-    }))
-    ctx.request = sinon.stub()
-    vi.doMock('request', () => ({
-      default: ctx.request,
-    }))
-
-    ctx.UserPagesController = (await import(modulePath)).default
-    ctx.req = new MockRequest(vi)
-    ctx.req.capabilitySet = new Set()
-    ctx.req.session.user = ctx.user
-    ctx.res = new MockResponse(vi)
+  },
+}))
+vi.mock('../../../../app/src/Features/User/UserGetter.mjs', () => ({
+  default: { promises: { getUser: mocks.getUser } },
+}))
+vi.mock('../../../../app/src/Features/User/UserSessionsManager.mjs', () => ({
+  default: {
+    getAllUserSessions: mocks.sessions,
+    removeSessionsFromRedis: mocks.removeSessions,
+  },
+}))
+vi.mock('../../../../app/src/infrastructure/Modules.mjs', () => ({
+  default: { promises: { hooks: { fire: mocks.hooks } } },
+}))
+vi.mock(
+  '../../../../app/src/Features/Authentication/AuthenticationController.mjs',
+  () => ({
+    default: {
+      setRedirectInSession: mocks.redirect,
+      getRedirectFromSession: mocks.getRedirect,
+    },
   })
+)
 
-  afterEach(function () {
-    setReqValidationModeForTests(null)
+import UserPagesController from '../../../../app/src/Features/User/UserPagesController.mjs'
+
+let req, user
+beforeEach(() => {
+  vi.clearAllMocks()
+  user = {
+    _id: 'account-id',
+    username: 'alpha',
+    displayName: 'Alpha',
+    role: 'user',
+    status: 'active',
+    identityVersion: 1,
+    passwordHash: 'private-hash',
+    features: {},
+    refProviders: { zotero: { encrypted: 'private-token' } },
+    ip_address: '127.0.0.1',
+    session_created: 'created',
+  }
+  req = {
+    query: {},
+    session: { passport: { user } },
+    capabilitySet: new Set(['change-password']),
+  }
+  mocks.getUser.mockResolvedValue(user)
+  mocks.hooks.mockResolvedValue([[]])
+  mocks.getRedirect.mockReturnValue(undefined)
+  mocks.sessions.mockImplementation((user, excluded, callback) =>
+    callback(null, [])
+  )
+  mocks.removeSessions.mockImplementation((user, retained, callback) =>
+    callback()
+  )
+})
+function invoke(handler) {
+  return new Promise((resolve, reject) => {
+    const headers = {}
+    const res = {
+      set: (key, value) => {
+        headers[key] = value
+        return res
+      },
+      render: (view, data) => resolve({ view, data, headers }),
+      redirect: url => resolve({ redirect: url }),
+    }
+    handler(req, res, reject)
   })
+}
 
-  describe('registerPage', function () {
-    it('should render the register page', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedTemplate.should.equal('user/register')
-          resolve()
-        }
-        ctx.UserPagesController.registerPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
+describe('UserPagesController local username accounts', () => {
+  it('renders login in the shared authentication shell without registration data', async () => {
+    const result = await invoke(UserPagesController.loginPage)
+    expect(result.view).toBe('underleaf/auth')
+    expect(result.data.authPage).toBe('login')
+    expect(result.headers['Cache-Control']).toBe('no-store')
+  })
+  it('preserves an explicit project redirect', async () => {
+    req.query.redir = '/project/project-id'
+    await invoke(UserPagesController.loginPage)
+    expect(mocks.redirect).toHaveBeenCalledWith(req, '/project/project-id')
+  })
+  it('does not overwrite an existing login redirect', async () => {
+    req.query.redir = '/project/new'
+    mocks.getRedirect.mockReturnValue('/project/existing')
+    await invoke(UserPagesController.loginPage)
+    expect(mocks.redirect).not.toHaveBeenCalled()
+  })
+  it('marks parameterized login pages as noindex', async () => {
+    req.query.redir = '/project/project-id'
+    const result = await invoke(UserPagesController.loginPage)
+    expect(result.data.metadata.robotsNoindexNofollow).toBe(true)
+  })
+  it('renders canonical settings without email, SSO or credentials', async () => {
+    const result = await invoke(UserPagesController.settingsPage)
+    expect(result.view).toBe('user/settings')
+    expect(result.data.user).toMatchObject({
+      id: 'account-id',
+      username: 'alpha',
+      displayName: 'Alpha',
+      role: 'user',
+      status: 'active',
     })
-
-    it('should set sharedProjectData', async function (ctx) {
-      ctx.req.session.sharedProjectData = {
-        project_name: 'myProject',
-        user_first_name: 'user_first_name_here',
-      }
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.sharedProjectData.project_name.should.equal(
-            'myProject'
-          )
-          ctx.res.renderedVariables.sharedProjectData.user_first_name.should.equal(
-            'user_first_name_here'
-          )
-          resolve()
-        }
-        ctx.UserPagesController.registerPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should set newTemplateData', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.req.session.templateData = { templateName: 'templateName' }
-
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.newTemplateData.templateName.should.equal(
-            'templateName'
-          )
-          resolve()
-        }
-        ctx.UserPagesController.registerPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should not set the newTemplateData if there is nothing in the session', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          assert.equal(
-            ctx.res.renderedVariables.newTemplateData.templateName,
-            undefined
-          )
-          resolve()
-        }
-        ctx.UserPagesController.registerPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
+    for (const field of [
+      'email',
+      'emails',
+      'password',
+      'passwordHash',
+      'samlIdentifiers',
+      'thirdPartyIdentifiers',
+    ])
+      expect(result.data.user).not.toHaveProperty(field)
+    for (const field of [
+      'oauthProviders',
+      'ssoErrorMessage',
+      'memberOfSSOEnabledGroups',
+      'reconfirmationRemoveEmail',
+      'currentManagedUserAdminEmail',
+      'emailAddressLimit',
+    ])
+      expect(result.data).not.toHaveProperty(field)
+    expect(result.data.hasPassword).toBe(true)
+    expect(result.data.user.refProviders).toEqual({
+      zotero: true,
+      mendeley: false,
+      papers: false,
     })
   })
-
-  describe('loginForm', function () {
-    it('should render the login page', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedTemplate.should.equal('user/login')
-          resolve()
-        }
-        ctx.UserPagesController.loginPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    describe('when an explicit redirect is set via query string', function () {
-      const redir = '/somewhere/in/particular'
-
-      beforeEach(function (ctx) {
-        ctx.AuthenticationController.getRedirectFromSession = sinon
-          .stub()
-          .returns(null)
-        ctx.AuthenticationController.setRedirectInSession = sinon.stub()
-        ctx.req.query = { redir }
-      })
-
-      it('should set a redirect', async function (ctx) {
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = page => {
-            ctx.AuthenticationController.setRedirectInSession.callCount.should.equal(
-              1
-            )
-            expect(
-              ctx.AuthenticationController.setRedirectInSession.lastCall.args[1]
-            ).to.equal(redir)
-            resolve()
-          }
-          ctx.UserPagesController.loginPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-    })
-
-    describe('request validation', function () {
-      beforeEach(function (ctx) {
-        // a bracketed query param (e.g. ?redir[foo]=bar) parses to a nested
-        // object, which the query schema (string | string[] values only)
-        // rejects
-        ctx.req.query = { redir: { foo: 'bar' } }
-        ctx.AuthenticationController.getRedirectFromSession = sinon
-          .stub()
-          .returns(null)
-      })
-
-      it('should still process the request in log mode', async function (ctx) {
-        setReqValidationModeForTests('log')
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = () => {
-            expect(
-              ctx.AuthenticationController.setRedirectInSession
-            ).to.have.been.calledWith(ctx.req, { foo: 'bar' })
-            resolve()
-          }
-          ctx.UserPagesController.loginPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-
-      it('should reject the request when enforced', function (ctx) {
-        setReqValidationModeForTests('enforce')
-        expect(() =>
-          ctx.UserPagesController.loginPage(ctx.req, ctx.res)
-        ).to.throw(InvalidRequestError)
-        expect(ctx.AuthenticationController.setRedirectInSession).to.not.have
-          .been.called
-      })
-    })
+  it('keeps sync notifications and consumes them from the session', async () => {
+    req.session.projectSyncSuccessMessage = 'Synced'
+    req.session.referenceLinkingErrorMessage = 'Cannot link'
+    const result = await invoke(UserPagesController.settingsPage)
+    expect(result.data.projectSyncSuccessMessage).toBe('Synced')
+    expect(result.data.referenceLinkingErrorMessage).toBe('Cannot link')
+    expect(req.session).not.toHaveProperty('projectSyncSuccessMessage')
+    expect(req.session).not.toHaveProperty('referenceLinkingErrorMessage')
   })
-
-  describe('sessionsPage', function () {
-    beforeEach(function (ctx) {
-      ctx.UserSessionsManager.getAllUserSessions.callsArgWith(2, null, [])
-    })
-
-    it('should render user/sessions', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedTemplate.should.equal('user/sessions')
-          resolve()
-        }
-        ctx.UserPagesController.sessionsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should include current session data in the view', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(ctx.res.renderedVariables.currentSession).to.deep.equal({
-            ip_address: '1.1.1.1',
-            session_created: 'timestamp',
-          })
-          resolve()
-        }
-        ctx.UserPagesController.sessionsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should have called getAllUserSessions', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = page => {
-          ctx.UserSessionsManager.getAllUserSessions.callCount.should.equal(1)
-          resolve()
-        }
-        ctx.UserPagesController.sessionsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    describe('when getAllUserSessions produces an error', function () {
-      beforeEach(function (ctx) {
-        ctx.UserSessionsManager.getAllUserSessions.callsArgWith(
-          2,
-          new Error('woops')
-        )
-      })
-
-      it('should call next with an error', async function (ctx) {
-        await new Promise(resolve => {
-          ctx.next = err => {
-            assert(err !== null)
-            assert(err instanceof Error)
-            resolve()
-          }
-          ctx.UserPagesController.sessionsPage(ctx.req, ctx.res, ctx.next)
-        })
-      })
-    })
+  it('preserves personal access token integrations independently of login identity', async () => {
+    mocks.hooks.mockResolvedValue([[{ name: 'automation', id: 'token-id' }]])
+    const result = await invoke(UserPagesController.settingsPage)
+    expect(result.data.personalAccessTokens).toEqual([
+      { name: 'automation', id: 'token-id' },
+    ])
+    expect(mocks.hooks).toHaveBeenCalledWith(
+      'listPersonalAccessTokens',
+      'account-id'
+    )
   })
-
-  describe('settingsPage', function () {
-    beforeEach(function (ctx) {
-      ctx.request.get = sinon
-        .stub()
-        .callsArgWith(1, null, { statusCode: 200 }, { has_password: true })
-      ctx.UserGetter.promises.getUser = sinon.stub().resolves(ctx.user)
-    })
-
-    it('should render user/settings', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedTemplate.should.equal('user/settings')
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should send user', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.user.id.should.equal(ctx.user._id)
-          ctx.res.renderedVariables.user.email.should.equal(ctx.user.email)
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it("should set 'shouldAllowEditingDetails' to true", async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.shouldAllowEditingDetails.should.equal(true)
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should restructure thirdPartyIdentifiers data for template use', async function (ctx) {
-      const expectedResult = {
-        google: 'testId',
-      }
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(ctx.res.renderedVariables.thirdPartyIds).to.include(
-            expectedResult
-          )
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it("should set and clear 'projectSyncSuccessMessage'", async function (ctx) {
-      ctx.req.session.projectSyncSuccessMessage = 'Some Sync Success'
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.projectSyncSuccessMessage.should.equal(
-            'Some Sync Success'
-          )
-          expect(ctx.req.session.projectSyncSuccessMessage).to.not.exist
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it("should set and clear 'projectSyncErrorMessage'", async function (ctx) {
-      ctx.req.session.projectSyncErrorMessage = 'Some Sync Error'
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          ctx.res.renderedVariables.projectSyncErrorMessage.should.equal(
-            'Some Sync Error'
-          )
-          expect(ctx.req.session.projectSyncErrorMessage).to.not.exist
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it("should leave 'projectSyncErrorMessage' undefined when not set on the session", async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(ctx.res.renderedVariables.projectSyncErrorMessage).to.not.exist
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should cast refProviders to booleans', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(ctx.res.renderedVariables.user.refProviders).to.deep.equal({
-            mendeley: true,
-            papers: true,
-            zotero: true,
-          })
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should send the correct managed user admin email', async function (ctx) {
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(
-            ctx.res.renderedVariables.currentManagedUserAdminEmail
-          ).to.equal(ctx.adminEmail)
-          resolve()
-        }
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    it('should send info for groups with SSO enabled', async function (ctx) {
-      ctx.user.enrollment = {
-        sso: [
-          {
-            groupId: 'abc123abc123',
-            primary: true,
-            linkedAt: new Date(),
-          },
-        ],
-      }
-      const group1 = {
-        _id: 'abc123abc123',
-        teamName: 'Group SSO Rulz',
-        admin_id: {
-          email: 'admin.email@ssolove.com',
-        },
-        linked: true,
-      }
-      const group2 = {
-        _id: 'def456def456',
-        admin_id: {
-          email: 'someone.else@noname.co.uk',
-        },
-        linked: false,
-      }
-
-      ctx.Modules.promises.hooks.fire
-        .withArgs('getUserGroupsSSOEnrollmentStatus')
-        .resolves([[group1, group2]])
-      await new Promise((resolve, reject) => {
-        ctx.res.callback = () => {
-          expect(
-            ctx.res.renderedVariables.memberOfSSOEnabledGroups
-          ).to.deep.equal([
-            {
-              groupId: 'abc123abc123',
-              groupName: 'Group SSO Rulz',
-              adminEmail: 'admin.email@ssolove.com',
-              linked: true,
-            },
-            {
-              groupId: 'def456def456',
-              groupName: undefined,
-              adminEmail: 'someone.else@noname.co.uk',
-              linked: false,
-            },
-          ])
-          resolve()
-        }
-
-        ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res,
-          ctx.rejectOnError(reject)
-        )
-      })
-    })
-
-    describe('when ldap.updateUserDetailsOnLogin is true', function () {
-      beforeEach(function (ctx) {
-        ctx.settings.ldap = { updateUserDetailsOnLogin: true }
-      })
-
-      afterEach(function (ctx) {
-        delete ctx.settings.ldap
-      })
-
-      it('should set "shouldAllowEditingDetails" to false', async function (ctx) {
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = () => {
-            ctx.res.renderedVariables.shouldAllowEditingDetails.should.equal(
-              false
-            )
-            resolve()
-          }
-          ctx.UserPagesController.settingsPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-    })
-
-    describe('when saml.updateUserDetailsOnLogin is true', function () {
-      beforeEach(function (ctx) {
-        ctx.settings.saml = { updateUserDetailsOnLogin: true }
-      })
-
-      afterEach(function (ctx) {
-        delete ctx.settings.saml
-      })
-
-      it('should set "shouldAllowEditingDetails" to false', async function (ctx) {
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = () => {
-            ctx.res.renderedVariables.shouldAllowEditingDetails.should.equal(
-              false
-            )
-            resolve()
-          }
-          ctx.UserPagesController.settingsPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-    })
-
-    describe('request validation', function () {
-      beforeEach(function (ctx) {
-        // an unrecognized query param (e.g. a tracking param on an old
-        // link) is rejected by the strict query schema
-        ctx.req.query = {
-          remove: 'someone@example.com',
-          utm_source: 'newsletter',
-        }
-      })
-
-      it('should still process the request in log mode', async function (ctx) {
-        setReqValidationModeForTests('log')
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = () => {
-            ctx.res.renderedVariables.reconfirmationRemoveEmail.should.equal(
-              'someone@example.com'
-            )
-            resolve()
-          }
-          ctx.UserPagesController.settingsPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-
-      it('should reject an invalid remove query value', async function (ctx) {
-        setReqValidationModeForTests('enforce')
-        ctx.req.query = { remove: { foo: 'bar' } }
-        await ctx.UserPagesController.settingsPage(
-          ctx.req,
-          ctx.res
-        ).should.be.rejectedWith(InvalidRequestError)
-        expect(ctx.UserGetter.promises.getUser).to.not.have.been.called
-      })
-    })
-
-    describe('with an oauth-complete query param', function () {
-      it('accepts any string value', async function (ctx) {
-        ctx.req.query = { 'oauth-complete': 'github' }
-        await new Promise((resolve, reject) => {
-          ctx.res.callback = () => {
-            ctx.res.renderedTemplate.should.equal('user/settings')
-            resolve()
-          }
-          ctx.UserPagesController.settingsPage(
-            ctx.req,
-            ctx.res,
-            ctx.rejectOnError(reject)
-          )
-        })
-      })
-    })
+  it('still renders settings if an optional integration fails', async () => {
+    mocks.hooks.mockRejectedValue(new Error('Optional integration unavailable'))
+    expect((await invoke(UserPagesController.settingsPage)).view).toBe(
+      'user/settings'
+    )
+  })
+  it('expires sessions for a deleted account before redirecting', async () => {
+    mocks.getUser.mockResolvedValue(null)
+    expect((await invoke(UserPagesController.settingsPage)).redirect).toBe('/')
+    expect(mocks.removeSessions).toHaveBeenCalledWith(
+      { _id: 'account-id' },
+      null,
+      expect.any(Function)
+    )
+  })
+  it('lists other sessions without querying identity by email', async () => {
+    req.sessionID = 'current-session'
+    mocks.sessions.mockImplementation((user, excluded, callback) =>
+      callback(null, [{ ip_address: 'other-device' }])
+    )
+    const result = await invoke(UserPagesController.sessionsPage)
+    expect(result.view).toBe('user/sessions')
+    expect(result.data.sessions).toEqual([{ ip_address: 'other-device' }])
+    expect(mocks.sessions).toHaveBeenCalledWith(
+      user,
+      ['current-session'],
+      expect.any(Function)
+    )
+  })
+  it('propagates session retrieval errors', async () => {
+    const failure = new Error('Session store unavailable')
+    mocks.sessions.mockImplementation((user, excluded, callback) =>
+      callback(failure)
+    )
+    await expect(invoke(UserPagesController.sessionsPage)).rejects.toBe(failure)
+  })
+  it('does not expose registration, recovery or email settings pages', () => {
+    for (const name of [
+      'registerPage',
+      'reconfirmPage',
+      'emailPreferencesPage',
+      'oneTimeLoginPage',
+      'compromisedPasswordPage',
+    ])
+      expect(UserPagesController).not.toHaveProperty(name)
   })
 })

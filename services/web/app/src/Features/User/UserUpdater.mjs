@@ -2,12 +2,10 @@ import logger from '@overleaf/logger'
 import { db } from '../../infrastructure/mongodb.mjs'
 import Mongo from '../Helpers/Mongo.mjs'
 import { callbackify } from 'node:util'
-import UserGetter from './UserGetter.mjs'
 import Errors from '../Errors/Errors.js'
 import UserAuditLogHandler from './UserAuditLogHandler.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import UserSessionsManager from './UserSessionsManager.mjs'
-import ThirdPartyIdentityManager from './ThirdPartyIdentityManager.mjs'
 
 const { normalizeQuery } = Mongo
 const retiredFields = new Set([
@@ -18,41 +16,14 @@ const retiredFields = new Set([
   'must_reconfirm',
   'lastPrimaryEmailCheck',
   'onboardingEmailSentAt',
+  'samlIdentifiers',
+  'thirdPartyIdentifiers',
 ])
 const isRetiredField = path =>
-  typeof path === 'string' && retiredFields.has(path.split('.')[0])
-
-async function retiredEmailIdentity() {
-  throw new Error(
-    'Email identity is unavailable. Use username account administration.'
-  )
-}
-
-async function clearSAMLData(userId) {
-  await updateUser(userId, {
-    $unset: { samlIdentifiers: 1, 'enrollment.sso': 1 },
-  })
-}
-
-async function clearThirdPartyIdentifiers(userId, auditLog) {
-  const user = await UserGetter.promises.getUser(userId, {
-    thirdPartyIdentifiers: 1,
-  })
-  await UserAuditLogHandler.promises.addEntry(
-    userId,
-    'clear-third-party-identifiers',
-    auditLog.initiatorId,
-    auditLog.ipAddress,
-    {}
-  )
-  for (const thirdPartyIdentifier of user.thirdPartyIdentifiers || []) {
-    await ThirdPartyIdentityManager.promises.unlink(
-      userId,
-      thirdPartyIdentifier.providerId,
-      auditLog
-    )
-  }
-}
+  typeof path === 'string' &&
+  (retiredFields.has(path.split('.')[0]) ||
+    path === 'enrollment.sso' ||
+    path.startsWith('enrollment.sso.'))
 
 async function updateUser(query, update) {
   if (!update || Array.isArray(update) || typeof update !== 'object') {
@@ -66,7 +37,8 @@ async function updateUser(query, update) {
     for (const [field, value] of Object.entries(fields)) {
       if (
         isRetiredField(field) ||
-        (operator === '$rename' && isRetiredField(value))
+        (operator === '$rename' && isRetiredField(value)) ||
+        (field === 'enrollment' && value && Object.hasOwn(value, 'sso'))
       ) {
         throw new Error(
           'Cannot restore retired email or password identity fields.'
@@ -103,18 +75,8 @@ async function suspendUser(userId, auditLog = {}) {
   )
 }
 
-// Explicitly reject retired write interfaces used by inherited scripts/modules.
+// Account metadata updates and suspension; identity changes use UnderleafUserManager.
 const promises = {
-  addAffiliationForNewUser: retiredEmailIdentity,
-  addEmailAddress: retiredEmailIdentity,
-  changeEmailAddress: retiredEmailIdentity,
-  confirmEmail: retiredEmailIdentity,
-  removeEmailAddress: retiredEmailIdentity,
-  removeReconfirmFlag: retiredEmailIdentity,
-  setDefaultEmailAddress: retiredEmailIdentity,
-  migrateDefaultEmailAddress: retiredEmailIdentity,
-  clearSAMLData,
-  clearThirdPartyIdentifiers,
   updateUser,
   suspendUser,
 }

@@ -68,16 +68,6 @@ export const UserSchema = new Schema(
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     institution: { type: String, default: '' },
     enrollment: {
-      sso: [
-        {
-          groupId: {
-            type: ObjectId,
-            ref: 'Subscription',
-          },
-          linkedAt: Date,
-          primary: { type: Boolean, default: false },
-        },
-      ],
       managedBy: {
         type: ObjectId,
         ref: 'Subscription',
@@ -241,8 +231,6 @@ export const UserSchema = new Schema(
       refreshToken: { type: String },
     },
     awareOfV2: { type: Boolean, default: false },
-    samlIdentifiers: { type: Array, default: [] },
-    thirdPartyIdentifiers: { type: Array, default: [] },
     migratedAt: { type: Date },
     twoFactorAuthentication: {
       createdAt: { type: Date },
