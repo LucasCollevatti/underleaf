@@ -30,6 +30,12 @@ administrador fica disponível para recuperação ou automação.
 Para parar os containers, use `make down`.
 Em Settings, usuários alteram o nome de exibição, a senha e a aparência
 System/Light/Dark. O username é administrado pelo responsável pela instalação.
+Projects usa o mesmo dashboard desde o primeiro projeto, com estado vazio,
+criação/importação, filtros e lixeira. `/admin` reúne estatísticas da instalação;
+`/admin/users` oferece busca, tabela somente para leitura e modais para criar,
+editar, redefinir senha, ativar/desativar e excluir contas. A exclusão exige
+digitar `DELETE` e escolher explicitamente excluir todos os projetos da conta.
+Para preservá-los, cancele e transfira sua propriedade antes de excluir o usuário.
 No editor, Share Project busca contas existentes por username e concede acesso
 direto como editor ou viewer, sem convites por email nem limites de plano.
 Volumes nomeados preservam projetos, histórico, cache, banco e saídas entre

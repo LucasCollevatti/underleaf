@@ -65,6 +65,7 @@ describe('<ProjectListRoot />', function () {
     ])
     Object.assign(getMeta('ol-ExposedSettings'), {
       templateLinks: [],
+      underleaf: false,
     })
     window.metaAttributesCache.set('ol-userEmails', [
       { email: 'test@overleaf.com', default: true },
@@ -108,6 +109,41 @@ describe('<ProjectListRoot />', function () {
           'Please confirm your primary email address test@overleaf.com by clicking on the link in the confirmation email.'
         )
       ).to.be.null
+    })
+  })
+
+  describe('Underleaf empty dashboard', function () {
+    beforeEach(async function () {
+      Object.assign(getMeta('ol-ExposedSettings'), { underleaf: true })
+      renderWithProjectListContext(<ProjectListRoot />, { projects: [] })
+      await fetchMock.callHistory.flush(true)
+      await screen.findByText('No projects yet')
+    })
+
+    it('keeps the normal sidebar, theme and project creation without a marketing welcome page', function () {
+      expect(document.querySelector('.underleaf-app-shell')).to.exist
+      expect(screen.getByRole('link', { name: 'Underleaf' })).to.exist
+      expect(screen.getByRole('link', { name: 'Account settings' })).to.exist
+      expect(screen.getByRole('radio', { name: 'System', exact: true })).to
+        .exist
+      expect(document.getElementById('new-project-button-no-projects')).to.exist
+      expect(screen.queryByRole('heading', { name: 'Welcome to Overleaf' })).to
+        .be.null
+      expect(document.querySelector('footer')).to.be.null
+    })
+
+    it('keeps empty shared/trash filters and suppresses creation in those views', async function () {
+      fireEvent.click(screen.getAllByText('Shared with you')[0])
+      await screen.findByText('Nothing shared with you yet')
+      expect(document.getElementById('new-project-button-no-projects')).to.be
+        .null
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Trash', exact: true })
+      )
+      await screen.findByText('No trashed projects')
+      expect(document.getElementById('new-project-button-no-projects')).to.be
+        .null
+      expect(document.querySelector('.underleaf-app-shell')).to.exist
     })
   })
 

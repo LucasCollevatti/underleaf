@@ -11,6 +11,7 @@ import { UnderleafSidebar } from '@/shared/components/underleaf/underleaf-sideba
 import { useProjectListContext } from '@/features/project-list/context/project-list-context'
 import importOverleafModules from '../../../../../macros/import-overleaf-module.macro'
 import { ActivePage } from '../../util/navigation-state'
+import getMeta from '@/utils/meta'
 
 function SidebarDsNav({
   activePage,
@@ -25,6 +26,7 @@ function SidebarDsNav({
   trashActive?: boolean
 }) {
   const { t } = useTranslation()
+  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
   const { show: showAddAffiliationWidget } = useAddAffiliation()
   const { filter, selectedTagId, selectFilter } = useProjectListContext()
   const isTrashActive =
@@ -66,8 +68,8 @@ function SidebarDsNav({
           data-testid="project-list-sidebar-scroll"
         >
           <SidebarFilters activePage={activePage} />
-          {showAddAffiliationWidget && <hr />}
-          <AddAffiliation />
+          {!isUnderleaf && showAddAffiliationWidget && <hr />}
+          {!isUnderleaf && <AddAffiliation />}
         </div>
       }
       footer={
@@ -98,9 +100,11 @@ function SidebarDsNav({
               {trashItemContent}
             </button>
           )}
-          <div className="project-list-sidebar-survey-wrapper">
-            <SurveyWidgetDsNav />
-          </div>
+          {!isUnderleaf && (
+            <div className="project-list-sidebar-survey-wrapper">
+              <SurveyWidgetDsNav />
+            </div>
+          )}
         </div>
       }
       resizeHandle={

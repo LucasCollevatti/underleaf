@@ -993,6 +993,16 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
       UnderleafAdminController.updateUser
     )
     webRouter.post(
+      '/admin/users/:userId/password',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.resetPassword
+    )
+    webRouter.post(
+      '/admin/users/:userId/status',
+      AuthorizationMiddleware.ensureUserIsSiteAdmin,
+      UnderleafAdminController.setStatus
+    )
+    webRouter.post(
       '/admin/users/:userId/delete',
       AuthorizationMiddleware.ensureUserIsSiteAdmin,
       UnderleafAdminController.deleteUser

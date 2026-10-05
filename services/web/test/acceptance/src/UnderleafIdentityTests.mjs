@@ -250,6 +250,25 @@ describe('Underleaf username identity', function () {
     ).to.equal(null)
   })
 
+  it('counts all owned projects in administration, including inactive and trashed entries', async function () {
+    const user = await UserManager.createUser({
+      username: 'project-owner',
+      password: 'strong-account-secret',
+    })
+    await collections.projects.insertMany([
+      { owner_ref: user._id, active: true },
+      { owner_ref: user._id, active: false, archived: true },
+      { owner_ref: user._id, active: true, trashed: true },
+      { owner_ref: new Mongoose.Types.ObjectId(), active: true },
+    ])
+    expect(await UserManager.countOwnedProjects(user._id)).to.equal(3)
+    const listed = (await UserManager.listUsers()).find(account =>
+      account._id.equals(user._id)
+    )
+    expect(listed.projectCount).to.equal(3)
+    expect(listed).not.to.have.property('passwordHash')
+  })
+
   it('administrator reset replaces the canonical hash and invalidates prior sessions', async function () {
     const user = await UserManager.createUser({
       username: 'reset-user',

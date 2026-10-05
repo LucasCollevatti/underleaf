@@ -1,4 +1,5 @@
 import { User, Features, FeatureUsage } from '../../../types/user'
+import type { UnderleafAdminPageData } from '../../../types/underleaf-admin'
 import { User as MinimalUser } from '../../../types/admin/user'
 import { User as ManagedUser } from '../../../types/group-management/user'
 import { UserSettings } from '../../../types/user-settings'
@@ -72,6 +73,7 @@ import { SharingPermissions } from '../../../modules/sharing-permissions/app/src
 import { FullHistoryFailure } from '@ol-types/history/projectHistory'
 
 export interface Meta {
+  'ol-underleafAdmin': UnderleafAdminPageData
   'ol-underleafAuthPage': 'welcome' | 'login'
   'ol-ExposedSettings': ExposedSettings
   'ol-adminCapabilities': AdminCapability[]

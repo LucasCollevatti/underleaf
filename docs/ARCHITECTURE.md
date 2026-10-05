@@ -66,9 +66,34 @@ Os SVGs públicos `underleaf-mark`, `underleaf-wordmark` e `underleaf-lockup`
 possuem variantes claras e escuras. `UnderleafBrand` seleciona a variante
 usando o tema ativo, incluindo mudanças no tema do sistema operacional.
 
-O dashboard com projetos, Login, Welcome e Settings usam o shell. A migração do
-dashboard vazio, de Admin/Users e de Status/erros ocorre nas fases
-seguintes; o editor mantém seu layout próprio.
+Projects, incluindo o estado vazio, Login, Welcome, Settings, Administration e
+Users usam o shell. Projects vazio mantém filtros, tags, lixeira e criação ou
+importação no dashboard normal, sem abrir uma página de marketing. Status e
+erros ainda serão migrados; o editor mantém seu layout próprio.
+
+## Administração de contas
+
+`pages/underleaf-admin` renderiza `/admin` e `/admin/users`. O overview mostra
+contas totais, usuários ativos, administradores ativos e projetos ativos. As
+páginas hidratam o tema salvo do administrador e enviam somente os campos
+públicos necessários; respostas administrativas usam `Cache-Control: no-store`.
+
+Users apresenta uma tabela somente para leitura com busca por username ou
+nome de exibição. Criação, edição de identidade/função, reset de senha,
+ativação/desativação e exclusão usam modais. As operações POST de senha e
+estado são independentes da edição de identidade para não sobrescrever campos
+que o administrador não editou. As rotas continuam restritas a administradores
+e protegidas por CSRF, e reutilizam `UnderleafUserManager` para validação,
+hashing, invalidação de sessões e proteção do último administrador ativo.
+
+Excluir uma conta exige escolher explicitamente a exclusão de todos os seus
+projetos e digitar `DELETE`. A opção inicial mantém a conta e os projetos;
+cancelar o modal não envia uma solicitação. A contagem de projetos pertencentes
+ao usuário inclui projetos inativos, arquivados e na lixeira, correspondendo ao
+alcance do `UserDeleter` existente. Para preservar projetos, o administrador
+cancela e transfere a propriedade nos diálogos de compartilhamento antes de
+excluir a conta. A interface impede desativar/excluir a própria conta ou remover
+a própria função de administrador, com a mesma proteção no servidor.
 
 ## Inicialização da instalação
 

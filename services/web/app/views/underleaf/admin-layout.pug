@@ -1,0 +1,21 @@
+extends ../layout-react
+
+block entrypointVar
+	- entrypoint = 'pages/underleaf-admin'
+
+block vars
+	- isWebsiteRedesign = true
+	- suppressNavbar = true
+	- suppressFooter = true
+	- suppressPugCookieBanner = true
+	- suppressSkipToContent = false
+
+block append meta
+	meta(name='ol-underleafAdmin' data-type='json' content=adminPage)
+	meta(name='ol-userSettings' data-type='json' content=userSettings)
+	meta(name='ol-overallThemes' data-type='json' content=overallThemes)
+
+block content
+	#underleaf-admin-root
+		noscript
+			p #{translate('underleaf_admin_requires_js')}

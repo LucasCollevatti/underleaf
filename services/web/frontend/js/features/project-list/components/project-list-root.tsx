@@ -80,6 +80,7 @@ function ProjectListPageContent() {
   useThemedPage()
   const { totalProjectsCount, isLoading, loadProgress } =
     useProjectListContext()
+  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
 
   useEffect(() => {
     eventTracking.sendMB('loads_v2_dash', { page: 'projects' })
@@ -95,7 +96,7 @@ function ProjectListPageContent() {
     return loadingComponent
   }
 
-  if (totalProjectsCount === 0) {
+  if (!isUnderleaf && totalProjectsCount === 0) {
     return (
       <>
         <DefaultPageContentWrapper>

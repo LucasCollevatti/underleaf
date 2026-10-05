@@ -284,10 +284,7 @@ async function listUsers() {
           {
             $match: {
               $expr: {
-                $and: [
-                  { $eq: ['$owner_ref', '$$userId'] },
-                  { $eq: ['$active', true] },
-                ],
+                $eq: ['$owner_ref', '$$userId'],
               },
             },
           },
@@ -322,7 +319,9 @@ async function listUsers() {
 }
 
 async function countOwnedProjects(userId) {
-  return await db.projects.countDocuments({ owner_ref: userId, active: true })
+  // Account deletion removes every owned project, including archived/trash
+  // entries and projects that have never been activated.
+  return await db.projects.countDocuments({ owner_ref: userId })
 }
 
 function isActiveAdmin(user) {

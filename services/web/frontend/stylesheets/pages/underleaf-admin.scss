@@ -1,0 +1,115 @@
+.underleaf-admin-main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px;
+
+  @include media-breakpoint-down(md) {
+    padding: 20px 16px;
+  }
+}
+
+.underleaf-admin-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h1 {
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+}
+
+.underleaf-admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0 32px;
+
+  > div {
+    padding: 24px;
+    background: var(--bg-primary-themed);
+    border: 1px solid var(--border-divider-themed);
+    border-radius: 8px;
+  }
+
+  dt {
+    font-weight: 400;
+  }
+
+  dd {
+    margin: 8px 0 0;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  @include media-breakpoint-down(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include media-breakpoint-down(sm) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.underleaf-admin-panel {
+  padding: 24px;
+  background: var(--bg-primary-themed);
+  border: 1px solid var(--border-divider-themed);
+  border-radius: 8px;
+}
+
+.underleaf-admin-search {
+  max-width: 480px;
+  margin-bottom: 24px;
+}
+
+.underleaf-admin-table-wrapper {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.underleaf-admin-table {
+  margin-bottom: 0;
+
+  th,
+  td {
+    padding: 16px;
+    vertical-align: middle;
+    color: var(--content-primary-themed);
+    background: transparent;
+    border-color: var(--border-divider-themed);
+  }
+}
+
+.underleaf-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 240px;
+}
+
+.underleaf-admin-status,
+.underleaf-admin-you {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-divider-themed);
+  border-radius: 4px;
+}
+
+.underleaf-admin-you {
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+.underleaf-admin-fields {
+  padding: 0;
+  border: 0;
+}

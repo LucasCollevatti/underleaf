@@ -29,6 +29,7 @@ import { UnderleafAppShell } from '@/shared/components/underleaf/underleaf-app-s
 export function ProjectListDsNav() {
   const navbarProps = getMeta('ol-navbar')
   const footerProps = getMeta('ol-footer')
+  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
   const { t } = useTranslation()
   const {
     error,
@@ -60,7 +61,7 @@ export function ProjectListDsNav() {
       {showNewProjectButton && (
         <NewProjectButton
           id="new-project-button-projects-table"
-          showAddAffiliationWidget
+          showAddAffiliationWidget={!isUnderleaf}
           align="end"
         />
       )}
@@ -71,16 +72,18 @@ export function ProjectListDsNav() {
     <UnderleafAppShell
       sidebar={<SidebarDsNav activePage="projects" />}
       header={
-        <DefaultNavbar
-          {...navbarProps}
-          customLogo={
-            activeOverallTheme === 'dark'
-              ? navbarProps.customLogoDark
-              : navbarProps.customLogo
-          }
-          overleafLogo={`/underleaf-lockup${activeOverallTheme === 'dark' ? '-dark' : ''}.svg`}
-          showCloseIcon
-        />
+        !isUnderleaf && (
+          <DefaultNavbar
+            {...navbarProps}
+            customLogo={
+              activeOverallTheme === 'dark'
+                ? navbarProps.customLogoDark
+                : navbarProps.customLogo
+            }
+            overleafLogo={`/underleaf-lockup${activeOverallTheme === 'dark' ? '-dark' : ''}.svg`}
+            showCloseIcon
+          />
+        )
       }
     >
       <SystemMessages />
@@ -88,7 +91,7 @@ export function ProjectListDsNav() {
         <div className="project-ds-nav-content">
           <div className="project-ds-nav-main">
             {error ? <DashApiError /> : ''}
-            <UserNotifications />
+            {!isUnderleaf && <UserNotifications />}
             <main aria-labelledby="main-content">
               <div className="project-list-header-row">
                 {showTrashHeader ? (
@@ -110,7 +113,7 @@ export function ProjectListDsNav() {
                 <div className="project-tools">
                   <div className="d-none d-md-block">
                     {selectedProjects.length === 0 ? (
-                      showTrashHeader ? null : (
+                      showTrashHeader || isUnderleaf ? null : (
                         <CurrentPlanWidget />
                       )
                     ) : (
@@ -118,13 +121,15 @@ export function ProjectListDsNav() {
                     )}
                   </div>
                   <div className="d-md-none">
-                    {!showTrashHeader && <CurrentPlanWidget />}
+                    {!showTrashHeader && !isUnderleaf && <CurrentPlanWidget />}
                   </div>
                 </div>
               </div>
               {showTrashHeader && <TrashPageTabs activeTab="projects" />}
-              {isSharedWorkspaceEnabled &&
+              {(isUnderleaf || isSharedWorkspaceEnabled) &&
+              !error &&
               selectedTagId === undefined &&
+              !searchText.trim() &&
               currentFilterProjectsCount === 0 ? (
                 <>
                   <ProjectsToolbarMobile />
@@ -148,7 +153,7 @@ export function ProjectListDsNav() {
                       <OLCol className="ms-auto" xs="auto">
                         <NewProjectButton
                           id="new-project-button-projects-table"
-                          showAddAffiliationWidget
+                          showAddAffiliationWidget={!isUnderleaf}
                           align="end"
                         />
                       </OLCol>
@@ -171,9 +176,9 @@ export function ProjectListDsNav() {
               )}
             </main>
           </div>
-          <Footer {...footerProps} />
+          {!isUnderleaf && <Footer {...footerProps} />}
         </div>
-        <CookieBanner />
+        {!isUnderleaf && <CookieBanner />}
       </div>
     </UnderleafAppShell>
   )

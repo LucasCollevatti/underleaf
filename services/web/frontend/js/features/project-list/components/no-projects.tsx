@@ -15,7 +15,8 @@ type NoProjectsProps = NoProjectsCommonProps & {
 function NoProjects({ activeSection, showNewProjectButton }: NoProjectsProps) {
   const { t } = useTranslation()
   const usersBestSubscription = getMeta('ol-usersBestSubscription')
-  const isGroupPlan = usersBestSubscription?.type === 'group'
+  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
+  const isGroupPlan = !isUnderleaf && usersBestSubscription?.type === 'group'
 
   return (
     <div className="project-ds-empty-project-list">
@@ -71,7 +72,7 @@ function NoProjects({ activeSection, showNewProjectButton }: NoProjectsProps) {
           <div className="text-center">
             <NewProjectButton
               id="new-project-button-no-projects"
-              showAddAffiliationWidget
+              showAddAffiliationWidget={!isUnderleaf}
             />
           </div>
         )}
