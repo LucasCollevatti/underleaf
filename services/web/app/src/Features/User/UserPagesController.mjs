@@ -5,12 +5,8 @@ import logger from '@overleaf/logger'
 import Settings from '@overleaf/settings'
 import AuthenticationController from '../Authentication/AuthenticationController.mjs'
 import SessionManager from '../Authentication/SessionManager.mjs'
-import SubscriptionLocator from '../Subscription/SubscriptionLocator.mjs'
-import _ from 'lodash'
 import { expressify } from '@overleaf/promise-utils'
-import Features from '../../infrastructure/Features.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
-import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import {
   z,
   parseReq,
@@ -25,20 +21,8 @@ function popSessionValue(session, key) {
   return value
 }
 
-const settingsPageSchema = z.object({
-  query: z.object({
-    remove: z.string().optional(),
-    'oauth-complete': z.string().optional(),
-  }),
-})
-
 async function settingsPage(req, res) {
-  const { query } = parseReq(req, settingsPageSchema, { logOnly: true })
   const userId = SessionManager.getLoggedInUserId(req.session)
-  const reconfirmationRemoveEmail = query.remove
-  // SSO
-  delete req.session.ssoError
-  const ssoErrorMessage = popSessionValue(req.session, 'ssoErrorMessage')
   const projectSyncSuccessMessage = popSessionValue(
     req.session,
     'projectSyncSuccessMessage'
@@ -51,38 +35,6 @@ async function settingsPage(req, res) {
     req.session,
     'referenceLinkingErrorMessage'
   )
-  // Institution SSO
-  let institutionLinked = _.get(req.session, ['saml', 'linked'])
-  if (institutionLinked) {
-    // copy object if exists because _.get does not
-    institutionLinked = Object.assign(
-      {
-        hasEntitlement: _.get(req.session, ['saml', 'hasEntitlement']),
-      },
-      institutionLinked
-    )
-  }
-  const samlError = _.get(req.session, ['saml', 'error'])
-  const institutionEmailNonCanonical = _.get(req.session, [
-    'saml',
-    'emailNonCanonical',
-  ])
-  const institutionRequestedEmail = _.get(req.session, [
-    'saml',
-    'requestedEmail',
-  ])
-
-  const reconfirmedViaSAML = _.get(req.session, ['saml', 'reconfirmed'])
-  delete req.session.saml
-  let shouldAllowEditingDetails = true
-  if (Settings.ldap && Settings.ldap.updateUserDetailsOnLogin) {
-    shouldAllowEditingDetails = false
-  }
-  if (Settings.saml && Settings.saml.updateUserDetailsOnLogin) {
-    shouldAllowEditingDetails = false
-  }
-  const oauthProviders = Settings.oauthProviders || {}
-
   const user = await UserGetter.promises.getUser(userId)
   if (!user) {
     // The user has just deleted their account.
@@ -105,42 +57,6 @@ async function settingsPage(req, res) {
     logger.error({ err, userId }, err.message)
   }
 
-  let currentManagedUserAdminEmail
-  try {
-    currentManagedUserAdminEmail =
-      await SubscriptionLocator.promises.getAdminEmail(req.managedBy)
-  } catch (err) {
-    logger.error({ err }, 'error getting subscription admin email')
-  }
-
-  let memberOfSSOEnabledGroups = []
-  try {
-    memberOfSSOEnabledGroups =
-      (
-        await Modules.promises.hooks.fire(
-          'getUserGroupsSSOEnrollmentStatus',
-          user._id,
-          { teamName: 1 },
-          ['email']
-        )
-      )?.[0] || []
-    memberOfSSOEnabledGroups = memberOfSSOEnabledGroups.map(group => {
-      return {
-        groupId: group._id.toString(),
-        linked: group.linked,
-        groupName: group.teamName,
-        adminEmail: group.admin_id?.email,
-      }
-    })
-  } catch (error) {
-    logger.error(
-      { err: error },
-      'error fetching groups with Group SSO enabled the user may be member of'
-    )
-  }
-
-  await SplitTestHandler.promises.getAssignment(req, res, 'email-notifications')
-
   res.render('user/settings', {
     title: 'account_settings',
     user: {
@@ -157,12 +73,12 @@ async function settingsPage(req, res) {
       betaProgram: user.betaProgram,
       labsProgram: user.labsProgram,
       features: {
-        dropbox: user.features.dropbox,
-        github: user.features.github,
-        mendeley: user.features.mendeley,
-        zotero: user.features.zotero,
-        papers: user.features.papers,
-        references: user.features.references,
+        dropbox: user.features?.dropbox,
+        github: user.features?.github,
+        mendeley: user.features?.mendeley,
+        zotero: user.features?.zotero,
+        papers: user.features?.papers,
+        references: user.features?.references,
       },
       refProviders: {
         mendeley: Boolean(user.refProviders?.mendeley),
@@ -173,34 +89,13 @@ async function settingsPage(req, res) {
     showAiFeatures: Boolean(user.aiFeatures?.enabled),
     labsExperiments: user.labsExperiments ?? [],
     hasPassword: !!user.passwordHash,
-    shouldAllowEditingDetails,
-    oauthProviders: UserPagesController._translateProviderDescriptions(
-      oauthProviders,
-      req
-    ),
-    institutionLinked,
-    samlError,
-    institutionEmailNonCanonical:
-      institutionEmailNonCanonical && institutionRequestedEmail
-        ? institutionEmailNonCanonical
-        : undefined,
-    reconfirmedViaSAML,
-    reconfirmationRemoveEmail,
-    samlBeta: req.session.samlBeta,
-    ssoErrorMessage,
-    thirdPartyIds: UserPagesController._restructureThirdPartyIds(user),
     projectSyncSuccessMessage,
     projectSyncErrorMessage,
     referenceLinkingErrorMessage,
     personalAccessTokens,
-    emailAddressLimit: Settings.emailAddressLimit,
-    isManagedAccount: !!req.managedBy,
     userRestrictions: Array.from(req.userRestrictions || []),
-    currentManagedUserAdminEmail,
     gitBridgeEnabled: Settings.enableGitBridge,
-    isSaas: Features.hasFeature('saas'),
-    memberOfSSOEnabledGroups,
-    capabilities: [...req.capabilitySet],
+    capabilities: [...(req.capabilitySet || [])],
   })
 }
 
@@ -249,8 +144,8 @@ const UserPagesController = {
     if (Object.keys(getRawReqInput(req).query).length !== 0) {
       metadata.robotsNoindexNofollow = true
     }
-    if (Settings.underleaf) res.set('Cache-Control', 'no-store')
-    res.render(Settings.underleaf ? 'underleaf/auth' : 'user/login', {
+    res.set('Cache-Control', 'no-store')
+    res.render('underleaf/auth', {
       authPage: 'login',
       title: Settings.nav?.login_support_title || 'login',
       login_support_title: Settings.nav?.login_support_title,
@@ -285,37 +180,6 @@ const UserPagesController = {
         })
       }
     )
-  },
-
-  _restructureThirdPartyIds(user) {
-    // 3rd party identifiers are an array of objects
-    // this turn them into a single object, which
-    // makes data easier to use in template
-    if (
-      !user.thirdPartyIdentifiers ||
-      user.thirdPartyIdentifiers.length === 0
-    ) {
-      return null
-    }
-    return user.thirdPartyIdentifiers.reduce((obj, identifier) => {
-      obj[identifier.providerId] = identifier.externalUserId
-      return obj
-    }, {})
-  },
-
-  _translateProviderDescriptions(providers, req) {
-    const result = {}
-    if (providers) {
-      for (const provider in providers) {
-        const data = providers[provider]
-        data.description = req.i18n.translate(
-          data.descriptionKey,
-          Object.assign({}, data.descriptionOptions)
-        )
-        result[provider] = data
-      }
-    }
-    return result
   },
 }
 

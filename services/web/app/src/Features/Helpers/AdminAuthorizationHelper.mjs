@@ -19,7 +19,7 @@ export default {
 function hasAdminAccess(user) {
   if (!Settings.adminPrivilegeAvailable) return false
   if (!user) return false
-  return Boolean(user.isAdmin)
+  return user.role === 'admin' && user.status === 'active' && !user.suspended
 }
 
 function hasAdminCapability(capability, requireAdminRoles = true) {
@@ -120,5 +120,5 @@ function canRedirectToAdminDomain(user) {
   if (Settings.adminPrivilegeAvailable) return false
   if (!Settings.adminUrl) return false
   if (!user) return false
-  return Boolean(user.isAdmin)
+  return user.role === 'admin' && user.status === 'active' && !user.suspended
 }

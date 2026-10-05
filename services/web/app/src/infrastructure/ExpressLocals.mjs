@@ -234,10 +234,9 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
   })
 
   webRouter.use(function (req, res, next) {
-    res.locals.getUserEmail = function () {
+    res.locals.getUserUsername = function () {
       const user = SessionManager.getSessionUser(req.session)
-      const email = (user != null ? user.email : undefined) || ''
-      return email
+      return user?.username || ''
     }
     next()
   })

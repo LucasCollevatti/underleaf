@@ -22,7 +22,8 @@ changing the account role. Never put passwords in command-line arguments.
    Verify the dump can be restored into a disposable database before upgrading.
 3. Start the new image. The existing init migration runner executes
    `20261002100000_underleaf_username_accounts` (when not already applied), then
-   `20261005100000_underleaf_username_identity`, before starting web. Both use
+   `20261005100000_underleaf_username_identity`, followed by
+   `20261005110000_underleaf_redact_deleted_credentials`, before starting web. Both use
    the same normalized reservation planner, so a legacy `Alpha` reserves `alpha`
    before a missing username derived from an `alpha@...` address is assigned. A failed
    migration prevents startup. It is safe to rerun after correcting its cause.
@@ -60,3 +61,14 @@ application image. Clear application sessions during rollback. Do not merely
 delete the migration marker or recreate email indexes: removed values cannot be
 reconstructed. New accounts and project changes made after the backup require
 separate recovery; schedule an upgrade maintenance window accordingly.
+
+Account settings and healthchecks use username identity. Email-based read
+interfaces retained for inherited integrations return empty results; retired
+write interfaces reject attempts to restore email fields. Password recovery
+is performed by an administrator or the local recovery CLI. Saving display
+changes keeps current sessions; password, username, role or status changes
+revoke older identity versions. New deleted-account snapshots omit passwords
+and password hashes.
+
+The credential-redaction follow-up also clears snapshots created after an
+already completed identity migration. It is idempotent and runs before web.

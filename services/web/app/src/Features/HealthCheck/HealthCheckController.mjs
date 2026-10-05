@@ -36,17 +36,21 @@ export default {
         logger.err({}, 'smokeTest.userId is undefined in health check')
         return res.sendStatus(404)
       }
-      UserGetter.getUserEmail(settings.smokeTest.userId, (err, email) => {
-        if (err) {
-          logger.err({ err }, 'failed api mongo health check')
-          return res.sendStatus(500)
+      UserGetter.getUser(
+        settings.smokeTest.userId,
+        { username: 1 },
+        (err, user) => {
+          if (err) {
+            logger.err({ err }, 'failed api mongo health check')
+            return res.sendStatus(500)
+          }
+          if (!user?.username) {
+            logger.err({ err }, 'failed api mongo health check (no username)')
+            return res.sendStatus(500)
+          }
+          res.sendStatus(200)
         }
-        if (email == null) {
-          logger.err({ err }, 'failed api mongo health check (no email)')
-          return res.sendStatus(500)
-        }
-        res.sendStatus(200)
-      })
+      )
     })
   },
 
@@ -62,16 +66,17 @@ export default {
   },
 
   checkMongo(req, res, next) {
-    return UserGetter.getUserEmail(
+    return UserGetter.getUser(
       settings.smokeTest.userId,
-      function (err, email) {
+      { username: 1 },
+      function (err, user) {
         if (err != null) {
           logger.err({ err }, 'mongo health check failed, error present')
           return res.sendStatus(500)
-        } else if (email == null) {
+        } else if (!user?.username) {
           logger.err(
             { err },
-            'mongo health check failed, no emai present in find result'
+            'mongo health check failed, no username present in find result'
           )
           return res.sendStatus(500)
         } else {

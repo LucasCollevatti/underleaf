@@ -58,7 +58,14 @@ async function changePassword(req, res, next) {
       body.newPassword1
     )
   } catch (error) {
-    if (error.name === 'InvalidPasswordError') {
+    if (error.name === 'ParallelLoginError') {
+      return res.status(409).json({
+        message: {
+          type: 'error',
+          text: 'Account changed while updating the password. Reload and try again.',
+        },
+      })
+    } else if (error.name === 'InvalidPasswordError') {
       const message = AuthenticationManager.getMessageForInvalidPasswordError(
         error,
         req
@@ -200,7 +207,7 @@ async function tryDeleteUser(req, res, next) {
   const sessionId = req.sessionID
 
   if (typeof req.logout === 'function') {
-    const logout = promisify(req.logout)
+    const logout = promisify(req.logout.bind(req))
     await logout()
   }
 
@@ -229,7 +236,11 @@ const updateUserSettingsSchema = z.object({
   // every field here is optional
   body: z.strictObject({
     institution: z.string().optional(),
-    displayName: z.string().trim().min(1).max(255).optional(),
+    displayName: z
+      .string()
+      .transform(sanitizeControlCharacters)
+      .pipe(z.string().trim().min(1).max(255))
+      .optional(),
     mode: z.string().optional(),
     editorTheme: z.string().optional(),
     editorLightTheme: z.string().optional(),

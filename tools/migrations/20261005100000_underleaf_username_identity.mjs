@@ -65,6 +65,7 @@ async function migrate({ db }) {
         'user.emails': '',
         'user.hashedPassword': '',
         'user.passwordHash': '',
+        'user.password': '',
       },
     }
   )

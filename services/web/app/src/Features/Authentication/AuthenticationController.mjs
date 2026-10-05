@@ -90,7 +90,13 @@ function _classifyOauthError(err) {
 // TODO: Finish making these methods async
 const AuthenticationController = {
   serializeUser(user, callback) {
-    if (!user._id || !user.username) {
+    if (
+      !user?._id ||
+      !user.username ||
+      user.status !== 'active' ||
+      !Number.isInteger(user.identityVersion) ||
+      user.identityVersion < 1
+    ) {
       const err = new Error('serializeUser called with non-user object')
       logger.warn({ user }, err.message)
       return callback(err)
@@ -122,11 +128,15 @@ const AuthenticationController = {
   },
 
   deserializeUser(user, cb) {
-    if (!user?.username || user.identityVersion === undefined)
+    if (
+      !user?.username ||
+      !Number.isInteger(user.identityVersion) ||
+      user.identityVersion < 1
+    )
       return cb(null, false)
     User.findById(
       user._id,
-      'username displayName role status isAdmin identityVersion first_name last_name'
+      'username displayName role status isAdmin suspended identityVersion first_name last_name'
     )
       .lean()
       .exec()
@@ -134,6 +144,7 @@ const AuthenticationController = {
         if (
           !current ||
           current.status !== 'active' ||
+          current.suspended ||
           current.identityVersion !== user.identityVersion
         ) {
           return cb(null, false)
@@ -199,7 +210,7 @@ const AuthenticationController = {
       return AsyncFormHelper.redirect(req, res, '/login')
     } // OAuth2 'state' mismatch
 
-    if (user.suspended) {
+    if (!user?.username || user.status !== 'active' || user.suspended) {
       return AsyncFormHelper.redirect(req, res, '/account-suspended')
     }
 

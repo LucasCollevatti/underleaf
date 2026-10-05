@@ -15,7 +15,6 @@ import InstitutionsAPI from '../Institutions/InstitutionsAPI.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import Errors from '../Errors/Errors.js'
 import OnboardingDataCollectionManager from '../OnboardingDataCollection/OnboardingDataCollectionManager.mjs'
-import EmailHandler from '../Email/EmailHandler.mjs'
 import Features from '../../infrastructure/Features.mjs'
 
 export default {
@@ -64,12 +63,6 @@ async function deleteUser(userId, options) {
     await _createDeletedUser(user, options)
     logger.info({ userId }, 'deleting user projects')
     await ProjectDeleter.promises.deleteUsersProjects(user._id)
-    if (options.skipEmail || !user.email) {
-      logger.info({ userId }, 'skipping sending deletion email to user')
-    } else {
-      logger.info({ userId }, 'sending deletion email to user')
-      await _sendDeleteEmail(user, options.force)
-    }
     logger.info({ userId }, 'deleting user record')
     await deleteMongoUser(user._id)
     logger.info({ userId }, 'user deletion complete')
@@ -169,31 +162,20 @@ async function ensureCanDeleteUser(user) {
   }
 }
 
-async function _sendDeleteEmail(user, force) {
-  const emailOptions = {
-    to: user.email,
-    action: 'account deleted',
-    actionDescribed: 'your Overleaf account was deleted',
-  }
-  try {
-    await EmailHandler.promises.sendEmail('securityAlert', emailOptions)
-  } catch (error) {
-    if (force) {
-      logger.error(
-        { error },
-        'error sending account deletion email notification'
-      )
-    } else {
-      throw error
-    }
-  }
-}
-
 async function _createDeletedUser(user, options) {
+  const snapshot = user.toObject()
+  for (const field of [
+    'email',
+    'emails',
+    'password',
+    'hashedPassword',
+    'passwordHash',
+  ])
+    delete snapshot[field]
   await DeletedUser.updateOne(
     { 'deleterData.deletedUserId': user._id },
     {
-      user,
+      user: snapshot,
       deleterData: {
         deletedAt: new Date(),
         deleterId: options.deleterUser ? options.deleterUser._id : undefined,

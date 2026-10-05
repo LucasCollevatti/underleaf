@@ -380,6 +380,8 @@ export interface Meta {
   'ol-user_id': string | undefined
   'ol-users': ManagedUser[]
   'ol-usersBestSubscription': ProjectDashboardSubscription | undefined
+  'ol-username': string | undefined
+  /** @deprecated Removed from Underleaf page metadata. */
   'ol-usersEmail': string | undefined
   'ol-usersSubscription': { personal: boolean; group: boolean }
   'ol-v1Url': string | undefined

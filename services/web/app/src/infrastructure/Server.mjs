@@ -222,11 +222,14 @@ passport.use(
 passport.serializeUser(AuthenticationController.serializeUser)
 passport.deserializeUser(AuthenticationController.deserializeUser)
 
-Modules.hooks.fire('passportSetup', passport, err => {
-  if (err != null) {
-    logger.err({ err }, 'error setting up passport in modules')
-  }
-})
+// Local username/password is the only account authentication strategy.
+if (!Settings.underleaf) {
+  Modules.hooks.fire('passportSetup', passport, err => {
+    if (err != null) {
+      logger.err({ err }, 'error setting up passport in modules')
+    }
+  })
+}
 
 await Modules.applyNonCsrfRouter(webRouter, privateApiRouter, publicApiRouter)
 

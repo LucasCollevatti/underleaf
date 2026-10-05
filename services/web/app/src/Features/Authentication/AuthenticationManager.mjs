@@ -59,7 +59,12 @@ const AuthenticationManager = {
     }
     const user = await User.findOne(query).exec()
 
-    if (!user || !user.passwordHash || user.status !== 'active') {
+    if (
+      !user ||
+      !user.passwordHash ||
+      user.status !== 'active' ||
+      user.suspended
+    ) {
       return { user: null, match: null }
     }
 
@@ -292,7 +297,13 @@ const AuthenticationManager = {
   ) {
     const hash = await this.hashPassword(password)
     const result = await db.users.updateOne(
-      { _id: new ObjectId(user._id.toString()) },
+      {
+        _id: new ObjectId(user._id.toString()),
+        passwordHash: user.passwordHash,
+        identityVersion: user.identityVersion,
+        status: 'active',
+        suspended: { $ne: true },
+      },
       {
         $set: {
           passwordHash: hash,
@@ -305,7 +316,9 @@ const AuthenticationManager = {
       }
     )
 
-    return _checkWriteResult(result)
+    if (!_checkWriteResult(result)) throw new ParallelLoginError()
+    user.passwordHash = hash
+    return true
   },
 
   _passwordCharactersAreValid(password) {

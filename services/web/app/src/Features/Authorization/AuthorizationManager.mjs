@@ -365,9 +365,9 @@ async function isUserSiteAdmin(userId) {
   if (!Settings.adminPrivilegeAvailable) return false
   const user = await User.findOne(
     { _id: userId },
-    { isAdmin: 1, role: 1, status: 1 }
+    { isAdmin: 1, role: 1, status: 1, suspended: 1 }
   ).exec()
-  return user?.status !== 'disabled' && hasAdminAccess(user)
+  return hasAdminAccess(user)
 }
 
 /**

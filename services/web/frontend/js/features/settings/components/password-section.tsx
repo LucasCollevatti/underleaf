@@ -21,36 +21,17 @@ type PasswordUpdateResult = {
 
 function PasswordSection() {
   const { t } = useTranslation()
-  const hideChangePassword = getMeta('ol-cannot-change-password')
+  const hasPassword = getMeta('ol-hasPassword')
   return (
     <>
       <h3>{t('change_password')}</h3>
-      {hideChangePassword ? (
-        <p>Ask your administrator to reset your password.</p>
+      {hasPassword ? (
+        <PasswordForm />
       ) : (
-        <PasswordInnerSection />
+        <p>Ask your administrator to reset your password.</p>
       )}
     </>
   )
-}
-
-function PasswordInnerSection() {
-  const { t } = useTranslation()
-  const { isOverleaf } = getMeta('ol-ExposedSettings')
-  const isExternalAuthenticationSystemUsed = getMeta(
-    'ol-isExternalAuthenticationSystemUsed'
-  )
-  const hasPassword = getMeta('ol-hasPassword')
-
-  if (isExternalAuthenticationSystemUsed && !isOverleaf) {
-    return <p>{t('password_managed_externally')}</p>
-  }
-
-  if (!hasPassword) {
-    return <p>Ask your administrator to set a password for your account.</p>
-  }
-
-  return <PasswordForm />
 }
 
 function PasswordForm() {

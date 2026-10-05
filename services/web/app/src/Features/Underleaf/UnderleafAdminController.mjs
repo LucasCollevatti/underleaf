@@ -7,7 +7,7 @@ import { db } from '../../infrastructure/mongodb.mjs'
 import { parseReq, z, zz } from '../../infrastructure/Validation.mjs'
 
 const createUserSchema = z.object({
-  body: z.object({
+  body: z.strictObject({
     username: z.string(),
     displayName: z.string().optional(),
     password: z.string(),
@@ -17,7 +17,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   params: z.object({ userId: zz.objectId() }),
-  body: z.object({
+  body: z.strictObject({
     username: z.string(),
     displayName: z.string(),
     password: z.string().optional(),
@@ -28,7 +28,7 @@ const updateUserSchema = z.object({
 
 const deleteUserSchema = z.object({
   params: z.object({ userId: zz.objectId() }),
-  body: z.object({
+  body: z.strictObject({
     confirm: z.literal('DELETE'),
     projectAction: z.enum(['cancel', 'delete']),
   }),
@@ -91,10 +91,7 @@ const UnderleafAdminController = {
     const { params, body } = parseReq(req, updateUserSchema)
     const currentUserId = getSessionUserId(req)
     const isCurrentUser = currentUserId === params.userId.toString()
-    if (
-      isCurrentUser &&
-      (body.role !== 'admin' || body.status !== 'active')
-    ) {
+    if (isCurrentUser && (body.role !== 'admin' || body.status !== 'active')) {
       redirectWithMessage(
         res,
         'error',

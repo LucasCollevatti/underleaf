@@ -4,8 +4,9 @@ import AuthenticationManager from '../Authentication/AuthenticationManager.mjs'
 import UserDeleter from '../User/UserDeleter.mjs'
 import { User } from '../../models/User.mjs'
 import { db } from '../../infrastructure/mongodb.mjs'
+import { sanitizeControlCharacters } from '../../infrastructure/Sanitize.mjs'
 
-const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])?$/
+const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$/
 const MIN_USERNAME_LENGTH = 3
 const MAX_USERNAME_LENGTH = 32
 
@@ -51,6 +52,38 @@ function validatePassword(password) {
   return password
 }
 
+function validateDisplayName(value) {
+  if (typeof value !== 'string') {
+    throw new UnderleafUserError(
+      'invalid_display_name',
+      'Display name must contain 1-255 characters.'
+    )
+  }
+  const displayName = sanitizeControlCharacters(value).trim()
+  if (!displayName || displayName.length > 255) {
+    throw new UnderleafUserError(
+      'invalid_display_name',
+      'Display name must contain 1-255 characters.'
+    )
+  }
+  return displayName
+}
+
+function rethrowIdentityWriteError(error) {
+  if (
+    error.code === 11000 &&
+    (error.keyPattern?.username ||
+      error.keyValue?.username ||
+      error.message?.includes('username_1'))
+  ) {
+    throw new UnderleafUserError(
+      'username_taken',
+      'Username is already in use.'
+    )
+  }
+  throw error
+}
+
 async function findById(userId) {
   return await User.findById(userId).exec()
 }
@@ -78,13 +111,7 @@ async function createUser(
 
   const now = new Date()
   const hash = await AuthenticationManager.promises.hashPassword(password)
-  const safeDisplayName = (displayName || normalizedUsername).trim()
-  if (!safeDisplayName || safeDisplayName.length > 255) {
-    throw new UnderleafUserError(
-      'invalid_display_name',
-      'Display name must contain 1-255 characters.'
-    )
-  }
+  const safeDisplayName = validateDisplayName(displayName || normalizedUsername)
   const user = new User({
     username: normalizedUsername,
     passwordHash: hash,
@@ -100,7 +127,11 @@ async function createUser(
     labsProgram: false,
     holdingAccount: false,
   })
-  return await user.save({ session })
+  try {
+    return await user.save({ session })
+  } catch (error) {
+    rethrowIdentityWriteError(error)
+  }
 }
 
 async function authenticate(username, password) {
@@ -111,10 +142,12 @@ async function authenticate(username, password) {
   )
     return { user: null, reason: 'invalid_credentials' }
   const normalizedUsername = normalizeUsername(username)
+  if (!USERNAME_PATTERN.test(normalizedUsername))
+    return { user: null, reason: 'invalid_credentials' }
   const user = await User.findOne({ username: normalizedUsername }).exec()
   if (!user) return { user: null, reason: 'invalid_credentials' }
 
-  if (user.status === 'disabled' || user.suspended) {
+  if (user.status !== 'active' || user.suspended) {
     return { user: null, reason: 'disabled' }
   }
 
@@ -132,8 +165,14 @@ async function authenticate(username, password) {
   }
 
   const now = new Date()
-  await User.updateOne(
-    { _id: user._id },
+  const result = await User.updateOne(
+    {
+      _id: user._id,
+      status: 'active',
+      suspended: { $ne: true },
+      identityVersion: user.identityVersion,
+      passwordHash: storedHash,
+    },
     {
       $set: {
         lastLoginAt: now,
@@ -143,6 +182,8 @@ async function authenticate(username, password) {
       $inc: { loginCount: 1 },
     }
   ).exec()
+  if (result.matchedCount !== 1)
+    return { user: null, reason: 'invalid_credentials' }
   user.lastLoginAt = now
   user.lastLoggedIn = now
   return { user, reason: null }
@@ -172,15 +213,10 @@ async function updateUser(userId, changes) {
     update.$set.username = username
   }
   if (changes.displayName != null) {
-    const displayName = changes.displayName.trim()
-    if (!displayName) {
-      throw new UnderleafUserError(
-        'invalid_display_name',
-        'Display name cannot be empty.'
-      )
-    }
+    const displayName = validateDisplayName(changes.displayName)
     update.$set.displayName = displayName
     update.$set.first_name = displayName
+    update.$set.last_name = ''
   }
   if (changes.role != null) {
     if (!['admin', 'user'].includes(changes.role)) {
@@ -211,13 +247,30 @@ async function updateUser(userId, changes) {
   }
 
   if (
-    ['username', 'password', 'role', 'status'].some(key => changes[key] != null)
+    changes.password != null ||
+    ['username', 'role', 'status'].some(
+      key => update.$set[key] !== undefined && update.$set[key] !== user[key]
+    )
   ) {
     update.$inc = { identityVersion: 1 }
   }
-  await User.updateOne({ _id: user._id }, update, {
-    runValidators: true,
-  }).exec()
+  try {
+    const result = await User.updateOne(
+      { _id: user._id, identityVersion: user.identityVersion },
+      update,
+      {
+        runValidators: true,
+      }
+    ).exec()
+    if (result.matchedCount !== 1) {
+      throw new UnderleafUserError(
+        'concurrent_update',
+        'Account changed while saving. Reload and try again.'
+      )
+    }
+  } catch (error) {
+    rethrowIdentityWriteError(error)
+  }
   return await findById(user._id)
 }
 
@@ -273,13 +326,14 @@ async function countOwnedProjects(userId) {
 }
 
 function isActiveAdmin(user) {
-  return user.status !== 'disabled' && (user.role === 'admin' || user.isAdmin)
+  return user.status === 'active' && !user.suspended && user.role === 'admin'
 }
 
 async function countActiveAdmins() {
   return await User.countDocuments({
-    status: { $ne: 'disabled' },
-    $or: [{ role: 'admin' }, { isAdmin: true }],
+    status: 'active',
+    suspended: { $ne: true },
+    role: 'admin',
   }).exec()
 }
 
