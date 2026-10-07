@@ -1,12 +1,10 @@
 // @ts-check
 
-import logger from '@overleaf/logger'
 import UserGetter from '../../Features/User/UserGetter.mjs'
 import FeatureUsageRateLimiter from './FeatureUsageRateLimiter.mjs'
 import Settings from '@overleaf/settings'
-import FeaturesHelper from '../../Features/Subscription/FeaturesHelper.mjs'
+import UserFeatures from '../../Features/User/UserFeatures.mjs'
 import AnalyticsManager from '../../Features/Analytics/AnalyticsManager.mjs'
-import SubscriptionViewModelBuilder from '../../Features/Subscription/SubscriptionViewModelBuilder.mjs'
 import UserAuditLogHandler from '../../Features/User/UserAuditLogHandler.mjs'
 
 class AiFeatureUsageRateLimiter extends FeatureUsageRateLimiter {
@@ -112,7 +110,7 @@ class AiFeatureUsageRateLimiter extends FeatureUsageRateLimiter {
     const wfQuota = user?.writefull?.isPremium
       ? Settings.writefull.quotaTierGranted
       : Settings.aiFeatures.freeQuota
-    const mergedFeatures = FeaturesHelper.mergeFeatures(user?.features, {
+    const mergedFeatures = UserFeatures.mergeFeatures(user?.features, {
       aiUsageQuota: wfQuota,
     })
     const quotaTier = mergedFeatures.aiUsageQuota

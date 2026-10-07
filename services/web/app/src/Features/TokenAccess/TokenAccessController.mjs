@@ -21,7 +21,7 @@ import AdminAuthorizationHelper from '../Helpers/AdminAuthorizationHelper.mjs'
 import UrlHelper from '../Helpers/UrlHelper.mjs'
 import UserGetter from '../User/UserGetter.mjs'
 import Settings from '@overleaf/settings'
-import LimitationsManager from '../Subscription/LimitationsManager.mjs'
+import LimitationsManager from '../Collaborators/CollaborationLimits.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import { z, zz, parseReq } from '../../infrastructure/Validation.mjs'
 

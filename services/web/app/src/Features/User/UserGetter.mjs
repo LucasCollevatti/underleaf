@@ -2,7 +2,7 @@ import { callbackify } from 'node:util'
 import { db } from '../../infrastructure/mongodb.mjs'
 import Mongo from '../Helpers/Mongo.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
-import FeaturesHelper from '../Subscription/FeaturesHelper.mjs'
+import FeaturesHelper from './UserFeatures.mjs'
 
 const { normalizeQuery, normalizeMultiQuery } = Mongo
 

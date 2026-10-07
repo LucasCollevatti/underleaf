@@ -13,10 +13,6 @@ release machine; the repository does not rely on GitHub Actions for auditing.
   through 4.17.23 and are fixed in 4.18.0 or later.
 - `mongoose` is pinned to 8.24.3. The 2026 prototype-pollution advisory is
   fixed in 8.24.1 or later.
-- Stripe/Recurly dependencies are retained because Subscription modules still
-  import them. Removing them would make the current tree internally
-  inconsistent; removal belongs to a later deletion of the remaining
-  subscription backend.
 - Run `yarn npm audit --all --recursive --severity moderate` locally against
 the immutable lockfile when dependencies change and before release.
 

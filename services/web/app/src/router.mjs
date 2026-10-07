@@ -10,7 +10,6 @@ import Settings from '@overleaf/settings'
 import TpdsController from './Features/ThirdPartyDataStore/TpdsController.mjs'
 import UploadsRouter from './Features/Uploads/UploadsRouter.mjs'
 import metrics from '@overleaf/metrics'
-import ReferalController from './Features/Referal/ReferalController.mjs'
 import AuthenticationController from './Features/Authentication/AuthenticationController.mjs'
 import PermissionsController from './Features/Authorization/PermissionsController.mjs'
 import SessionManager from './Features/Authentication/SessionManager.mjs'
@@ -300,13 +299,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
 
   await Modules.applyRouter(webRouter, privateApiRouter, publicApiRouter)
 
-  if (Settings.enableSubscriptions) {
-    webRouter.get(
-      '/user/bonus',
-      AuthenticationController.requireLogin(),
-      ReferalController.bonus
-    )
-  }
 
   // .getMessages will generate an empty response for anonymous users.
   webRouter.get('/system/messages', SystemMessageController.getMessages)

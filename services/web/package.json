@@ -183,11 +183,7 @@
     "xregexp": "^4.3.0",
     "yauzl": "^3.4.0",
     "zod": "^4.0.17",
-    "zod-validation-error": "^4.0.1",
-    "@stripe/react-stripe-js": "^3.9.0",
-    "@stripe/stripe-js": "^7.7.0",
-    "recurly": "^4.0.0",
-    "stripe": "^18.4.0"
+    "zod-validation-error": "^4.0.1"
   },
   "devDependencies": {
     "@ai-sdk/react": "^3.0.172",
@@ -442,7 +438,6 @@
     "webpack-dev-server": "^5.2.3",
     "webpack-merge": "^6.0.1",
     "yup": "^0.32.11",
-    "zustand": "^5.0.1",
-    "@types/recurly__recurly-js": "^4.38.0"
+    "zustand": "^5.0.1"
   }
 }

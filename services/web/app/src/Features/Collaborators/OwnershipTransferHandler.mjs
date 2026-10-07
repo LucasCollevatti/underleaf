@@ -12,7 +12,7 @@ import AnalyticsManager from '../Analytics/AnalyticsManager.mjs'
 import OError from '@overleaf/o-error'
 import TagsHandler from '../Tags/TagsHandler.mjs'
 import { promiseMapWithLimit } from '@overleaf/promise-utils'
-import LimitationsManager from '../Subscription/LimitationsManager.mjs'
+import LimitationsManager from './CollaborationLimits.mjs'
 import AsyncLocalStorage from '../../infrastructure/AsyncLocalStorage.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 

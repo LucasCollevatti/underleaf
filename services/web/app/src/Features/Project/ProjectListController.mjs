@@ -15,7 +15,6 @@ import TagsHandler from '../Tags/TagsHandler.mjs'
 import { expressify } from '@overleaf/promise-utils'
 import logger from '@overleaf/logger'
 import Features from '../../infrastructure/Features.mjs'
-import SubscriptionViewModelBuilder from '../Subscription/SubscriptionViewModelBuilder.mjs'
 import NotificationsHandler from '../Notifications/NotificationsHandler.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import { OError, V1ConnectionError } from '../Errors/Errors.js'
@@ -26,8 +25,6 @@ import GeoIpLookup from '../../infrastructure/GeoIpLookup.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import SplitTestSessionHandler from '../SplitTests/SplitTestSessionHandler.mjs'
 import TutorialHandler from '../Tutorial/TutorialHandler.mjs'
-import SubscriptionHelper from '../Subscription/SubscriptionHelper.mjs'
-import CustomerIoPlanHelpers from '../Subscription/CustomerIoPlanHelpers.mjs'
 import PermissionsManager from '../Authorization/PermissionsManager.mjs'
 import AnalyticsManager from '../Analytics/AnalyticsManager.mjs'
 import { OnboardingDataCollection } from '../../models/OnboardingDataCollection.mjs'
@@ -248,9 +245,7 @@ async function projectListPage(req, res, next) {
         individualSubscription: usersIndividualSubscription,
         memberGroupSubscriptions: usersGroupSubscriptions,
         managedGroupSubscriptions: usersManagedGroupSubscriptions,
-      } = await SubscriptionViewModelBuilder.promises.getUsersSubscriptionDetails(
-        { _id: userId }
-      ))
+      } = Promise.resolve({ bestSubscription: undefined, individualSubscription: undefined, memberGroupSubscriptions: [], managedGroupSubscriptions: [] }))
     } catch (error) {
       logger.err(
         { err: error, userId },
@@ -546,9 +541,7 @@ async function projectListPage(req, res, next) {
 
   try {
     hasIndividualPaidSubscription =
-      SubscriptionHelper.isIndividualActivePaidSubscription(
-        usersIndividualSubscription
-      )
+      false
   } catch (error) {
     logger.error({ err: error }, 'Failed to get individual subscription')
   }
@@ -631,7 +624,7 @@ async function projectListPage(req, res, next) {
       ...(usedLatex && { used_latex: usedLatex }),
       ...(countryCode && { country: countryCode }),
       ...(commonsInstitution && { commons_institution: commonsInstitution }),
-      ...CustomerIoPlanHelpers.getAffiliationProperties(userEmails),
+      ...{},
       ...(groupRole && { group_role: groupRole }),
       is_managed_user: Boolean(user.enrollment?.managedBy),
       ...(user.email && { email: user.email }),

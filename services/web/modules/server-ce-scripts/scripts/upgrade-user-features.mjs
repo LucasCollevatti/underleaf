@@ -1,7 +1,7 @@
 import Settings from '@overleaf/settings'
 import logger from '@overleaf/logger'
 import { db } from '../../../app/src/infrastructure/mongodb.mjs'
-import FeaturesHelper from '../../../app/src/Features/Subscription/FeaturesHelper.mjs'
+import FeaturesHelper from '../../../app/src/Features/User/UserFeatures.mjs'
 import { fileURLToPath } from 'url'
 const DRY_RUN = !process.argv.includes('--dry-run=false')
 const { mergeFeatures, compareFeatures } = FeaturesHelper

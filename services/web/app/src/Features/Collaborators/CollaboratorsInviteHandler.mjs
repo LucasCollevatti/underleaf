@@ -12,7 +12,7 @@ import NotificationsBuilder from '../Notifications/NotificationsBuilder.mjs'
 import PrivilegeLevels, {
   isPrivilegeUpgrade,
 } from '../Authorization/PrivilegeLevels.mjs'
-import LimitationsManager from '../Subscription/LimitationsManager.mjs'
+import LimitationsManager from './CollaborationLimits.mjs'
 import ProjectAuditLogHandler from '../Project/ProjectAuditLogHandler.mjs'
 import _ from 'lodash'
 

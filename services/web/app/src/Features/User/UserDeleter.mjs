@@ -8,9 +8,7 @@ import ProjectDeleter from '../Project/ProjectDeleter.mjs'
 import UserSessionsManager from './UserSessionsManager.mjs'
 import UserAuditLogHandler from './UserAuditLogHandler.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
-import Errors from '../Errors/Errors.js'
 import OnboardingDataCollectionManager from '../OnboardingDataCollection/OnboardingDataCollectionManager.mjs'
-import Features from '../../infrastructure/Features.mjs'
 
 export default {
   deleteUser: callbackify(deleteUser),
@@ -39,7 +37,7 @@ async function deleteUser(userId, options) {
     logger.info({ userId }, 'deleting user')
     await ensureCanDeleteUser(user)
 
-    // add audit log entry before _cleanUpUser removes any group subscriptions
+    // Add the audit log entry before cleanup removes account data.
     logger.info({ userId }, 'adding delete-account audit log entry')
     await UserAuditLogHandler.promises.addEntry(
       userId,
@@ -148,14 +146,7 @@ async function expireDeletedUsersAfterDuration() {
   }
 }
 
-async function ensureCanDeleteUser(user) {
-  if (!Features.hasFeature('saas')) return
-  const subscription =
-    await SubscriptionLocator.promises.getUsersSubscription(user)
-  if (subscription) {
-    throw new Errors.SubscriptionAdminDeletionError({})
-  }
-}
+async function ensureCanDeleteUser() {}
 
 async function _createDeletedUser(user, options) {
   const snapshot = user.toObject()

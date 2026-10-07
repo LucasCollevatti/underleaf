@@ -14,10 +14,6 @@ import EditorController from '../Editor/EditorController.mjs'
 import ProjectHelper from './ProjectHelper.mjs'
 import metrics from '@overleaf/metrics'
 import { User } from '../../models/User.mjs'
-import SubscriptionLocator from '../Subscription/SubscriptionLocator.mjs'
-import SubscriptionHelper from '../Subscription/SubscriptionHelper.mjs'
-import LimitationsManager from '../Subscription/LimitationsManager.mjs'
-import { isProfessionalGroupPlan } from '../Subscription/PlansHelper.mjs'
 import Settings from '@overleaf/settings'
 import AuthorizationManager from '../Authorization/AuthorizationManager.mjs'
 import InactiveProjectManager from '../InactiveData/InactiveProjectManager.mjs'
@@ -37,7 +33,7 @@ import AnalyticsManager from '../Analytics/AnalyticsManager.mjs'
 import LocalsHelper from '../SplitTests/LocalsHelper.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import SplitTestSessionHandler from '../SplitTests/SplitTestSessionHandler.mjs'
-import FeaturesUpdater from '../Subscription/FeaturesUpdater.mjs'
+import UserFeatureManager from '../User/UserFeatureManager.mjs'
 import SpellingHandler from '../Spelling/SpellingHandler.mjs'
 import AdminAuthorizationHelper from '../Helpers/AdminAuthorizationHelper.mjs'
 import ProjectAuditLogHandler from './ProjectAuditLogHandler.mjs'
@@ -48,8 +44,6 @@ import UserUpdater from '../User/UserUpdater.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import { z, zz, parseReq } from '../../infrastructure/Validation.mjs'
 import UserGetter from '../User/UserGetter.mjs'
-import { isStandaloneAiAddOnPlanCode } from '../Subscription/AiHelper.mjs'
-import SubscriptionController from '../Subscription/SubscriptionController.mjs'
 import UserSettingsHelper from './UserSettingsHelper.mjs'
 import AiFeatureUsageRateLimiter from '../../infrastructure/rate-limiters/AiFeatureUsageRateLimiter.mjs'
 import WorkbenchRateLimiter from '../../infrastructure/rate-limiters/WorkbenchRateLimiter.mjs'
@@ -57,7 +51,6 @@ import PermissionsManager from '../Authorization/PermissionsManager.mjs'
 import { FileTooLargeError } from '../Errors/Errors.js'
 
 const { checkUserPermissions } = PermissionsManager.promises
-const { isPaidSubscription } = SubscriptionHelper
 const { hasAdminAccess } = AdminAuthorizationHelper
 const { ObjectId } = mongodb
 /**
@@ -670,7 +663,7 @@ const _ProjectController = {
               return
             }
             logger.debug({ projectId, userId }, 'got user')
-            return FeaturesUpdater.featuresEpochIsCurrent(user)
+            return UserFeatureManager.featuresEpochIsCurrent(user)
               ? user
               : await ProjectController._refreshFeatures(req, user)
           })(),
@@ -681,8 +674,7 @@ const _ProjectController = {
           ),
           userHasInstitutionLicence: false,
           affiliations: [],
-          subscription:
-            SubscriptionLocator.promises.getUsersSubscription(userId),
+          
           isTokenMember: CollaboratorsGetter.promises.userIsTokenMember(
             userId,
             projectId
@@ -711,30 +703,13 @@ const _ProjectController = {
           overleaf: 1,
           tokens: 1,
         }),
-        userIsMemberOfGroupSubscription: sessionUser
-          ? (async () =>
-              (
-                await LimitationsManager.promises.userIsMemberOfGroupSubscription(
-                  sessionUser
-                )
-              ).isMember)()
-          : false,
-        activeProfessionalGroupSubscriptions:
-          SubscriptionLocator.promises.getUserActiveProfessionalGroupSubscriptions(
-            userId,
-            {
-              _id: 1,
-              teamName: 1,
-              sharingPermissions: 1,
-            }
-          ),
+        
+        
       })
 
       const {
         project,
         userValues,
-        userIsMemberOfGroupSubscription,
-        activeProfessionalGroupSubscriptions,
       } = responses
 
       await Promise.all([
@@ -747,7 +722,6 @@ const _ProjectController = {
         learnedWords,
         projectTags,
         userHasInstitutionLicence,
-        subscription,
         isTokenMember,
         isInvitedMember,
         affiliations,
@@ -758,10 +732,6 @@ const _ProjectController = {
         inEnterpriseCommons =
           inEnterpriseCommons || affiliation.institution?.enterpriseCommons
       }
-
-      const allowedFreeTrial =
-        subscription == null ||
-        isStandaloneAiAddOnPlanCode(subscription.planCode)
 
       const splitTestAssignments = Object.fromEntries(
         await Promise.all(
@@ -935,20 +905,6 @@ const _ProjectController = {
         !Features.hasFeature('saas') ||
         (user.features && user.features.symbolPalette)
 
-      const userInNonIndividualSub =
-        userIsMemberOfGroupSubscription || userHasInstitutionLicence
-
-      const userHasPremiumSub =
-        subscription && !isStandaloneAiAddOnPlanCode(subscription.planCode)
-
-      // Persistent upgrade prompts
-      // in header & in share project modal
-      const showUpgradePrompt =
-        Features.hasFeature('saas') &&
-        userId &&
-        !userHasPremiumSub &&
-        !userInNonIndividualSub
-
       let aiFeaturesAllowedForUser = false
       let aiFeaturesAllowedForProject = false
 
@@ -991,7 +947,7 @@ const _ProjectController = {
         userValues,
         userId,
         aiFeaturesAllowedForUser && aiFeaturesAllowedForProject,
-        userIsMemberOfGroupSubscription
+        false
       )
 
       AnalyticsManager.setUserPropertyForSessionInBackground(
@@ -1026,8 +982,7 @@ const _ProjectController = {
         fullFeatureSet = await UserGetter.promises.getUserFeatures(userId)
       }
 
-      const hasPaidSubscription = isPaidSubscription(subscription)
-      const aiFeaturesDisabled = user.aiFeatures?.enabled === false
+            const aiFeaturesDisabled = user.aiFeatures?.enabled === false
 
       let showAiFeatures = aiFeaturesAllowedForUser && !aiFeaturesDisabled
       let showAiFeaturesDisabled =
@@ -1039,31 +994,9 @@ const _ProjectController = {
         showAiFeaturesDisabled = false
       }
 
-      let standardPlanPricing
-      let recommendedCurrency
-      if (Features.hasFeature('saas')) {
-        standardPlanPricing = await ProjectController._getPlanPricing(
-          req,
-          res,
-          'collaborator'
-        )
-        const { currency } =
-          await SubscriptionController.getRecommendedCurrency(req, res)
-        recommendedCurrency = currency
-      }
-
-      let planCode = subscription?.planCode
-      if (!planCode && !userInNonIndividualSub) {
-        planCode = 'personal'
-      }
-
-      const planDetails = Settings.plans.find(p => p.planCode === planCode)
-
-      const shouldLoadHotjar =
-        splitTestAssignments['compile-timeout-target-plans']?.variant ===
-          'enabled' &&
-        !userHasPremiumSub &&
-        !userInNonIndividualSub
+      
+      
+      const shouldLoadHotjar = false
 
       const userSettings = await UserSettingsHelper.buildUserSettings(
         req,
@@ -1110,8 +1043,6 @@ const _ProjectController = {
           last_name: user.last_name,
           referal_id: user.referal_id,
           signUpDate: user.signUpDate,
-          allowedFreeTrial,
-          hasPaidSubscription,
           featureSwitches: user.featureSwitches,
           features: fullFeatureSet,
           featureUsage,
@@ -1124,15 +1055,6 @@ const _ProjectController = {
           labsProgram: user.labsProgram,
           inactiveTutorials: TutorialHandler.getInactiveTutorials(user),
           isAdmin: hasAdminAccess(user),
-          planCode,
-          planName: planDetails?.name,
-          isAnnualPlan: planCode && planDetails?.annual,
-          isProfessionalGroupPlan: Boolean(
-            subscription && isProfessionalGroupPlan(subscription)
-          ),
-          isMemberOfGroupSubscription: userIsMemberOfGroupSubscription,
-          hasInstitutionLicence: userHasInstitutionLicence,
-          activeProfessionalGroupSubscriptions,
         },
         initialLoadingScreenTheme,
         userSettings,
@@ -1188,36 +1110,12 @@ const _ProjectController = {
         compileSettings: {
           compileTimeout: ownerFeatures?.compileTimeout,
         },
-        standardPlanPricing,
-        recommendedCurrency,
         ownerHasSharingUpdates,
       })
       timer.done()
     } catch (err) {
       OError.tag(err, 'error getting details for project page')
       return next(err)
-    }
-  },
-
-  async _getPlanPricing(req, res, plan = 'collaborator') {
-    const { currency } = await SubscriptionController.getRecommendedCurrency(
-      req,
-      res
-    )
-
-    const pricingForCurrency = Settings.localizedPlanPricing[currency]
-    if (!pricingForCurrency) {
-      return null
-    }
-
-    const planPricing = pricingForCurrency[plan]
-    if (!planPricing) {
-      return null
-    }
-
-    return {
-      monthly: planPricing.monthly,
-      annual: planPricing.annual,
     }
   },
 
@@ -1255,7 +1153,7 @@ const _ProjectController = {
       refreshTimeoutHandler(),
       (async () => {
         try {
-          const { features } = await FeaturesUpdater.promises.refreshFeatures(
+          const { features } = await UserFeatureManager.promises.refreshFeatures(
             user._id,
             'load-editor'
           )
@@ -1421,8 +1319,8 @@ const _ProjectController = {
     userValues,
     userId,
     aiFeaturesAllowed,
-    userIsMemberOfGroupSubscription
-  ) {
+        false
+      ) {
     if (!aiFeaturesAllowed) {
       return
     }
@@ -1473,11 +1371,6 @@ const defaultSettingsForAnonymousUser = userId => ({
     pdfViewer: '',
     syntaxValidation: true,
   },
-  subscription: {
-    freeTrial: {
-      allowed: true,
-    },
-  },
   featureSwitches: {
     github: false,
   },
@@ -1497,7 +1390,6 @@ const defaultUserValues = () => ({
   projectTags: [],
   userHasInstitutionLicence: false,
   affiliations: [],
-  subscription: undefined,
   isTokenMember: false,
   isInvitedMember: false,
 })

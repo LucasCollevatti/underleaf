@@ -4,7 +4,7 @@ import { callbackifyMultiResult } from '@overleaf/promise-utils'
 import Settings from '@overleaf/settings'
 import UserGetter from '../User/UserGetter.mjs'
 import UserFeaturesUpdater from './UserFeaturesUpdater.mjs'
-import FeaturesHelper from './FeaturesHelper.mjs'
+import UserFeatures from './UserFeatures.mjs'
 import Queues from '../../infrastructure/Queues.mjs'
 
 async function scheduleRefreshFeatures(userId, reason) {
@@ -25,7 +25,7 @@ async function computeFeatures(userId) {
   const overrides = (user?.featuresOverrides || [])
     .filter(item => !item.expiresAt || item.expiresAt > new Date())
     .map(item => item.features)
-  return _.reduce(overrides, FeaturesHelper.mergeFeatures, {
+  return _.reduce(overrides, UserFeatures.mergeFeatures, {
     ...Settings.defaultFeatures,
   })
 }
