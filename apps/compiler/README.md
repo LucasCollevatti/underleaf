@@ -1,17 +1,20 @@
-# Underleaf compiler boundary
+# Underleaf compiler service
 
-The current compiler implementation is the imported CLSI service, started
-inside the application image and reached only through the web application's
-internal compile flow. The web layer uses
-`UnderleafCompilerGateway.compile({ projectId, userId, options })` as the
-stable boundary.
+Compilation is a dedicated runtime service. The web application owns project
+authorization, compile limits and request composition, then sends the CLSI
+request over the private `compiler_net` network to the `compiler` container.
 
-The gateway returns the existing compile result, including status, output
-files, build identifiers, logs and validation problems. The editor and PDF
-download routes remain the only public-facing consumers of those artifacts.
+The compiler container runs `services/clsi/app.js` and is the only supported
+runtime path for TeX execution. The main application image no longer starts
+CLSI. Generated files live in the `underleaf_compiler_work` volume; the app
+mounts that volume read-only so its internal nginx can stream PDF/log artifacts
+without executing TeX.
 
-This directory is the architectural home for the future dedicated compiler
-service. Moving CLSI behind a separate container can therefore happen behind
-the gateway without changing editor routes or exposing the compiler API on the
-host network.
+The web-facing contract remains
+`UnderleafCompilerGateway`. Its legacy adapter preserves the established
+request/result semantics while the process boundary is now enforced by the
+deployment topology.
 
+The compiler API is not published on a host port. It can reach the app's
+filestore over `compiler_net`, but it is not attached to the MongoDB/Redis
+backend network.

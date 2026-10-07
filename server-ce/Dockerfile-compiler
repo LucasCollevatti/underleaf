@@ -1,13 +1,28 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1-labs
 
 ARG UNDERLEAF_COMPILER_BASE_IMAGE=underleaf/base:local
 FROM ${UNDERLEAF_COMPILER_BASE_IMAGE}
 
 ARG TEXLIVE_MIRROR=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
 
+WORKDIR /overleaf
+
+COPY --parents libraries/*/package.json .yarn/patches/ services/*/package.json tools/migrations/ package.json yarn.lock .yarnrc.yml .pnp.register.mjs /overleaf/
+
+ENV COREPACK_HOME=/opt/corepack
+RUN corepack enable && corepack prepare yarn@4.18.0 --activate
+ENV COREPACK_ENABLE_NETWORK=0
+
+RUN --mount=type=cache,target=/root/.cache \
+    --mount=type=cache,target=/root/.yarn/berry/cache,id=compiler-yarn-cache \
+    --mount=type=tmpfs,target=/tmp \
+    yarn workspaces focus @overleaf/clsi --production
+
+COPY --parents libraries/ services/clsi/ /overleaf/
+
+ENV NODE_OPTIONS="--require /overleaf/.pnp.cjs --import /overleaf/.pnp.register.mjs"
 ENV TEXMFVAR=/var/lib/underleaf/compiler/texmf-var
 
-# Keep the compiler environment independent from the web image.
 RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
   && tlmgr install \
     bibtex \
@@ -24,7 +39,6 @@ RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
     texcount \
     xetex \
   && tlmgr path add \
-  && mkdir -p "${TEXMFVAR}" \
   && command -v pdflatex \
   && command -v xelatex \
   && command -v lualatex \
@@ -35,8 +49,18 @@ RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
   && for package in tikz.sty pgfplots.sty circuitikz.sty minted.sty fontspec.sty biblatex.sty chemfig.sty; do \
     kpsewhich "${package}" >/dev/null; \
   done \
-  && mkdir -p "${TEXMFVAR}" /var/lib/underleaf/compiler/work \
+  && mkdir -p \
+    /var/lib/underleaf/compiler/compiles \
+    /var/lib/underleaf/compiler/output \
+    /var/lib/underleaf/compiler/cache \
+    /var/lib/underleaf/compiler/uploads \
+    /var/lib/underleaf/compiler/texmf-var \
   && chown -R www-data:www-data /var/lib/underleaf/compiler
 
 USER www-data
-WORKDIR /var/lib/underleaf/compiler
+WORKDIR /overleaf/services/clsi
+
+EXPOSE 3013
+
+ENTRYPOINT []
+CMD ["node", "app.js"]

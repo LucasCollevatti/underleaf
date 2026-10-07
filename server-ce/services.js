@@ -9,9 +9,6 @@ module.exports = [
     name: 'document-updater',
   },
   {
-    name: 'clsi',
-  },
-  {
     name: 'filestore',
   },
   {
