@@ -26073,9 +26073,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"overleaf@workspace:.":
+"underleaf@workspace:.":
   version: 0.0.0-use.local
-  resolution: "overleaf@workspace:."
+  resolution: "underleaf@workspace:."
   dependencies:
     "@eslint/compat": "npm:^2.1.0"
     "@eslint/js": "npm:^10.0.1"
