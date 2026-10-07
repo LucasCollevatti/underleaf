@@ -1,12 +1,8 @@
 import { callbackify } from 'node:util'
-import TeamInvitesHandler from '../Subscription/TeamInvitesHandler.mjs'
 import { db, READ_PREFERENCE_SECONDARY } from '../../infrastructure/mongodb.mjs'
 
-async function populateTeamInvites(user) {
-  if (!user.email) return
-  return await TeamInvitesHandler.promises.createTeamInvitesForLegacyInvitedEmail(
-    user.email
-  )
+async function populateTeamInvites() {
+  // Underleaf does not support email-based team invitations.
 }
 
 async function countActiveUsers() {

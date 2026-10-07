@@ -8,7 +8,6 @@ import SpellingController from './Features/Spelling/SpellingController.mjs'
 import EditorRouter from './Features/Editor/EditorRouter.mjs'
 import Settings from '@overleaf/settings'
 import TpdsController from './Features/ThirdPartyDataStore/TpdsController.mjs'
-import SubscriptionRouter from './Features/Subscription/SubscriptionRouter.mjs'
 import UploadsRouter from './Features/Uploads/UploadsRouter.mjs'
 import metrics from '@overleaf/metrics'
 import ReferalController from './Features/Referal/ReferalController.mjs'
@@ -291,9 +290,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     )
   }
   CollaboratorsRouter.apply(webRouter, privateApiRouter)
-  if (!Settings.underleaf) {
-    SubscriptionRouter.apply(webRouter, privateApiRouter, publicApiRouter)
-  }
   UploadsRouter.apply(webRouter, privateApiRouter)
   StaticPagesRouter.apply(webRouter, privateApiRouter)
   ContactRouter.apply(webRouter, privateApiRouter)

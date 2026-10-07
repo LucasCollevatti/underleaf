@@ -5,7 +5,6 @@ import Modules from './app/src/infrastructure/Modules.mjs'
 import metrics from '@overleaf/metrics'
 import Settings from '@overleaf/settings'
 import logger from '@overleaf/logger'
-import PlansLocator from './app/src/Features/Subscription/PlansLocator.mjs'
 import HistoryManager from './app/src/Features/History/HistoryManager.mjs'
 import SiteAdminHandler from './app/src/infrastructure/SiteAdminHandler.mjs'
 import http from 'node:http'
@@ -101,7 +100,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     throw new Error('No API user and password provided')
   }
 
-  PlansLocator.ensurePlansAreSetupCorrectly()
 
   Server.server.listen(port, host, function () {
     logger.debug(`web starting up, listening on ${host}:${port}`)
