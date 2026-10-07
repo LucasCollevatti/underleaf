@@ -204,7 +204,7 @@ function StatusContent({
   return (
     <div className="underleaf-system-status-content">
       <header className="underleaf-system-heading">
-        <div>
+        <div className="underleaf-page-heading">
           <h1>
             {t('underleaf_system_status_title', {
               defaultValue: 'System status',

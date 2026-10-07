@@ -73,12 +73,37 @@
     border-radius: 0;
   }
 
-  .project-ds-nav-main {
+  .underleaf-page-heading {
+    h1 {
+      margin: 0 0 8px !important;
+      color: var(--content-primary-themed);
+      font-size: 30px !important;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2 !important;
+
+      &:last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    p {
+      margin: 0;
+      color: var(--content-secondary-themed);
+    }
+  }
+
+  .underleaf-projects-layout,
+  .underleaf-projects-surface {
+    display: contents;
+  }
+
+  .underleaf-projects-main {
     box-sizing: border-box;
     width: 100%;
     max-width: 1136px;
-    padding: 40px 28px 56px !important;
-    margin: 0 auto !important;
+    padding: 40px 28px 56px;
+    margin: 0 auto;
 
     > main {
       padding: 0;
@@ -94,21 +119,17 @@
       line-height: 1.2 !important;
     }
 
-    .project-list-header-row {
-      align-items: flex-start;
-      min-height: 36px;
-      margin: 0 0 24px !important;
+    .underleaf-projects-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .underleaf-projects-heading {
       min-width: 0;
-
-      p {
-        margin: 6px 0 0;
-        color: var(--underleaf-app-muted);
-        font-size: 13px;
-        line-height: 1.45;
-      }
     }
 
     .underleaf-projects-toolbar {
@@ -293,6 +314,10 @@
           flex-basis: 32px;
         }
       }
+    }
+
+    @include media-breakpoint-down(sm) {
+      padding: 28px 16px 40px;
     }
   }
 

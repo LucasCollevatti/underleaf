@@ -79,7 +79,7 @@ function SessionsPageContent() {
         <span aria-hidden="true">/</span>
         <span>{t('sessions')}</span>
       </nav>
-      <header className="underleaf-sessions-heading">
+      <header className="underleaf-sessions-heading underleaf-page-heading">
         <h1>
           {t('underleaf_sessions_title', { defaultValue: 'Your sessions' })}
         </h1>

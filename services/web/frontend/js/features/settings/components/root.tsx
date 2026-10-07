@@ -38,7 +38,7 @@ function SettingsPageContent() {
   const { t } = useTranslation();
   return (
     <main id="main-content" className="underleaf-settings-main">
-      <header className="underleaf-settings-heading">
+      <header className="underleaf-settings-heading underleaf-page-heading">
         <h1>{t("account_settings")}</h1>
       </header>
       <div className="underleaf-settings-grid">

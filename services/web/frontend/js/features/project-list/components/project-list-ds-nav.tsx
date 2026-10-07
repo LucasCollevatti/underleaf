@@ -87,16 +87,40 @@ export function ProjectListDsNav() {
       }
     >
       <SystemMessages />
-      <div className="project-ds-nav-content-and-messages">
-        <div className="project-ds-nav-content">
-          <div className="project-ds-nav-main">
+      <div
+        className={
+          isUnderleaf
+            ? "underleaf-projects-layout"
+            : "project-ds-nav-content-and-messages"
+        }
+      >
+        <div
+          className={
+            isUnderleaf
+              ? "underleaf-projects-surface"
+              : "project-ds-nav-content"
+          }
+        >
+          <div
+            className={
+              isUnderleaf ? "underleaf-projects-main" : "project-ds-nav-main"
+            }
+          >
             {error ? <DashApiError /> : ""}
             {!isUnderleaf && <UserNotifications />}
             <main aria-labelledby="main-content">
-              <div className="project-list-header-row">
+              <div
+                className={
+                  isUnderleaf
+                    ? "underleaf-projects-header"
+                    : "project-list-header-row"
+                }
+              >
                 <div
                   className={
-                    isUnderleaf ? "underleaf-projects-heading" : undefined
+                    isUnderleaf
+                      ? "underleaf-projects-heading underleaf-page-heading"
+                      : undefined
                   }
                 >
                   {showTrashHeader ? (

@@ -84,7 +84,7 @@ function Overview({
   return (
     <>
       <header className="underleaf-admin-heading">
-        <div>
+        <div className="underleaf-page-heading">
           <h1>{t('underleaf_administration')}</h1>
           <p>
             {t('underleaf_admin_overview_intro', {
@@ -200,7 +200,7 @@ function Users({
   return (
     <>
       <header className="underleaf-admin-heading">
-        <div>
+        <div className="underleaf-page-heading">
           <h1>{t('underleaf_users')}</h1>
           <p>
             {t('underleaf_users_page_intro', {
