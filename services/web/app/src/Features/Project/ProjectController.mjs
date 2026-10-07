@@ -40,8 +40,6 @@ import SplitTestSessionHandler from '../SplitTests/SplitTestSessionHandler.mjs'
 import FeaturesUpdater from '../Subscription/FeaturesUpdater.mjs'
 import SpellingHandler from '../Spelling/SpellingHandler.mjs'
 import AdminAuthorizationHelper from '../Helpers/AdminAuthorizationHelper.mjs'
-import InstitutionsFeatures from '../Institutions/InstitutionsFeatures.mjs'
-import InstitutionsGetter from '../Institutions/InstitutionsGetter.mjs'
 import ProjectAuditLogHandler from './ProjectAuditLogHandler.mjs'
 import PublicAccessLevels from '../Authorization/PublicAccessLevels.mjs'
 import TagsHandler from '../Tags/TagsHandler.mjs'
@@ -681,21 +679,8 @@ const _ProjectController = {
             userId,
             projectId
           ),
-          userHasInstitutionLicence: InstitutionsFeatures.promises
-            .hasLicence(userId)
-            .catch(err => {
-              logger.error({ err, userId }, 'failed to get institution licence')
-              return false
-            }),
-          affiliations: InstitutionsGetter.promises
-            .getCurrentAffiliations(userId)
-            .catch(err => {
-              logger.error(
-                { err, userId },
-                'failed to get current affiliations'
-              )
-              return false
-            }),
+          userHasInstitutionLicence: false,
+          affiliations: [],
           subscription:
             SubscriptionLocator.promises.getUsersSubscription(userId),
           isTokenMember: CollaboratorsGetter.promises.userIsTokenMember(

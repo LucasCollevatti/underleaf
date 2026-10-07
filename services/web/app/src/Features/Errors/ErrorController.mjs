@@ -10,7 +10,6 @@ import {
 } from '@overleaf/validation-tools'
 import Errors, { NotFoundError } from './Errors.js'
 import SessionManager from '../Authentication/SessionManager.mjs'
-import SamlLogHandler from '../SamlLog/SamlLogHandler.mjs'
 import HttpErrorHandler from './HttpErrorHandler.mjs'
 import { plainTextResponse } from '../../infrastructure/Response.mjs'
 import { expressifyErrorHandler } from '@overleaf/promise-utils'
@@ -42,11 +41,6 @@ async function handleError(error, req, res, next) {
   const shouldSendErrorResponse = !res.headersSent
   const user = SessionManager.getSessionUser(req.session)
   req.logger.addFields({ err: error })
-  // log errors related to SAML flow
-  if (req.session && req.session.saml) {
-    req.logger.setLevel('error')
-    await SamlLogHandler.promises.log(req, { error })
-  }
   if (error.code === 'EBADCSRFTOKEN') {
     req.logger.addFields({ user })
     req.logger.setLevel('warn')
