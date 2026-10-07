@@ -2,7 +2,6 @@
 .cache/
 node_modules/
 .yarn/cache/
-services/git-bridge
 server-ce/test
 services/web/scripts/plan-prices
 services/web/scripts/translations

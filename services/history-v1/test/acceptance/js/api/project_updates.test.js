@@ -450,7 +450,7 @@ describe('history import', function () {
       .catch(expectResponse.unprocessableEntity)
   })
 
-  it('imports changes with git-bridge origin', function () {
+  it('preserves legacy git-bridge origin when importing changes', function () {
     const testProjectId = '1'
     const testFilePathname = 'git.tex'
     const testFile = File.fromHash(File.EMPTY_FILE_HASH)
@@ -511,6 +511,9 @@ describe('history import', function () {
         expect(changes.length).to.be.at.least(1)
         const lastChange = changes[changes.length - 1]
         expect(lastChange.getOrigin()).to.deep.equal(testGitOrigin)
+        expect(lastChange.getOrigin().toRaw()).to.deep.equal({
+          kind: 'git-bridge',
+        })
       })
   })
 

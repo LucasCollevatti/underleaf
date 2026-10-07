@@ -65,7 +65,7 @@ const Features = {
       case 'github-sync':
         return Boolean(Settings.enableGithubSync)
       case 'git-bridge':
-        return Boolean(Settings.enableGitBridge)
+        return !Settings.underleaf && Boolean(Settings.enableGitBridge)
       case 'oauth':
         return !Settings.underleaf && Boolean(Settings.oauth)
       case 'templates-server-pro':
