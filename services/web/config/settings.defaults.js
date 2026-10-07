@@ -70,8 +70,6 @@ const httpPermissionsPolicy = {
     autoplay: 'self "https://videos.ctfassets.net"',
     fullscreen: 'self',
     'on-device-speech-recognition': 'self',
-    // required for Apple Pay / Google Pay
-    payment: 'self "https://js.stripe.com"',
   },
 }
 
@@ -277,9 +275,8 @@ module.exports = {
       },
     },
 
-    // For legacy reasons, we need to populate the below objects.
+    // For legacy reasons, we still populate the v1 object.
     v1: {},
-    recurly: {},
   },
 
   // Defines which features are allowed in the
