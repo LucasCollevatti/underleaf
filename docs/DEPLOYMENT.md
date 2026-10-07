@@ -115,6 +115,25 @@ ShareLaTeX-era base image.
 Compose command directly, build the base image first and set
 `UNDERLEAF_BASE_IMAGE=underleaf/base:local` in `.env`.
 
+## Web-only rebuild
+
+For UI and web-service changes on an existing installation, rebuild only the
+application image without rebuilding the Underleaf TeX Live base:
+
+```bash
+make web
+```
+
+The web-only path builds `underleaf/base:web` from
+`server-ce/Dockerfile-web-base`. That image starts from the upstream
+ShareLaTeX base (which already contains TeX Live) and updates only the Node.js
+and native build runtime required by the current Underleaf source. It does not
+run `server-ce/Dockerfile-base` and therefore does not reinstall TeX Live.
+
+After the image build, `make web` recreates only the `app` service with
+`--no-deps`. Existing MongoDB and Redis containers and all named volumes are
+left untouched.
+
 ## Compiler image
 
 The application image and the LaTeX compiler image are built separately. The

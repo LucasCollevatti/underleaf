@@ -2,14 +2,30 @@ COMPOSE ?= docker compose
 DOCKER ?= docker
 ENV_FILE ?= .env
 COMPOSE_FILES ?= -f compose.yaml
+WEB_BASE_IMAGE ?= underleaf/base:web
+WEB_BASE_UPSTREAM ?= sharelatex/sharelatex-base:latest
 
-.PHONY: config build-base build dev test up down logs health backup restore
+.PHONY: config build-base build-web-base build-web web dev test up down logs health backup restore
 
 config:
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) config --quiet
 
 build-base:
 	$(DOCKER) build --file server-ce/Dockerfile-base --tag underleaf/base:local .
+
+build-web-base:
+	$(DOCKER) build \
+		--file server-ce/Dockerfile-web-base \
+		--build-arg OVERLEAF_WEB_BASE_TAG=$(WEB_BASE_UPSTREAM) \
+		--tag $(WEB_BASE_IMAGE) \
+		.
+
+build-web: build-web-base
+	UNDERLEAF_BASE_IMAGE=$(WEB_BASE_IMAGE) \
+		$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app
+
+web: build-web
+	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up -d --no-deps app
 
 build: build-base
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app

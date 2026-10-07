@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+# ---------------------------------------------------------
+# Fast web-only base for Underleaf application rebuilds.
+#
+# The upstream ShareLaTeX base already contains TeX Live.
+# This image only aligns the Node/build runtime with Underleaf,
+# avoiding the expensive TeX Live installation in Dockerfile-base.
+# ---------------------------------------------------------
+
+ARG OVERLEAF_WEB_BASE_TAG=sharelatex/sharelatex-base:latest
+FROM ${OVERLEAF_WEB_BASE_TAG}
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    set -eux; \
+    rm -f /etc/apt/apt.conf.d/docker-clean; \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache; \
+    apt-get update; \
+    apt-get install -y \
+      build-essential \
+      ca-certificates \
+      curl \
+      git \
+      gnupg \
+      python3 \
+      python-is-python3; \
+    mkdir -p /etc/apt/keyrings; \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+      | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" \
+      > /etc/apt/sources.list.d/nodesource.list; \
+    apt-get update; \
+    apt-get install -y nodejs; \
+    node --version; \
+    node -e "const [major] = process.versions.node.split('.').map(Number); if (major !== 24) process.exit(1)"
