@@ -1,11 +1,18 @@
-## Description
+## Summary
 
-<!-- Goal of the pull request -->
+<!-- What problem does this change solve? -->
 
-## Related issues / Pull Requests
+## Scope
 
-<!-- Fixes #xyz, Contributes to #xyz, Related to #xyz-->
+<!-- Mention affected services, data, runtime, security or documentation. -->
 
-## Contributor Agreement
+## Validation
 
-- [ ] I confirm I have signed the [Contributor License Agreement](https://github.com/overleaf/overleaf/blob/main/CONTRIBUTING.md#contributor-license-agreement)
+- [ ] Relevant unit or frontend tests pass
+- [ ] Relevant lint, type-check or format checks pass
+- [ ] Compose configuration/build was checked when applicable
+- [ ] Documentation was updated when behavior or operations changed
+
+## Compatibility and rollback
+
+<!-- Describe migrations, persistent-data impact, or rollback considerations. -->

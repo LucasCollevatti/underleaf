@@ -5,13 +5,6 @@ import getMeta from "@/utils/meta";
 
 const RESET_AFTER_MS = 5_000;
 
-const COMPILE_ICONS = {
-  ERROR: "favicon-error.svg",
-  COMPILING: "favicon-compiling.svg",
-  COMPILED: "favicon-compiled.svg",
-  UNCOMPILED: "underleaf-favicon.png",
-} as const;
-
 const UNDERLEAF_COMPILE_ICONS = {
   ERROR: "underleaf-favicon-error.svg?v=2026-10-07-brand-5",
   COMPILING: "underleaf-favicon-compiling.svg?v=2026-10-07-brand-5",
@@ -19,7 +12,7 @@ const UNDERLEAF_COMPILE_ICONS = {
   UNCOMPILED: "underleaf-favicon.svg?v=2026-10-07-brand-5",
 } as const;
 
-type CompileStatus = keyof typeof COMPILE_ICONS;
+type CompileStatus = keyof typeof UNDERLEAF_COMPILE_ICONS;
 
 const useCompileStatus = (): CompileStatus => {
   const compileContext = useCompileContext();
@@ -39,9 +32,7 @@ const updateFavicon = (status: CompileStatus = "UNCOMPILED") => {
   removeFavicon();
   const linkElement = document.createElement("link");
   linkElement.rel = "icon";
-  const icons = getMeta("ol-ExposedSettings").underleaf
-    ? UNDERLEAF_COMPILE_ICONS
-    : COMPILE_ICONS;
+  const icons = UNDERLEAF_COMPILE_ICONS;
   linkElement.href = getMeta("ol-baseAssetPath") + icons[status];
   linkElement.type = icons[status].includes(".svg")
     ? "image/svg+xml"

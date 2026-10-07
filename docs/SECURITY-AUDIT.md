@@ -8,13 +8,20 @@ release machine; the repository does not rely on GitHub Actions for auditing.
 
 ## Dependency findings
 
-- `lodash` is constrained by the web workspace to `^4.18.1`. The 2026
-  prototype-pollution and template code-injection advisories affect releases
-  through 4.17.23 and are fixed in 4.18.0 or later.
-- `mongoose` is pinned to 8.24.3. The 2026 prototype-pollution advisory is
-  fixed in 8.24.1 or later.
-- Run `yarn npm audit --all --recursive --severity moderate` locally against
-the immutable lockfile when dependencies change and before release.
+On 2026-10-07, `corepack yarn npm audit --all --recursive
+--severity moderate --json` reported 2 critical, 43 high, 73 moderate, 0 low
+and 22 deprecation findings. These are finding instances rather than a count
+of unique packages. The result is not a clean release baseline.
+
+The current report includes direct or runtime-relevant findings in `axios`,
+`@xmldom/xmldom`, `multer`, `nodemailer`, `proxy-addr`, `shell-quote`,
+`source-map-js`, `webpack-dev-server` and other transitive packages. The
+operator must remediate or explicitly accept each HIGH/CRITICAL finding before
+Internet exposure.
+
+Commit 4 removes the unused `knip` and `prettier-plugin-groovy` dependencies;
+neither has a remaining descriptor in `yarn.lock`. Re-run the audit after any
+lockfile change and before release.
 
 ## Runtime findings
 
@@ -24,7 +31,8 @@ the immutable lockfile when dependencies change and before release.
   instead of the floating `mongo:7.0` tag.
 - Redis stays on the compatible 6.2 line but is pinned to
   `redis:6.2.21-alpine` instead of the floating `redis:6.2` tag.
-- Caddy is not part of the current runtime.
+- Caddy is used by the production overlay as the only public entry point; the
+  local stack publishes the app directly on its configured development port.
 - The compiler remains a dedicated non-root, read-only container with dropped
   capabilities and resource limits.
 

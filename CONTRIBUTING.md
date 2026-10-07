@@ -1,38 +1,49 @@
-# Contributing to Overleaf
+# Contributing to Underleaf
 
-Thank you for reading this! If you'd like to report a bug or join in the development
-of Overleaf, then here are some notes on how to do that.
+Underleaf is a self-hosted collaborative LaTeX editor for trusted local
+deployments. Contributions should preserve the supported product scope and
+keep the repository runnable with the canonical Compose stack.
 
-## Reporting bugs and opening issues
+## Issues
 
-If you'd like to report a bug or open an issue, please **[check if there is an existing issue](https://github.com/overleaf/overleaf/issues).**
-If there is then please add any more information that you have, or give it a 👍.
+Before opening an issue, search existing reports and include a small,
+reproducible description. Please provide:
 
-When submitting an issue please describe the issue as clearly as possible, including how to
-reproduce the bug, which situations it appears in, what you expected to happen, and what actually happens.
-If you can include a screenshot for front end issues that is very helpful.
+- the steps that reproduce the problem;
+- the expected and observed behavior;
+- the Underleaf version or commit;
+- relevant browser, operating system and Docker details;
+- sanitized logs or screenshots when they help explain the failure.
 
-**Note**: If you are using [www.overleaf.com](www.overleaf.com) and have a problem, or if you would like to request a new feature, please contact the Support team at support@overleaf.com. Raise an issue here only to report bugs in the Community Edition release of Overleaf.
+Do not include passwords, session cookies, document contents or other private
+data in an issue.
 
-## Pull Requests
+## Pull requests
 
-See [our wiki](https://github.com/overleaf/overleaf/wiki)
-for how to manage the Overleaf development environment and for our developer guidelines.
+Keep each change focused and preserve existing behavior unless the change is
+intentional. Update documentation and tests when the supported behavior or
+runtime changes. Do not commit secrets, local environment files, generated
+build output or dependency directories.
 
-We love pull requests, so be bold with them! Don't be afraid of going ahead
-and changing something, or adding a new feature. We're very happy to work with you
-to get your changes merged into Overleaf.
+Run the checks relevant to the change. The usual local gate is:
 
-If you're looking for something to work on, have a look at the [open issues](https://github.com/overleaf/overleaf/issues).
+```sh
+corepack yarn install --immutable
+corepack yarn format
+corepack yarn lint
+corepack yarn workspace @overleaf/web type-check
+docker compose -f compose.yaml --env-file .env config --quiet
+```
+
+For runtime changes, also exercise the affected Compose service and the
+appropriate smoke test under `tests/`.
 
 ## Security
 
-Please see [our security policy](https://github.com/overleaf/overleaf/security/policy) if you would like to report a potential security vulnerability.
+Do not report vulnerabilities in a public issue. Follow the instructions in
+[`docs/SECURITY.md`](docs/SECURITY.md) and provide only the minimum details
+needed for a private report.
 
-## Contributor License Agreement
-
-Before we can accept any contributions of code, we need you to agree to our
-[Contributor License Agreement](https://docs.google.com/forms/d/e/1FAIpQLSef79XH3mb7yIiMzZw-yALEegS-wyFetvjTiNBfZvf_IHD2KA/viewform?usp=sf_link).
-This is to ensure that you own the copyright of your contribution, and that you
-agree to give us a license to use it in both the open source version, and the version
-of Overleaf running at www.overleaf.com, which may have additional changes.
+Underleaf does not require a Contributor License Agreement. Contributions
+remain subject to the repository license and the applicable provenance notices
+in `LICENSE`, `THIRD_PARTY_NOTICES.md` and `docs/ORIGIN.md`.

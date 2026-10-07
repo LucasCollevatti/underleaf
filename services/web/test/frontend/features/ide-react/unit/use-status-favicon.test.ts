@@ -153,14 +153,4 @@ describe('useStatusFavicon', function () {
       '/underleaf-favicon-compiling.svg'
     )
   })
-
-  it('uses the legacy compile indicator only outside Underleaf', function () {
-    window.metaAttributesCache.set('ol-ExposedSettings', {
-      appName: 'Overleaf',
-      underleaf: false,
-    })
-    setCompilation({ uncompiled: false, compiling: true, error: false })
-    renderHook(() => useStatusFavicon())
-    expect(getCurrentFaviconHref()).to.include('/favicon-compiling.svg')
-  })
 })

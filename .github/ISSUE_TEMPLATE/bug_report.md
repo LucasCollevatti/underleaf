@@ -1,56 +1,31 @@
 ---
 name: Bug report
-about: Report a bug
+about: Report a reproducible Underleaf problem
 title: ''
 labels: type:bug
 assignees: ''
 ---
 
-<!--
-
-Note: If you are using www.overleaf.com and have a problem,
-      or if you would like to request a new feature please contact
-      the support team at support@overleaf.com
-
-      This form should only be used to report bugs in the
-      Community Edition release of Overleaf.
-
--->
-
-<!-- BUG REPORT TEMPLATE -->
-
-## Steps to Reproduce
-
-<!-- Describe the steps leading up to when / where you found the bug. -->
-<!-- Screenshots may be helpful here. -->
+## Steps to reproduce
 
 1.
 2.
 3.
 
-## Expected Behaviour
+## Expected behavior
 
-<!-- What should have happened when you completed the steps above? -->
+## Observed behavior
 
-## Observed Behaviour
+## Environment
 
-<!-- What actually happened when you completed the steps above? -->
-<!-- Screenshots may be helpful here. -->
+- Underleaf commit or version:
+- Browser and version:
+- Operating system:
+- Docker and Compose versions:
+- Deployment mode or relevant Compose files:
 
-## Context
+## Logs and context
 
-<!-- How has this issue affected you? What were you trying to accomplish? -->
+<!-- Remove passwords, tokens, cookies, document contents and private data. -->
 
-## Technical Info
-
-<!-- Provide any technical details that may be applicable (or N/A if not applicable). -->
-
-- URL:
-- Browser Name and version:
-- Operating System and version (desktop or mobile):
-- Signed in as:
-- Project and/or file:
-
-## Analysis
-
-<!--- Optionally, document investigation of / suggest a fix for the bug, e.g. 'comes from this line / commit' -->
+## Additional notes

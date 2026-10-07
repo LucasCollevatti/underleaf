@@ -33,7 +33,7 @@ if (typeof global.devicePixelRatio === 'undefined') {
 const path = require('path')
 process.env.OVERLEAF_CONFIG = path.resolve(
   __dirname,
-  '../../config/settings.webpack.js'
+  '../../config/settings.defaults.js'
 )
 
 // Load sinon-chai assertions so expect(stubFn).to.have.been.calledWith('abc')

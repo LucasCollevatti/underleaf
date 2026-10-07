@@ -8132,7 +8132,6 @@ __metadata:
     json2csv: "npm:^4.3.3"
     jsonwebtoken: "npm:^9.0.3"
     katex: "npm:^0.16.28"
-    knip: "npm:^5.64.1"
     lodash: "npm:^4.18.1"
     lottie-react: "npm:^2.4.1"
     lru-cache: "npm:^7.10.1"
@@ -22697,32 +22696,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:5.64.1":
-  version: 5.64.1
-  resolution: "knip@npm:5.64.1"
-  dependencies:
-    "@nodelib/fs.walk": "npm:^1.2.3"
-    fast-glob: "npm:^3.3.3"
-    formatly: "npm:^0.3.0"
-    jiti: "npm:^2.6.0"
-    js-yaml: "npm:^4.1.0"
-    minimist: "npm:^1.2.8"
-    oxc-resolver: "npm:^11.8.3"
-    picocolors: "npm:^1.1.1"
-    picomatch: "npm:^4.0.1"
-    smol-toml: "npm:^1.4.1"
-    strip-json-comments: "npm:5.0.2"
-    zod: "npm:^4.1.11"
-  peerDependencies:
-    "@types/node": ">=18"
-    typescript: ">=5.0.4 <7"
-  bin:
-    knip: bin/knip.js
-    knip-bun: bin/knip-bun.js
-  checksum: 10c0/48a9ab767375446e5aeca3bfadcb0ec7d9e35c022bc3185f5385fc206599ab555bd85ceba378341e69bf4ae2031da7108f6df5cf38c1d7522d8a7b7aed50ee29
-  languageName: node
-  linkType: hard
-
 "known-css-properties@npm:^0.37.0":
   version: 0.37.0
   resolution: "known-css-properties@npm:0.37.0"
@@ -26055,7 +26028,6 @@ __metadata:
     globals: "npm:^17.6.0"
     js-yaml: "npm:^4.1.1"
     prettier: "npm:3.7.4"
-    prettier-plugin-groovy: "npm:0.2.1"
     typescript: "npm:^5.9.3"
   dependenciesMeta:
     "@babel/helper-string-parser@7.27.1":
@@ -26135,8 +26107,6 @@ __metadata:
     object-assign@4.1.1:
       unplugged: true
     path-parse@1.0.7:
-      unplugged: true
-    prettier-plugin-groovy@0.2.1:
       unplugged: true
     prettier@3.7.4:
       unplugged: true
@@ -28047,15 +28017,6 @@ __metadata:
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
   checksum: 10c0/b00d617431e7886c520a6f498a2e14c75ec58f6d93ba48c3b639cf241b54232d90daa05d83a9e9b9fef6baa63cb7e1e4602c2372fea5bc169668401eb127d0cd
-  languageName: node
-  linkType: hard
-
-"prettier-plugin-groovy@npm:0.2.1":
-  version: 0.2.1
-  resolution: "prettier-plugin-groovy@npm:0.2.1"
-  peerDependencies:
-    prettier: ^3.3.3
-  checksum: 10c0/685f0c91875226f0113522c4b53484f2f1d12acad487fc5ef9b4224b21557c0f99186cc869190e1cab7768b8dba8db7bf7a0ce693cb9d3b7e61e398fba573188
   languageName: node
   linkType: hard
 

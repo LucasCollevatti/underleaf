@@ -2,7 +2,7 @@ import { merge } from 'webpack-merge'
 import path from 'path'
 import webpack from 'webpack'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
-import devConfig from '../../webpack.config.dev'
+import devConfig from '../../webpack.config'
 
 const buildConfig = () => {
   const webpackConfig = merge(devConfig, {

@@ -428,7 +428,8 @@ module.exports = {
         },
         // Copy Pyodide runtime assets from the npm package so the loader is
         // always available. Python package wheels are fetched separately by
-        // scripts/fetch-pyodide-packages.mjs into the same directory on disk.
+        // The Pyodide package is installed with the web workspace and copied
+        // into the generated asset tree from its package directory.
         {
           from: 'pyodide.mjs',
           to: 'js/libs/pyodide',
