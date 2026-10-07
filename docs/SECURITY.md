@@ -42,15 +42,18 @@ da rede.
 - O app não publica uma porta no host; ele é acessível pelo proxy na rede
   Docker padrão.
 - MongoDB e Redis ficam apenas na rede interna `underleaf_app_backend`.
-- O compiler fica apenas na rede interna `underleaf_compiler_net` e não recebe
-  portas, secrets da aplicação ou o Docker socket.
+- O compiler fica apenas na rede interna `underleaf_compiler_net`, sem acesso
+  às redes de MongoDB/Redis e sem portas publicadas no host.
+- O único acesso de aplicação necessário ao compiler é o filestore do `app`;
+  o container não recebe secrets da aplicação nem o Docker socket.
 - O Caddy encaminha WebSocket automaticamente pelo `reverse_proxy`.
 
 ## Containers e filesystem
 
-O compiler roda como `www-data`, com root filesystem somente leitura, todas as
-capabilities removidas, `no-new-privileges`, `tmpfs` controlado, limites de
-CPU/memória e limite de processos. O overlay de produção também aplica
+O compiler roda como `www-data:www-data`, com root filesystem somente leitura,
+todas as capabilities removidas, `no-new-privileges`, `tmpfs` controlado,
+limites explícitos de CPU, memória e PIDs e somente um volume gravável:
+`/var/lib/underleaf/compiler`. O overlay de produção também aplica
 `no-new-privileges` ao app e usa limites de CPU, memória e processos.
 
 O app herdado ainda usa um init privilegiado para administrar seus processos
@@ -73,13 +76,17 @@ desabilitado.
 
 ```bash
 tests/underleaf-security-smoke.sh
+tests/underleaf-compiler-boundary-smoke.sh
 tests/underleaf-compiler-sandbox-smoke.sh
 corepack yarn npm audit --all
 ```
 
-O primeiro comando valida a topologia efetiva do Compose de produção e a
-ausência de portas ou secrets indevidos no compiler. O segundo inspeciona o
-sandbox do container. O audit de dependências deve ser executado novamente
+O primeiro comando valida a topologia efetiva do Compose de produção. O teste
+de boundary confirma que o app usa o serviço dedicado e que CLSI não volta a
+ser iniciado no runtime principal. O sandbox smoke inspeciona limites,
+capabilities, mounts, rede e secrets e executa verificações negativas de escrita
+no root filesystem, Docker socket e resolução de MongoDB/Redis. O audit de
+dependências deve ser executado novamente
 quando o lockfile ou a imagem base mudar.
 
 ## Resultado do audit do snapshot

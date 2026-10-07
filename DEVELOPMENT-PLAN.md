@@ -382,11 +382,12 @@ Underleaf.
 **Critério de aceite:** a aplicação solicita uma compilação por uma interface
 documentada e recebe resultado, logs e artefatos de forma previsível.
 
-**Evidência:** `UnderleafCompilerGateway` é usado pelo endpoint web de
-compilação e encapsula a implementação atual do CLSI. A interface e o destino
-da migração estão documentados em `apps/compiler/README.md` e
-`docs/ARCHITECTURE.md`; o Compose continua publicando somente a aplicação,
-MongoDB e Redis.
+**Evidência:** `UnderleafCompilerGateway` concentra compile, stop, syncTeX,
+word count, limpeza de auxiliares e submissions atrás de um contrato testado. O
+CLSI roda no serviço `compiler` do Compose, sem porta publicada; o app depende
+do health check desse serviço e não inicia mais CLSI no próprio runtime.
+`apps/compiler/README.md`, `docs/ARCHITECTURE.md` e
+`tests/underleaf-compiler-boundary-smoke.sh` registram e verificam a fronteira.
 
 ### M12 — Ambiente LaTeX completo
 
@@ -404,8 +405,8 @@ MongoDB e Redis.
 **Critério de aceite:** documentos representativos compilam com os engines e
 pacotes suportados, com testes reproduzíveis.
 
-**Evidência:** `server-ce/Dockerfile-compiler` e o serviço Compose com perfil
-`compiler` criam uma imagem independente da aplicação. O build valida os três
+**Evidência:** `server-ce/Dockerfile-compiler` e o serviço `compiler` padrão
+do Compose criam uma imagem independente da aplicação. O build valida os três
 engines, ferramentas de bibliografia/índice e os pacotes representativos; o
 fluxo está documentado em `docs/DEPLOYMENT.md` e pode ser repetido por
 `scripts/build-compiler.sh`.
@@ -432,12 +433,13 @@ aplicação sem necessidade.
 **Critério de aceite:** uma compilação não consegue acessar secrets da
 aplicação e é interrompida de forma previsível ao exceder os limites.
 
-**Evidência:** `compose.yaml` aplica usuário não-root, filesystem read-only,
-capabilities removidas, `no-new-privileges`, tmpfs, limites de CPU/memória e
-rede interna ao perfil `compiler`, sem socket ou secrets. O
-`LocalCommandRunner` usa uma allowlist de ambiente, timeout de parede e limite
-de memória/CPU por processo; `tests/underleaf-compiler-sandbox-smoke.sh` e os
-testes unitários verificam a configuração e a terminação previsível.
+**Evidência:** `compose.yaml` aplica usuário `www-data:www-data`, filesystem
+read-only, capabilities removidas, `no-new-privileges`, tmpfs, limites de
+CPU/memória/PIDs e uma única rede interna, sem socket ou secrets. O único volume
+gravável é `/var/lib/underleaf/compiler`; o app o enxerga somente para leitura.
+`tests/underleaf-compiler-sandbox-smoke.sh` verifica a configuração e também
+nega escrita no root filesystem, presença do Docker socket e resolução de
+MongoDB/Redis.
 
 ### M14 — Compartilhamento por username
 

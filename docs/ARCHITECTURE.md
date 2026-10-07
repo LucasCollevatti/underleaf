@@ -4,9 +4,10 @@
 
 ```text
 compose.yaml
-├── app    aplicação web, serviços internos e compilação LaTeX
-├── mongo  persistência MongoDB com replica set
-└── redis  filas, sessões e colaboração em tempo real
+├── app       aplicação web e serviços internos sem execução LaTeX
+├── compiler  CLSI e toolchain TeX em sandbox dedicado
+├── mongo     persistência MongoDB com replica set
+└── redis     filas, sessões e colaboração em tempo real
 ```
 
 O container `app` ainda usa o runtime importado em `server-ce/`, com os
@@ -34,10 +35,16 @@ gateway é uma interface interna: recebe uma solicitação estruturada e devolve
 o resultado do CLSI com status, build, logs, erros e artefatos. O
 `compose.yaml` não publica uma porta do compilador no host.
 
-O processo CLSI atual permanece dentro da imagem da aplicação para preservar o
-snapshot importado. `apps/compiler/` registra o destino de um serviço dedicado;
-as rotas do editor e de download não precisarão mudar quando essa migração
-acontecer.
+O CLSI roda exclusivamente no serviço `compiler`. O `app` não inicia mais o
+runit `clsi-overleaf`; solicitações chegam ao compiler pela rede interna
+`compiler_net`. O compiler pode alcançar apenas o filestore do app nessa rede
+e não participa da rede de MongoDB/Redis. A API do compiler não publica portas
+no host.
+
+Os arquivos gerados ficam no volume `underleaf_compiler_work`. O compiler
+monta esse volume para escrita e o app o monta somente para leitura, permitindo
+que o nginx interno entregue PDFs, logs e auxiliares sem executar ferramentas
+TeX. `apps/compiler/README.md` documenta essa fronteira operacional.
 
 ## Shell compartilhado da aplicação
 

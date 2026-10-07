@@ -22,6 +22,7 @@ COPY --parents libraries/ services/clsi/ /overleaf/
 
 ENV NODE_OPTIONS="--require /overleaf/.pnp.cjs --import /overleaf/.pnp.register.mjs"
 ENV TEXMFVAR=/var/lib/underleaf/compiler/texmf-var
+ENV HOME=/tmp
 
 RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
   && tlmgr install \

@@ -71,8 +71,10 @@ services:
       args:
         UNDERLEAF_COMPILER_BASE_IMAGE: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
         TEXLIVE_MIRROR: ${UNDERLEAF_TEXLIVE_MIRROR:-https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet}
-    user: "www-data"
+    user: "www-data:www-data"
     read_only: true
+    init: true
+    stop_grace_period: 30s
     cap_drop:
       - ALL
     security_opt:
@@ -84,6 +86,7 @@ services:
     mem_limit: ${UNDERLEAF_COMPILE_MEMORY:-8G}
     pids_limit: 512
     environment:
+      HOME: /tmp
       LISTEN_ADDRESS: 0.0.0.0
       FILESTORE_HOST: app
       CLSI_COMPILES_PATH: /var/lib/underleaf/compiler/compiles
