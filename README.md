@@ -79,10 +79,10 @@ O passo a passo completo para instalar no PC está em
   reorganização incremental;
 - [`DEVELOPMENT-PLAN.md`](DEVELOPMENT-PLAN.md): plano operacional em Markdown.
 
-A compilação suportada usa o perfil `compiler`, isolado em um container sem
-Docker socket, com filesystem somente leitura e limites de recursos. A
-instalação base continua compatível com o runtime herdado para facilitar a
-migração incremental.
+A identidade de produto e os assets visíveis são do Underleaf. Nomes internos
+herdados, histórico Git, copyrights e atribuições de origem permanecem quando
+necessários para compatibilidade e cumprimento da licença; os detalhes estão em
+[`docs/ORIGIN.md`](docs/ORIGIN.md).
 
 ## Desenvolvimento
 

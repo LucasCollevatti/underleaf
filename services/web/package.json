@@ -1,6 +1,6 @@
 {
   "name": "@overleaf/web",
-  "description": "The HTTP front end for Overleaf",
+  "description": "The HTTP front end for Underleaf",
   "private": true,
   "main": "app.mjs",
   "exports": {

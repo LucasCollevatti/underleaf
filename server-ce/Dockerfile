@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1-labs
 # ---------------------------------------------
-# Overleaf Community Edition (overleaf/overleaf)
+# Underleaf application runtime
 # ---------------------------------------------
 
 ARG OVERLEAF_BASE_TAG=sharelatex/sharelatex-base:latest
@@ -8,8 +8,9 @@ FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
 
-# The current base image can still contain empty ShareLaTeX-era directories.
-# The runtime rejects those paths to prevent ambiguous data mounts.
+# The imported base image can still contain empty ShareLaTeX-era directories.
+# Underleaf rejects those paths to prevent ambiguous data mounts. Provenance and
+# upstream attribution are documented in docs/ORIGIN.md and LICENSE.
 RUN rm -rf /etc/sharelatex /var/lib/sharelatex /var/log/sharelatex
 
 # Add required source files for yarn install
