@@ -137,7 +137,7 @@ function ProjectListTable() {
             {t('tags')}
           </th>
           <th className="dash-cell-actions" aria-label={t('actions')}>
-            {t('actions')}
+            <span className="visually-hidden">{t('actions')}</span>
           </th>
         </tr>
       </thead>

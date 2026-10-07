@@ -8,12 +8,38 @@ import { DownloadProjectButtonTooltip } from './action-buttons/download-project-
 import { LeaveProjectButtonTooltip } from './action-buttons/leave-project-button'
 import { DeleteProjectButtonTooltip } from './action-buttons/delete-project-button'
 import { CompileAndDownloadProjectPDFButtonTooltip } from './action-buttons/compile-and-download-project-pdf-button'
+import getMeta from '@/utils/meta'
 
 type ActionsCellProps = {
   project: Project
 }
 
 export default function ActionsCell({ project }: ActionsCellProps) {
+  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
+
+  if (isUnderleaf) {
+    return (
+      <div className="underleaf-project-row-actions">
+        <DownloadProjectButtonTooltip project={project} />
+        {project.trashed ? (
+          <>
+            <UntrashProjectButtonTooltip project={project} />
+            <DeleteProjectButtonTooltip project={project} />
+          </>
+        ) : (
+          <>
+            {project.archived ? (
+              <UnarchiveProjectButtonTooltip project={project} />
+            ) : (
+              <ArchiveProjectButtonTooltip project={project} />
+            )}
+            <TrashProjectButtonTooltip project={project} />
+          </>
+        )}
+      </div>
+    )
+  }
+
   return (
     <>
       <CopyProjectButtonTooltip project={project} />

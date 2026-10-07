@@ -67,6 +67,15 @@ describe('<UnderleafAdminPage />', function () {
     return userEvent.setup()
   }
 
+  async function openActions(
+    user: ReturnType<typeof userEvent.setup>,
+    username: string
+  ) {
+    await user.click(
+      screen.getByRole('button', { name: `Actions: ${username}` })
+    )
+  }
+
   it('renders overview counts and administrative navigation in the shared shell', function () {
     render(
       <UnderleafAdminPage
@@ -106,6 +115,7 @@ describe('<UnderleafAdminPage />', function () {
     const table = screen.getByRole('table')
     expect(within(table).queryByRole('textbox')).to.be.null
     expect(within(table).queryByRole('combobox')).to.be.null
+    await openActions(user, 'administrator')
     expect(
       screen.getByRole('button', { name: 'Disable user: administrator' })
     ).to.have.property('disabled', true)
@@ -162,6 +172,7 @@ describe('<UnderleafAdminPage />', function () {
       message: 'User updated.',
     })
     const user = users()
+    await openActions(user, 'alice')
     await user.click(screen.getByRole('button', { name: 'Edit user: alice' }))
     const modal = screen.getByRole('dialog')
     await user.clear(within(modal).getByLabelText('Username'))
@@ -181,6 +192,7 @@ describe('<UnderleafAdminPage />', function () {
     const path = `/admin/users/${account.id}/password`
     fetchMock.post(path, { user: account, message: 'Password reset.' })
     const user = users()
+    await openActions(user, 'alice')
     await user.click(
       screen.getByRole('button', { name: 'Reset password: alice' })
     )
@@ -227,6 +239,7 @@ describe('<UnderleafAdminPage />', function () {
       },
     })
     const user = users()
+    await openActions(user, 'alice')
     await user.click(
       screen.getByRole('button', { name: 'Disable user: alice' })
     )
@@ -248,6 +261,7 @@ describe('<UnderleafAdminPage />', function () {
       message: 'User and all owned projects deleted.',
     })
     const user = users()
+    await openActions(user, 'alice')
     await user.click(screen.getByRole('button', { name: 'Delete user: alice' }))
     let modal = screen.getByRole('dialog')
     await user.type(
@@ -260,6 +274,7 @@ describe('<UnderleafAdminPage />', function () {
     await user.click(within(modal).getByRole('button', { name: 'Cancel' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).to.be.null)
     expect(fetchMock.callHistory.called(path)).to.equal(false)
+    await openActions(user, 'alice')
     await user.click(screen.getByRole('button', { name: 'Delete user: alice' }))
     modal = screen.getByRole('dialog')
     expect(within(modal).getByRole('alert').textContent).to.include(

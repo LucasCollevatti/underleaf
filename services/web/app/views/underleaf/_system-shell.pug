@@ -3,34 +3,58 @@
 		include ./_static-sidebar
 		.underleaf-app-content
 			main#main-content.underleaf-system-main
-				section.underleaf-system-panel(aria-labelledby='underleaf-system-heading')
-					if systemPage.code
-						p.underleaf-system-code= systemPage.code
-					h1#underleaf-system-heading= systemPage.title
-					if systemPage.descriptionHtml
-						div !{systemPage.descriptionHtml}
-					else
-						p= systemPage.description
-					if systemPage.detail
-						p.alert.alert-danger= systemPage.detail
-					if systemPage.status
-						dl.underleaf-system-status
-							dt= translate('underleaf_status_web')
-							dd= translate(systemPage.status.shuttingDown ? 'underleaf_status_stopping' : 'underleaf_status_ready')
-							dt= translate('underleaf_status_site')
-							dd= translate(systemPage.status.siteOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
-							dt= translate('underleaf_status_editor')
-							dd= translate(systemPage.status.editorOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
-							dt= translate('underleaf_status_uptime')
-							dd= systemPage.status.uptimeSeconds
-					if systemPage.kind === 'logout'
-						form(method='POST' action='/logout')
-							input(type='hidden' name='_csrf' value=csrfToken)
-							button.btn.btn-primary(type='submit')= translate('log_out')
-							a.btn.btn-secondary.ms-2(href='/project')= translate('cancel')
-					else
-						.underleaf-system-actions
-							a.btn.btn-primary(href=systemPage.kind === 'session-expired' ? '/login?session=expired' : systemPage.backPath)= systemPage.kind === 'session-expired' ? translate('log_in') : systemPage.backLabel
-							if systemPage.kind === 'status'
-								a.btn.btn-secondary(href='/status')= translate('refresh')
+				if systemPage.kind === 'status'
+					div.underleaf-page-skeleton.underleaf-page-skeleton-system(role='status' aria-label='Loading' aria-live='polite')
+						span.visually-hidden Loading
+						.underleaf-skeleton-system-content
+							.underleaf-skeleton-page-heading.underleaf-skeleton-system-heading
+								div
+									span.underleaf-skeleton-block.underleaf-skeleton-page-title(aria-hidden='true')
+									span.underleaf-skeleton-block.underleaf-skeleton-description(aria-hidden='true')
+								span.underleaf-skeleton-block.underleaf-skeleton-action-secondary(aria-hidden='true')
+							.underleaf-skeleton-block.underleaf-skeleton-system-summary(aria-hidden='true')
+							.underleaf-skeleton-system-services
+								- for (let index = 0; index < 4; index++)
+									.underleaf-skeleton-system-service
+										span.underleaf-skeleton-block.underleaf-skeleton-system-icon(aria-hidden='true')
+										div
+											span.underleaf-skeleton-block.underleaf-skeleton-system-service-title(aria-hidden='true')
+											span.underleaf-skeleton-block.underleaf-skeleton-system-service-description(aria-hidden='true')
+										span.underleaf-skeleton-block.underleaf-skeleton-system-status(aria-hidden='true')
+							.underleaf-skeleton-system-note
+								span.underleaf-skeleton-block.underleaf-skeleton-system-note-icon(aria-hidden='true')
+								div
+									span.underleaf-skeleton-block.underleaf-skeleton-system-note-line(aria-hidden='true')
+									span.underleaf-skeleton-block.underleaf-skeleton-system-note-line-short(aria-hidden='true')
+				unless systemPage.kind === 'status'
+					section.underleaf-system-panel(aria-labelledby='underleaf-system-heading')
+						if systemPage.code
+							p.underleaf-system-code= systemPage.code
+						h1#underleaf-system-heading= systemPage.title
+						if systemPage.descriptionHtml
+							div !{systemPage.descriptionHtml}
+						else
+							p= systemPage.description
+						if systemPage.detail
+							p.alert.alert-danger= systemPage.detail
+						if systemPage.status
+							dl.underleaf-system-status
+								dt= translate('underleaf_status_web')
+								dd= translate(systemPage.status.shuttingDown ? 'underleaf_status_stopping' : 'underleaf_status_ready')
+								dt= translate('underleaf_status_site')
+								dd= translate(systemPage.status.siteOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
+								dt= translate('underleaf_status_editor')
+								dd= translate(systemPage.status.editorOpen ? 'underleaf_status_ready' : 'underleaf_status_closed')
+								dt= translate('underleaf_status_uptime')
+								dd= systemPage.status.uptimeSeconds
+						if systemPage.kind === 'logout'
+							form(method='POST' action='/logout')
+								input(type='hidden' name='_csrf' value=csrfToken)
+								button.btn.btn-primary(type='submit')= translate('log_out')
+								a.btn.btn-secondary.ms-2(href='/project')= translate('cancel')
+						else
+							.underleaf-system-actions
+								a.btn.btn-primary(href=systemPage.kind === 'session-expired' ? '/login?session=expired' : systemPage.backPath)= systemPage.kind === 'session-expired' ? translate('log_in') : systemPage.backLabel
+								if systemPage.kind === 'status'
+									a.btn.btn-secondary(href='/status')= translate('refresh')
 			include ./_footer

@@ -5,10 +5,13 @@ export type UnderleafPageSkeletonVariant =
   | 'settings'
   | 'admin'
   | 'users'
+  | 'sessions'
+  | 'system'
 
 const PROJECT_ROW_COUNT = 6
 const SETTINGS_CARD_COUNT = 4
 const ADMIN_TABLE_ROW_COUNT = 5
+const SYSTEM_SERVICE_COUNT = 4
 
 function SkeletonBlock({ className }: { className?: string }) {
   return (
@@ -127,6 +130,82 @@ function UsersSkeleton() {
   )
 }
 
+function SessionsSkeleton() {
+  return (
+    <>
+      <div className="underleaf-skeleton-breadcrumb">
+        <SkeletonBlock className="underleaf-skeleton-breadcrumb-item" />
+        <SkeletonBlock className="underleaf-skeleton-breadcrumb-separator" />
+        <SkeletonBlock className="underleaf-skeleton-breadcrumb-item-short" />
+      </div>
+      <div className="underleaf-skeleton-session-heading">
+        <SkeletonBlock className="underleaf-skeleton-page-title" />
+        <SkeletonBlock className="underleaf-skeleton-description" />
+      </div>
+      <div className="underleaf-skeleton-session-card">
+        <SkeletonBlock className="underleaf-skeleton-card-heading" />
+        <div className="underleaf-skeleton-session-row">
+          <SkeletonBlock className="underleaf-skeleton-session-icon" />
+          <div>
+            <SkeletonBlock className="underleaf-skeleton-session-label" />
+            <SkeletonBlock className="underleaf-skeleton-session-value" />
+          </div>
+          <div>
+            <SkeletonBlock className="underleaf-skeleton-session-label" />
+            <SkeletonBlock className="underleaf-skeleton-session-value-wide" />
+          </div>
+          <SkeletonBlock className="underleaf-skeleton-session-badge" />
+        </div>
+      </div>
+      <div className="underleaf-skeleton-session-card underleaf-skeleton-session-card-empty">
+        <div className="underleaf-skeleton-session-card-header">
+          <SkeletonBlock className="underleaf-skeleton-card-heading" />
+          <SkeletonBlock className="underleaf-skeleton-action-secondary" />
+        </div>
+        <div className="underleaf-skeleton-session-empty">
+          <SkeletonBlock className="underleaf-skeleton-session-empty-icon" />
+          <SkeletonBlock className="underleaf-skeleton-session-empty-title" />
+          <SkeletonBlock className="underleaf-skeleton-session-empty-line" />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function SystemSkeleton() {
+  return (
+    <div className="underleaf-skeleton-system-content">
+      <div className="underleaf-skeleton-page-heading underleaf-skeleton-system-heading">
+        <div>
+          <SkeletonBlock className="underleaf-skeleton-page-title" />
+          <SkeletonBlock className="underleaf-skeleton-description" />
+        </div>
+        <SkeletonBlock className="underleaf-skeleton-action-secondary" />
+      </div>
+      <SkeletonBlock className="underleaf-skeleton-system-summary" />
+      <div className="underleaf-skeleton-system-services">
+        {Array.from({ length: SYSTEM_SERVICE_COUNT }, (_, index) => (
+          <div className="underleaf-skeleton-system-service" key={index}>
+            <SkeletonBlock className="underleaf-skeleton-system-icon" />
+            <div>
+              <SkeletonBlock className="underleaf-skeleton-system-service-title" />
+              <SkeletonBlock className="underleaf-skeleton-system-service-description" />
+            </div>
+            <SkeletonBlock className="underleaf-skeleton-system-status" />
+          </div>
+        ))}
+      </div>
+      <div className="underleaf-skeleton-system-note">
+        <SkeletonBlock className="underleaf-skeleton-system-note-icon" />
+        <div>
+          <SkeletonBlock className="underleaf-skeleton-system-note-line" />
+          <SkeletonBlock className="underleaf-skeleton-system-note-line-short" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function UnderleafPageSkeleton({
   variant,
 }: {
@@ -137,6 +216,8 @@ export default function UnderleafPageSkeleton({
     settings: <SettingsSkeleton />,
     admin: <AdminSkeleton />,
     users: <UsersSkeleton />,
+    sessions: <SessionsSkeleton />,
+    system: <SystemSkeleton />,
   }[variant]
 
   return (

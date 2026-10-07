@@ -20,7 +20,8 @@
   h1 {
     margin: 0 0 8px;
     color: var(--content-primary-themed);
-    font-size: 30px;
+    font-size: 30px !important;
+    line-height: 1.2;
     font-weight: 700;
     letter-spacing: -0.03em;
   }
@@ -204,23 +205,43 @@
 }
 
 .underleaf-admin-panel {
-  padding: 24px;
-  background: var(--bg-primary-themed);
-  border: 1px solid var(--border-divider-themed);
+  padding: 0;
+  background: var(--underleaf-app-surface);
+  border: 1px solid var(--underleaf-app-line);
   border-radius: 14px;
 }
 
 .underleaf-admin-search {
-  max-width: 480px;
-  margin-bottom: 24px;
+  width: min(320px, 100%);
+
+  .form-control {
+    min-height: 40px;
+    border-radius: 10px;
+  }
+}
+
+.underleaf-admin-users-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.underleaf-admin-users-count {
+  margin: 0;
+  color: var(--underleaf-app-muted);
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .underleaf-admin-table-wrapper {
-  padding: 0;
-  overflow-x: auto;
+  overflow: visible;
 }
 
 .underleaf-admin-table {
+  min-width: 780px;
   margin-bottom: 0;
 
   th,
@@ -231,30 +252,304 @@
     background: transparent;
     border-color: var(--border-divider-themed);
   }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    color: var(--underleaf-app-muted);
+    background: var(--underleaf-app-surface);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  tbody th,
+  tbody td {
+    height: 68px;
+    font-size: 13px;
+  }
+
+  tbody th {
+    min-width: 300px;
+    font-weight: 400;
+  }
+}
+
+.underleaf-admin-actions-cell {
+  width: 1%;
+  text-align: right;
 }
 
 .underleaf-admin-actions {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.underleaf-admin-actions-trigger {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--content-primary-themed);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-expanded='true'] {
+    background: var(--underleaf-app-surface-2);
+    border-color: var(--underleaf-app-line-strong);
+    outline: 0;
+  }
+
+  .material-symbols {
+    font-size: 20px;
+  }
+}
+
+.underleaf-admin-actions-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 240px;
+  width: 244px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  text-align: left;
+  background: var(--underleaf-app-surface-2);
+  border: 1px solid var(--underleaf-app-line-strong);
+  border-radius: 12px;
+  box-shadow: 0 14px 28px rgb(0 0 0 / 22%);
+}
+
+.underleaf-admin-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 36px;
+  padding: 8px 10px;
+  color: var(--content-primary-themed);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  text-align: left;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: var(--underleaf-app-bg);
+  }
+
+  &:disabled {
+    color: var(--content-disabled);
+  }
+
+  .material-symbols {
+    font-size: 18px;
+  }
+}
+
+.underleaf-admin-actions-help {
+  margin: 8px 8px 2px;
+  color: var(--underleaf-app-muted);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .underleaf-admin-status,
 .underleaf-admin-you {
   display: inline-block;
   padding: 4px 8px;
-  font-size: 0.875rem;
-  border: 1px solid var(--border-divider-themed);
-  border-radius: 4px;
+  font-size: 11px;
+  border: 0;
+  border-radius: 999px;
 }
 
 .underleaf-admin-you {
   margin-left: 8px;
+  color: var(--underleaf-app-muted);
+  background: var(--underleaf-app-surface-2);
   font-weight: 400;
+}
+
+.underleaf-admin-status-active {
+  color: var(--underleaf-app-accent);
+  background: var(--underleaf-app-accent-soft);
+}
+
+.underleaf-admin-status-active::before,
+.underleaf-admin-status-disabled::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  background: currentcolor;
+  border-radius: 50%;
+  content: '';
+}
+
+.underleaf-admin-status-disabled {
+  color: var(--content-danger-themed);
+  background: rgba(220, 80, 80, 0.12);
+}
+
+.underleaf-admin-create-button {
+  min-height: 40px;
+  padding-inline: 16px;
+}
+
+.underleaf-admin-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.underleaf-admin-avatar {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  color: #102018;
+  background: #72c45f;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.underleaf-admin-user-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.underleaf-admin-user-name {
+  color: var(--content-primary-themed);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.underleaf-admin-user-username {
+  overflow: hidden;
+  color: var(--underleaf-app-muted);
+  font-family: monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &::before {
+    content: '@';
+  }
 }
 
 .underleaf-admin-fields {
   padding: 0;
   border: 0;
+}
+
+.modal.underleaf-user-action-modal {
+  .modal-dialog {
+    max-width: 480px;
+  }
+
+  .modal-content {
+    overflow: hidden;
+    background-color: var(--underleaf-app-popover, #2a3443);
+    border: 1px solid var(--underleaf-app-line-strong, #4d5a6e);
+    border-radius: 16px;
+    box-shadow: 0 24px 56px rgb(0 0 0 / 42%);
+    opacity: 1;
+  }
+
+  .modal-header {
+    padding: 24px 26px 8px;
+    border-bottom: 0;
+
+    .modal-title {
+      color: var(--content-primary-themed);
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  .modal-body {
+    padding: 0 26px 8px;
+  }
+
+  .modal-footer {
+    gap: 8px;
+    padding: 16px 26px 24px;
+    border-top: 0;
+  }
+
+  .underleaf-user-modal-description {
+    margin: 0 0 20px;
+    color: var(--content-secondary-themed);
+    font-size: 13px;
+  }
+
+  .form-label {
+    margin-bottom: 7px;
+    color: var(--content-primary-themed);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .form-control,
+  .form-select {
+    min-height: 42px;
+    color: var(--content-primary-themed);
+    background: var(--underleaf-app-bg, #1f2937);
+    border: 1px solid var(--underleaf-app-line-strong, #4d5a6e);
+    border-radius: 9px;
+
+    &:focus {
+      background: var(--underleaf-app-bg, #1f2937);
+      border-color: var(--underleaf-app-accent, #5bd37d);
+      box-shadow: 0 0 0 2px var(--underleaf-app-accent-soft, rgb(91 211 125 / 20%));
+    }
+  }
+
+  .small {
+    color: var(--underleaf-app-muted);
+  }
+}
+
+.modal-backdrop.underleaf-user-action-backdrop {
+  background-color: #111820;
+
+  &.show {
+    opacity: 0.72;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .underleaf-admin-users-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .underleaf-admin-search {
+    width: 100%;
+  }
+
+  .underleaf-admin-users-count {
+    align-self: flex-end;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .underleaf-admin-table-wrapper {
+    overflow-x: auto;
+  }
 }

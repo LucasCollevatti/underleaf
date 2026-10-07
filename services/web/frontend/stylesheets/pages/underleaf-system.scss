@@ -1,12 +1,153 @@
 .underleaf-system-main {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
+  width: 100%;
+  max-width: 1136px;
+  padding: 40px 28px 56px;
+  margin: 0 auto;
 
   @include media-breakpoint-down(md) {
-    padding: 24px 16px;
+    padding: 28px 16px 40px;
+  }
+}
+
+.underleaf-system-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0 0 8px;
+    color: var(--content-primary-themed);
+    font-size: 30px !important;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  p {
+    margin: 0;
+    color: var(--content-secondary-themed);
+    font-size: 13px;
+  }
+}
+
+.underleaf-system-status-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.underleaf-system-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  margin-bottom: 24px;
+  padding: 0 20px;
+  border-radius: 14px;
+
+  .material-symbols {
+    font-size: 22px;
+  }
+
+  &.is-ready {
+    color: #68d392;
+    background: rgb(52 132 101 / 28%);
+  }
+
+  &.is-warning {
+    color: #f2c56b;
+    background: rgb(156 115 40 / 24%);
+  }
+}
+
+.underleaf-system-services {
+  overflow: visible;
+  background: var(--underleaf-app-surface);
+  border: 1px solid var(--underleaf-app-line);
+  border-radius: 14px;
+}
+
+.underleaf-system-service {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 72px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--underleaf-app-line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  > .material-symbols {
+    color: #8ba6c9;
+    font-size: 21px;
+  }
+
+  strong {
+    display: block;
+    color: var(--content-primary-themed);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: var(--content-secondary-themed);
+    font-size: 13px;
+  }
+}
+
+.underleaf-system-service-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  color: var(--underleaf-app-muted);
+  background: var(--underleaf-app-surface-2);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  span {
+    width: 6px;
+    height: 6px;
+    background: currentcolor;
+    border-radius: 50%;
+  }
+
+  &.is-ready {
+    color: #68d392;
+    background: rgb(52 132 101 / 24%);
+  }
+
+  &.is-warning {
+    color: #f2c56b;
+    background: rgb(156 115 40 / 24%);
+  }
+}
+
+.underleaf-system-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 26px;
+  color: var(--content-secondary-themed);
+
+  .material-symbols {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    font-size: 17px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
   }
 }
 
@@ -43,9 +184,28 @@
 }
 
 .underleaf-product-footer {
-  padding: 24px 32px;
+  display: flex;
+  max-width: 760px;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 0 28px;
+  margin: 0 auto;
   color: var(--content-secondary-themed);
   border-top: 1px solid var(--border-divider-themed);
+
+  p {
+    margin: 0;
+  }
+
+  @include media-breakpoint-down(md) {
+    display: block;
+    width: calc(100% - 32px);
+    padding: 20px 0 24px;
+
+    p + p {
+      margin-top: 12px;
+    }
+  }
 }
 
 .underleaf-static-brand-dark {

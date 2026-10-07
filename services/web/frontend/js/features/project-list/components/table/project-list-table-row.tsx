@@ -8,6 +8,7 @@ import { getOwnerName } from '../../util/project'
 import { Project } from '../../../../../../types/project/dashboard/api'
 import { ProjectCheckbox } from './project-checkbox'
 import { ProjectListOwnerName } from '@/features/project-list/components/table/project-list-owner-name'
+import MaterialIcon from '@/shared/components/material-icon'
 
 type ProjectListTableRowProps = {
   project: Project
@@ -22,10 +23,20 @@ function ProjectListTableRow({ project, selected }: ProjectListTableRowProps) {
         <ProjectCheckbox projectId={project.id} projectName={project.name} />
       </td>
       <td className="dash-cell-name">
-        <a href={`/project/${project.id}`} translate="no">
-          {project.name}
-        </a>{' '}
-        <InlineTags className="d-none d-md-inline" projectId={project.id} />
+        <div className="underleaf-project-row-title">
+          <span className="underleaf-project-row-icon" aria-hidden="true">
+            <MaterialIcon type="description" />
+          </span>
+          <span className="underleaf-project-row-copy">
+            <a href={`/project/${project.id}`} translate="no">
+              {project.name}
+            </a>
+            <InlineTags
+              className="d-none d-md-inline"
+              projectId={project.id}
+            />
+          </span>
+        </div>
       </td>
       <td className="dash-cell-date-owner pb-0 d-md-none">
         <LastUpdatedCell project={project} />

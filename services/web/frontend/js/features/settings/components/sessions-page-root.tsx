@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { postJSON } from '@/infrastructure/fetch-json'
 import getMeta from '@/utils/meta'
 import MaterialIcon from '@/shared/components/material-icon'
+import useWaitForI18n from '@/shared/hooks/use-wait-for-i18n'
+import UnderleafPageSkeleton from '@/shared/components/underleaf/underleaf-page-skeleton'
 import {
   UnderleafAppProviders,
   UnderleafAppShell,
@@ -30,13 +32,19 @@ function formatSessionDate(value?: string) {
 }
 
 function SessionsPageRoot() {
+  const { isReady } = useWaitForI18n()
+
   return (
     <UnderleafAppProviders>
       <UnderleafAppShell
         activePage="settings"
         pageClassName="underleaf-sessions-page"
       >
-        <SessionsPageContent />
+        {isReady ? (
+          <SessionsPageContent />
+        ) : (
+          <UnderleafPageSkeleton variant="sessions" />
+        )}
       </UnderleafAppShell>
     </UnderleafAppProviders>
   )

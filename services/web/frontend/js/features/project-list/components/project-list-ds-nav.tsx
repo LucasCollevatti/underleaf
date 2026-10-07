@@ -94,36 +94,75 @@ export function ProjectListDsNav() {
             {!isUnderleaf && <UserNotifications />}
             <main aria-labelledby="main-content">
               <div className="project-list-header-row">
-                {showTrashHeader ? (
-                  <h1
-                    id="main-content"
-                    tabIndex={-1}
-                    className="project-list-title text-truncate d-none d-md-block mb-0"
-                  >
-                    {t("trash")}
-                  </h1>
-                ) : (
-                  <ProjectListTitle
-                    filter={filter}
-                    selectedTag={selectedTag}
-                    selectedTagId={selectedTagId}
-                    className="text-truncate d-none d-md-block"
-                  />
-                )}
-                <div className="project-tools">
-                  <div className="d-none d-md-block">
-                    {selectedProjects.length === 0 ? (
-                      showTrashHeader || isUnderleaf ? null : (
-                        <CurrentPlanWidget />
-                      )
-                    ) : (
+                <div
+                  className={
+                    isUnderleaf ? "underleaf-projects-heading" : undefined
+                  }
+                >
+                  {showTrashHeader ? (
+                    <h1
+                      id="main-content"
+                      tabIndex={-1}
+                      className="project-list-title text-truncate d-none d-md-block mb-0"
+                    >
+                      {t("trash")}
+                    </h1>
+                  ) : (
+                    <ProjectListTitle
+                      filter={filter}
+                      selectedTag={selectedTag}
+                      selectedTagId={selectedTagId}
+                      className="text-truncate d-none d-md-block"
+                    />
+                  )}
+                  {isUnderleaf && (
+                    <p>
+                      {t("underleaf_projects_page_description", {
+                        defaultValue: "Projects available on this instance.",
+                      })}
+                    </p>
+                  )}
+                </div>
+                {isUnderleaf ? (
+                  <div className="underleaf-projects-toolbar d-none d-md-flex">
+                    {selectedProjects.length > 0 ? (
                       <ProjectTools />
+                    ) : (
+                      <>
+                        <SearchForm
+                          inputValue={searchText}
+                          setInputValue={setSearchText}
+                          filter={filter}
+                          selectedTag={selectedTag}
+                          className="underleaf-project-search"
+                        />
+                        {showNewProjectButton && (
+                          <NewProjectButton
+                            id="new-project-button-projects-header"
+                            showAddAffiliationWidget={false}
+                            showLeadingIcon
+                            align="end"
+                          />
+                        )}
+                      </>
                     )}
                   </div>
-                  <div className="d-md-none">
-                    {!showTrashHeader && !isUnderleaf && <CurrentPlanWidget />}
+                ) : (
+                  <div className="project-tools">
+                    <div className="d-none d-md-block">
+                      {selectedProjects.length === 0 ? (
+                        showTrashHeader ? null : (
+                          <CurrentPlanWidget />
+                        )
+                      ) : (
+                        <ProjectTools />
+                      )}
+                    </div>
+                    <div className="d-md-none">
+                      {!showTrashHeader && <CurrentPlanWidget />}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               {showTrashHeader && <TrashPageTabs activeTab="projects" />}
               {(isUnderleaf || isSharedWorkspaceEnabled) &&
@@ -140,30 +179,38 @@ export function ProjectListDsNav() {
                 </>
               ) : (
                 <div className="project-ds-nav-project-list">
-                  <OLRow className="d-none d-md-flex align-items-center">
-                    <OLCol md={8} lg={7}>
-                      <SearchForm
-                        inputValue={searchText}
-                        setInputValue={setSearchText}
-                        filter={filter}
-                        selectedTag={selectedTag}
-                      />
-                    </OLCol>
-                    {showNewProjectButton && (
-                      <OLCol className="ms-auto" xs="auto">
-                        <NewProjectButton
-                          id="new-project-button-projects-table"
-                          showAddAffiliationWidget={!isUnderleaf}
-                          align="end"
+                  {!isUnderleaf && (
+                    <OLRow className="d-none d-md-flex align-items-center">
+                      <OLCol md={8} lg={7}>
+                        <SearchForm
+                          inputValue={searchText}
+                          setInputValue={setSearchText}
+                          filter={filter}
+                          selectedTag={selectedTag}
                         />
                       </OLCol>
-                    )}
-                  </OLRow>
+                      {showNewProjectButton && (
+                        <OLCol className="ms-auto" xs="auto">
+                          <NewProjectButton
+                            id="new-project-button-projects-table"
+                            showAddAffiliationWidget
+                            align="end"
+                          />
+                        </OLCol>
+                      )}
+                    </OLRow>
+                  )}
                   <div className="project-list-sidebar-survey-wrapper d-md-none">
                     {/* Omit the survey card in mobile view for now */}
                   </div>
                   <ProjectsToolbarMobile />
-                  <div className="mt-3">
+                  <div
+                    className={
+                      isUnderleaf
+                        ? "underleaf-project-table-container"
+                        : "mt-3"
+                    }
+                  >
                     <TableContainer bordered>
                       {tableTopArea}
                       <ProjectListTable />

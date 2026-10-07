@@ -24,6 +24,7 @@ import { useFeatureFlag } from '@/shared/context/split-test-context'
 import { useProjectListContext } from '@/features/project-list/context/project-list-context'
 import { NestableDropdownContextProvider } from '@/shared/context/nestable-dropdown-context'
 import { NestedMenuBarDropdown } from '@/shared/components/menu-bar/menu-bar-dropdown'
+import MaterialIcon from '@/shared/components/material-icon'
 
 type SendTrackingEvent = {
   dropdownMenu: string
@@ -46,6 +47,7 @@ type NewProjectButtonProps = {
   className?: string
   trackingKey?: string
   showAddAffiliationWidget?: boolean
+  showLeadingIcon?: boolean
   align?: OLDropdownProps['align']
 }
 
@@ -55,6 +57,7 @@ function NewProjectButton({
   className,
   trackingKey,
   showAddAffiliationWidget,
+  showLeadingIcon = false,
   align = 'start',
 }: NewProjectButtonProps) {
   const { t } = useTranslation()
@@ -187,6 +190,7 @@ function NewProjectButton({
           className="new-project-button"
           variant="primary"
         >
+          {showLeadingIcon && <MaterialIcon type="add" />}
           {buttonText || t('new_project')}
         </OLDropdownToggle>
         <OLDropdownMenu>

@@ -132,6 +132,9 @@ export default function UserActionModal({
   return (
     <OLModal
       show
+      className="underleaf-user-action-modal"
+      backdropClassName="underleaf-user-action-backdrop"
+      centered
       onHide={() => {
         if (!inflight.current) onHide()
       }}
@@ -145,6 +148,11 @@ export default function UserActionModal({
           <OLModalTitle id="underleaf-user-action-title">{title}</OLModalTitle>
         </OLModalHeader>
         <OLModalBody>
+          {action.kind === 'create' && (
+            <p className="underleaf-user-modal-description">
+              Create a local account on this instance.
+            </p>
+          )}
           {user && (
             <p>
               <strong>@{user.username}</strong> · {user.displayName}
