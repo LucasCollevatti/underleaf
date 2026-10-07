@@ -19,10 +19,7 @@ const entryPoints = {
   bootstrap: './frontend/js/bootstrap.ts',
   devToolbar: './frontend/js/dev-toolbar.ts',
   'ide-detached': './frontend/js/ide-detached.ts',
-  marketing: './frontend/js/marketing.ts',
   'main-style': './frontend/stylesheets/main-style.scss',
-  tracking: './frontend/js/infrastructure/tracking.ts',
-  'linkedin-insight': './frontend/js/infrastructure/linkedin-insight.ts',
   highlight: './frontend/js/highlight.js',
 }
 
