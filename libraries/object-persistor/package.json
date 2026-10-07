@@ -31,7 +31,7 @@
     "@overleaf/metrics": "workspace:*",
     "@overleaf/o-error": "workspace:*",
     "@overleaf/stream-utils": "workspace:*",
-    "fast-crc32c": "overleaf/node-fast-crc32c#aae6b2a4c7a7a159395df9cc6c38dfde702d6f51",
+    "fast-crc32c": "workspace:*",
     "glob": "^12.0.0",
     "range-parser": "^1.2.1",
     "tiny-async-pool": "^1.1.0"

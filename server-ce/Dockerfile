@@ -22,9 +22,7 @@ COPY server-ce/genScript.js server-ce/services.js /overleaf/
 # Corepack setup, shared between all the images.
 ENV COREPACK_HOME=/opt/corepack
 RUN corepack enable && corepack prepare yarn@4.18.0 --activate
-# Git dependencies are packed with their own package manager. Keep Corepack
-# network access enabled while dependencies and frontend assets are built.
-# Runtime Corepack network access is disabled after compilation.
+ENV COREPACK_ENABLE_NETWORK=0
 
 # Install yarn dependencies
 # -------------------------
@@ -42,9 +40,6 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=cache,target=/overleaf/services/web/.cache,id=server-ce-webpack-cache \
     --mount=type=tmpfs,target=/tmp \
     node genScript compile | bash
-
-# Prevent runtime Corepack from downloading package-manager binaries.
-ENV COREPACK_ENABLE_NETWORK=0
 
 # Enable Yarn PnP resolution for all Node.js processes
 # -----------------------------------------------------

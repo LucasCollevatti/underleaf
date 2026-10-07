@@ -7544,7 +7544,7 @@ __metadata:
     chai: "npm:^4.3.6"
     chai-as-promised: "npm:^7.1.1"
     eslint: "npm:^10.4.0"
-    fast-crc32c: "overleaf/node-fast-crc32c#aae6b2a4c7a7a159395df9cc6c38dfde702d6f51"
+    fast-crc32c: "workspace:*"
     glob: "npm:^12.0.0"
     mocha: "npm:^11.1.0"
     mocha-junit-reporter: "npm:^2.2.1"
@@ -18686,17 +18686,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-crc32c@overleaf/node-fast-crc32c#aae6b2a4c7a7a159395df9cc6c38dfde702d6f51":
-  version: 2.0.0
-  resolution: "fast-crc32c@https://github.com/overleaf/node-fast-crc32c.git#commit=aae6b2a4c7a7a159395df9cc6c38dfde702d6f51"
+"fast-crc32c@workspace:*, fast-crc32c@workspace:libraries/fast-crc32c":
+  version: 0.0.0-use.local
+  resolution: "fast-crc32c@workspace:libraries/fast-crc32c"
   dependencies:
     "@node-rs/crc32": "npm:^0.1.7"
   dependenciesMeta:
     "@node-rs/crc32":
       optional: true
-  checksum: 10c0/d433f8a2fef5044abdf1a479128a85fe347ab1a9a8ae486bf16a5fb842ee7ec80a841dc164d918c12c2d846d368aff176063b95de18c2fc8b09271732f1ee46e
-  languageName: node
-  linkType: hard
+  languageName: unknown
+  linkType: soft
 
 "fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
