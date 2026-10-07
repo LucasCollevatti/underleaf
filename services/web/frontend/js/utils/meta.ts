@@ -2,7 +2,6 @@ import { User, Features, FeatureUsage } from '../../../types/user'
 import type { UnderleafAdminPageData } from '../../../types/underleaf-admin'
 import type { UnderleafSystemPageData } from '../../../types/underleaf-system'
 import { User as MinimalUser } from '../../../types/admin/user'
-import { User as ManagedUser } from '../../../types/group-management/user'
 import { UserSettings } from '../../../types/user-settings'
 import { ExposedSettings } from '../../../types/exposed-settings'
 import {
@@ -36,7 +35,6 @@ import {
   StripePaymentProviderService,
 } from '../../../types/subscription/dashboard/subscription'
 import { SplitTestInfo } from '../../../types/split-test'
-import { ValidationStatus } from '../../../types/group-management/validation'
 import { ManagedInstitution } from '../../../types/subscription/dashboard/managed-institution'
 import { OnboardingFormData } from '../../../types/onboarding'
 import { GroupSSOTestResult } from '../../../modules/group-settings/frontend/js/utils/types'
@@ -363,19 +361,39 @@ export interface Meta {
   'ol-userNotificationPreferences': UserNotificationPreferences
   'ol-userSettings': UserSettings
   'ol-user_id': string | undefined
-  'ol-users': ManagedUser[]
+  'ol-users': ManagedUserMetadata[]
   'ol-usersBestSubscription': ProjectDashboardSubscription | undefined
   'ol-username': string | undefined
   /** @deprecated Removed from Underleaf page metadata. */
   'ol-usersEmail': string | undefined
   'ol-usersSubscription': { personal: boolean; group: boolean }
   'ol-v1Url': string | undefined
-  'ol-validationStatus': ValidationStatus
   'ol-viaDomainCapture': boolean
   'ol-wikiEnabled': boolean
   'ol-writefullEnabled': boolean
   'ol-writefullEnv': WritefullPublicEnv
   'ol-wsUrl': string
+}
+
+type ManagedUserMetadata = {
+  _id: string
+  email: string
+  first_name: string
+  last_name: string
+  invite: boolean
+  last_active_at: Date
+  enrollment?: {
+    managedBy?: string
+    enrolledAt?: Date
+    sso?: Array<{
+      groupId: string
+      linkedAt: Date
+      primary: boolean
+    }>
+  }
+  isEntityAdmin?: boolean
+  isEntityManager?: boolean
+  isEntityMember?: boolean
 }
 
 export type UserSessionMetadata = {

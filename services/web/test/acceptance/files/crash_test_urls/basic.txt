@@ -18,5 +18,4 @@
 /project/download/zip
 /tag
 /notifications
-/beta/participate
 /unsupported-browser

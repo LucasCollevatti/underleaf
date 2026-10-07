@@ -198,7 +198,7 @@ describe('split test badge', function () {
     cy.get('.badge').should('not.exist')
   })
 
-  it('default badge url and text are used when not provided', function () {
+  it('renders an unlinked default badge when no feedback url is provided', function () {
     cy.window().then(win => {
       win.metaAttributesCache.set('ol-splitTestVariants', {
         'cypress-test': 'active',
@@ -219,10 +219,8 @@ describe('split test badge', function () {
       </EditorProviders>
     )
 
-    cy.findByRole('link', {
-      name: /we are testing this new feature.*click to give feedback/i,
-    })
-      .should('have.attr', 'href', '/beta/participate')
+    cy.findByText(/we are testing this new feature.*click to give feedback/i)
+      .should('not.have.attr', 'href')
       .find('.info-badge')
   })
 })

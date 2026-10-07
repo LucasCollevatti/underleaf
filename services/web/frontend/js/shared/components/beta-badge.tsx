@@ -26,18 +26,24 @@ const BetaBadge: FC<{
 }> = ({ tooltip, link = {}, description, phase = 'beta' }) => {
   const { href, ...linkProps } = link
 
-  const linkedBadge = (
+  const badgeContent = (
+    <>
+      <span className="visually-hidden">{description || tooltip?.text}</span>
+      <BetaBadgeIcon phase={phase} />
+    </>
+  )
+  const badgeHref = href || (phase === 'labs' ? '/labs/participate' : undefined)
+  const linkedBadge = badgeHref ? (
     <a
       target="_blank"
       rel="noopener noreferrer"
-      href={
-        href || (phase === 'labs' ? '/labs/participate' : '/beta/participate')
-      }
+      href={badgeHref}
       {...linkProps}
     >
-      <span className="visually-hidden">{description || tooltip?.text}</span>
-      <BetaBadgeIcon phase={phase} />
+      {badgeContent}
     </a>
+  ) : (
+    <span className={link.className}>{badgeContent}</span>
   )
 
   return tooltip ? (

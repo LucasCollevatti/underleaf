@@ -93,7 +93,6 @@ function FatFooter() {
           href: 'https://forms.gle/67PSpN1bLnjGCmPQ9',
           label: t('let_us_know_what_you_think'),
         },
-        { href: '/beta/participate', label: t('join_beta_program') },
       ],
     },
     {

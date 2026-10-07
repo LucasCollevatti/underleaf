@@ -42,7 +42,6 @@ import InactiveProjectController from './Features/InactiveData/InactiveProjectCo
 import ContactRouter from './Features/Contacts/ContactRouter.mjs'
 import ReferencesController from './Features/References/ReferencesController.mjs'
 import AuthorizationMiddleware from './Features/Authorization/AuthorizationMiddleware.mjs'
-import BetaProgramController from './Features/BetaProgram/BetaProgramController.mjs'
 import MetaController from './Features/Metadata/MetaController.mjs'
 import TokenAccessController from './Features/TokenAccess/TokenAccessController.mjs'
 import TokenAccessRouter from './Features/TokenAccess/TokenAccessRouter.mjs'
@@ -929,23 +928,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     AuthorizationMiddleware.ensureUserCanReadProject,
     RateLimiterMiddleware.rateLimit(rateLimiters.indexAllProjectReferences),
     ReferencesController.indexAll
-  )
-
-  // disable beta program while v2 is in beta
-  webRouter.get(
-    '/beta/participate',
-    AuthenticationController.requireLogin(),
-    BetaProgramController.optInPage
-  )
-  webRouter.post(
-    '/beta/opt-in',
-    AuthenticationController.requireLogin(),
-    BetaProgramController.optIn
-  )
-  webRouter.post(
-    '/beta/opt-out',
-    AuthenticationController.requireLogin(),
-    BetaProgramController.optOut
   )
 
   webRouter.get('/chrome', function (req, res, next) {
