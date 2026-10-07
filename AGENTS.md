@@ -60,7 +60,6 @@ The current repository organization is authoritative:
 
 ```text
 underleaf/
-├── apps/
 ├── bin/
 ├── compliance/
 ├── docs/

@@ -73,11 +73,10 @@ O passo a passo completo para instalar no PC está em
 ## Estrutura atual
 
 - `compose.yaml`: stack local do Underleaf;
-- `server-ce/`: runtime importado que ainda está sendo migrado;
-- `services/` e `libraries/`: código de aplicação e pacotes do snapshot;
-- `infra/`, `apps/`, `packages/`, `scripts/`, `tests/` e `docs/`: destinos da
-  reorganização incremental;
-- [`DEVELOPMENT-PLAN.md`](DEVELOPMENT-PLAN.md): plano operacional em Markdown.
+- `server-ce/`: runtime importado usado pela distribuição atual;
+- `services/` e `libraries/`: código de aplicação e pacotes compartilhados;
+- `infra/`: Compose, proxy e configuração operacional;
+- `scripts/`, `tests/` e `docs/`: automação, validação e documentação do sistema atual.
 
 A identidade de produto e os assets visíveis são do Underleaf. Nomes internos
 herdados, histórico Git, copyrights e atribuições de origem permanecem quando

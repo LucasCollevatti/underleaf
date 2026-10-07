@@ -1,8 +1,6 @@
 # Desenvolvimento e cobertura do produto
 
-Leia [`AGENTS.md`](../AGENTS.md) antes de alterar o Underleaf. O
-[`DEVELOPMENT-PLAN.md`](../DEVELOPMENT-PLAN.md) distingue implementação,
-evidências históricas e validação pendente da revisão atual.
+Leia [`AGENTS.md`](../AGENTS.md) antes de alterar o Underleaf. Este documento descreve o ambiente e os contratos de desenvolvimento vigentes.
 
 ## Ambiente
 
