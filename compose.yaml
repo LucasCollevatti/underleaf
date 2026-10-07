@@ -22,8 +22,6 @@ services:
     stop_grace_period: 60s
     volumes:
       - app_data:/var/lib/overleaf
-      - app_compiles:/var/lib/overleaf/data/compiles
-      - app_output:/var/lib/overleaf/data/output
       - app_history:/var/lib/overleaf/data/history
       - app_cache:/var/lib/overleaf/data/cache
       - app_templates:/var/lib/overleaf/data/template_files
@@ -148,10 +146,6 @@ services:
 volumes:
   app_data:
     name: underleaf_app_data
-  app_compiles:
-    name: underleaf_app_compiles
-  app_output:
-    name: underleaf_app_output
   app_history:
     name: underleaf_app_history
   app_cache:

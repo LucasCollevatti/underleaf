@@ -51,8 +51,9 @@ DNS and first-admin procedure.
 
 The initial baseline contains:
 
-- `app`: imported Overleaf Community Edition application and its current
-  internal services, including LaTeX compilation;
+- `app`: imported Overleaf Community Edition application and its non-compiler
+  internal services;
+- `compiler`: dedicated internal CLSI service for LaTeX compilation;
 - `mongo`: MongoDB 7 with the replica set required by the application;
 - `redis`: Redis for queues, sessions and real-time collaboration.
 
@@ -65,11 +66,10 @@ MongoDB, Redis and the application data are stored in named volumes:
 
 ```text
 underleaf_app_data
-underleaf_app_compiles
-underleaf_app_output
 underleaf_app_history
 underleaf_app_cache
 underleaf_app_templates
+underleaf_compiler_work
 underleaf_mongo_data
 underleaf_redis_data
 underleaf_proxy_data
@@ -99,10 +99,11 @@ docker compose ps
 docker compose logs app
 ```
 
-The app, MongoDB and Redis services have healthchecks. The supported compiler
-profile runs as a dedicated, internal-only service with no Docker socket, no
-application secrets and explicit resource limits. The application image still
-contains the imported runtime services required by the current migration stage.
+The app, compiler, MongoDB and Redis services have healthchecks. The supported
+compiler profile runs as a dedicated, internal-only service with no Docker
+socket, no application secrets and explicit resource limits. The application
+image still contains the imported non-compiler runtime services required by the
+current migration stage.
 
 ## Local base image
 

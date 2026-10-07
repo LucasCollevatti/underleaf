@@ -71,7 +71,7 @@ services:
         max-file: "5"
 
   compiler:
-    restart: "no"
+    restart: unless-stopped
 
 volumes:
   proxy_data:

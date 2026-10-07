@@ -5,12 +5,6 @@ mkdir -p /var/lib/overleaf/data
 chown www-data:www-data /var/lib/overleaf
 chown www-data:www-data /var/lib/overleaf/data
 
-mkdir -p /var/lib/overleaf/data/compiles
-chown www-data:www-data /var/lib/overleaf/data/compiles
-
-mkdir -p /var/lib/overleaf/data/output
-chown www-data:www-data /var/lib/overleaf/data/output
-
 mkdir -p /var/lib/overleaf/data/cache
 chown www-data:www-data /var/lib/overleaf/data/cache
 

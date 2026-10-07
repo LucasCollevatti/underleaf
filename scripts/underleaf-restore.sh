@@ -72,7 +72,7 @@ trap cleanup EXIT
 compose exec -T mongo mongorestore --drop --archive --gzip \
   < "$backup_dir/mongo.archive.gz"
 compose run --rm --no-deps --entrypoint sh app -c \
-  'for entry in /var/lib/overleaf/data/*; do if [ -d "$entry" ]; then find "$entry" -mindepth 1 -delete; else rm -f "$entry"; fi; done; tar -xzf - -C /var/lib/overleaf' \
+  'for entry in /var/lib/overleaf/data/*; do if [ -d "$entry" ]; then find "$entry" -mindepth 1 -delete; else rm -f "$entry"; fi; done; tar -xzf - -C /var/lib/overleaf; rm -rf /var/lib/overleaf/data/compiles /var/lib/overleaf/data/output; if [ -d /var/lib/overleaf/data/cache ]; then find /var/lib/overleaf/data/cache -mindepth 1 -delete; fi' \
   < "$backup_dir/app-data.tar.gz"
 
 compose up -d --no-build app >/dev/null
