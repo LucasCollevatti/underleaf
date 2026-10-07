@@ -19,7 +19,6 @@ import ProjectOptionsHandler from './ProjectOptionsHandler.mjs'
 import ProjectUpdateHandler from './ProjectUpdateHandler.mjs'
 import ProjectEntityMongoUpdateHandler from './ProjectEntityMongoUpdateHandler.mjs'
 import SafePath from './SafePath.mjs'
-import TpdsUpdateSender from '../ThirdPartyDataStore/TpdsUpdateSender.mjs'
 import FileWriter from '../../infrastructure/FileWriter.mjs'
 import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
 import { callbackifyMultiResult, callbackify } from '@overleaf/promise-utils'
@@ -191,14 +190,6 @@ async function updateDocLines(
     .catch(error => {
       logger.error({ error }, 'failed to mark project as updated')
     })
-  await TpdsUpdateSender.promises.addDoc({
-    projectId,
-    path,
-    docId,
-    projectName,
-    rev,
-    folderId: folder?._id,
-  })
   return { rev, modified }
 }
 
@@ -292,7 +283,7 @@ const addDocWithRanges = wrapWithLock({
     source,
   }) {
     const { result, project } =
-      await ProjectEntityUpdateHandler._addDocAndSendToTpds(
+      await ProjectEntityUpdateHandler._addDoc(
         projectId,
         folderId,
         doc,
@@ -359,7 +350,7 @@ const addFile = wrapWithLock({
     source,
   }) {
     const { result, project } =
-      await ProjectEntityUpdateHandler._addFileAndSendToTpds(
+      await ProjectEntityUpdateHandler._addFile(
         projectId,
         folderId,
         fileRef,
@@ -438,14 +429,6 @@ const upsertDoc = wrapWithLock(
           userId
         )
 
-      await TpdsUpdateSender.promises.addDoc({
-        projectId,
-        docId: doc._id,
-        path: filePath,
-        projectName: updatedProject.name,
-        rev: existingFile.rev + 1,
-        folderId,
-      })
 
       const projectHistoryId =
         updatedProject.overleaf &&
@@ -637,16 +620,6 @@ const upsertFile = wrapWithLock({
           userId
         )
       const projectHistoryId = project.overleaf?.history?.id
-      await TpdsUpdateSender.promises.addFile({
-        projectId: project._id,
-        historyId: projectHistoryId,
-        fileId: fileRef._id,
-        hash: fileRef.hash,
-        path: path.fileSystem,
-        rev: fileRef.rev,
-        projectName: project.name,
-        folderId,
-      })
       await DocumentUpdaterHandler.promises.updateProjectStructure(
         projectId,
         projectHistoryId,
@@ -845,14 +818,6 @@ const deleteEntity = wrapWithLock(
     const subtreeEntityIds = subtreeListing.map(entry =>
       entry.entity._id.toString()
     )
-    await TpdsUpdateSender.promises.deleteEntity({
-      projectId,
-      path: path.fileSystem,
-      projectName: projectBeforeDeletion.name,
-      entityId,
-      entityType,
-      subtreeEntityIds,
-    })
 
     return entityId
   }
@@ -951,20 +916,6 @@ const moveEntity = wrapWithLock(
       )
 
     const projectHistoryId = project.overleaf?.history?.id
-    try {
-      await TpdsUpdateSender.promises.moveEntity({
-        projectId,
-        projectName: project.name,
-        startPath,
-        endPath,
-        rev,
-        entityId,
-        entityType,
-        folderId: destFolderId,
-      })
-    } catch (err) {
-      logger.error({ err }, 'error sending tpds update')
-    }
 
     return await DocumentUpdaterHandler.promises.updateProjectStructure(
       projectId,
@@ -1011,20 +962,6 @@ const renameEntity = wrapWithLock(
       )
 
     const projectHistoryId = project.overleaf?.history?.id
-    try {
-      await TpdsUpdateSender.promises.moveEntity({
-        projectId,
-        projectName: project.name,
-        startPath,
-        endPath,
-        rev,
-        entityId,
-        entityType,
-        folderId: null, // this means the folder has not changed
-      })
-    } catch (err) {
-      logger.error({ err }, 'error sending tpds update')
-    }
     return await DocumentUpdaterHandler.promises.updateProjectStructure(
       projectId,
       projectHistoryId,
@@ -1293,7 +1230,7 @@ const ProjectEntityUpdateHandler = {
     setMainBibliographyDoc,
   },
 
-  async _addDocAndSendToTpds(projectId, folderId, doc, userId) {
+  async _addDoc(projectId, folderId, doc, userId) {
     let result, project
     try {
       ;({ result, project } =
@@ -1312,14 +1249,6 @@ const ProjectEntityUpdateHandler = {
       })
     }
 
-    await TpdsUpdateSender.promises.addDoc({
-      projectId,
-      docId: doc != null ? doc._id : undefined,
-      path: result?.path?.fileSystem,
-      projectName: project.name,
-      rev: 0,
-      folderId,
-    })
     return { result, project }
   },
 
@@ -1346,7 +1275,7 @@ const ProjectEntityUpdateHandler = {
     }
   },
 
-  async _addFileAndSendToTpds(projectId, folderId, fileRef, userId) {
+  async _addFile(projectId, folderId, fileRef, userId) {
     let result, project
     try {
       ;({ result, project } =
@@ -1369,16 +1298,6 @@ const ProjectEntityUpdateHandler = {
     if (!historyId) {
       throw new OError('project does not have a history id', { projectId })
     }
-    await TpdsUpdateSender.promises.addFile({
-      projectId,
-      historyId,
-      fileId: fileRef._id,
-      hash: fileRef.hash,
-      path: result?.path?.fileSystem,
-      projectName: project.name,
-      rev: fileRef.rev,
-      folderId,
-    })
     return { result, project }
   },
 
@@ -1418,16 +1337,6 @@ const ProjectEntityUpdateHandler = {
       },
     ]
     const projectHistoryId = project.overleaf?.history?.id
-    await TpdsUpdateSender.promises.addFile({
-      projectId: project._id,
-      historyId: projectHistoryId,
-      fileId: updatedFileRef._id,
-      hash: updatedFileRef.hash,
-      path: path.fileSystem,
-      rev: updatedFileRef.rev,
-      projectName: project.name,
-      folderId,
-    })
 
     await DocumentUpdaterHandler.promises.updateProjectStructure(
       projectId,

@@ -4,7 +4,6 @@ import HttpErrorHandler from '../../Features/Errors/HttpErrorHandler.mjs'
 import mongodb from 'mongodb-legacy'
 import CollaboratorsHandler from './CollaboratorsHandler.mjs'
 import CollaboratorsGetter from './CollaboratorsGetter.mjs'
-import CollaboratorsInviteHandler from './CollaboratorsInviteHandler.mjs'
 import OwnershipTransferHandler from './OwnershipTransferHandler.mjs'
 import SessionManager from '../Authentication/SessionManager.mjs'
 import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
@@ -505,31 +504,6 @@ async function grantAccessRequest(req, res) {
     }
   )
 
-  // The requester is now a named collaborator, so clear any pending email
-  // invite they may still have (e.g. they were invited by email but joined
-  // via a sharing link before requesting edit access). Mirrors the
-  // token-access join flow; a failure here shouldn't fail the grant.
-  if (!Settings.underleaf) {
-    try {
-      const requesterEmails =
-        await UserGetter.promises.getUserConfirmedEmails(requesterId)
-      await CollaboratorsInviteHandler.promises.revokeInviteForUser(
-        projectId,
-        requesterEmails
-      )
-    } catch (err) {
-      logger.error(
-        { err, projectId, requesterId },
-        'failed to revoke pending invite after granting access request'
-      )
-    }
-  }
-
-  EditorRealTimeController.emitToRoom(
-    projectId,
-    'project:collaboratorAccessLevel:changed',
-    { userId: requesterId }
-  )
   EditorRealTimeController.emitToRoom(projectId, 'project:membership:changed', {
     members: true,
     invites: true,

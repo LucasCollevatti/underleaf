@@ -25,7 +25,6 @@ import Sources from '../Authorization/Sources.mjs'
 import TokenAccessHandler from '../TokenAccess/TokenAccessHandler.mjs'
 import CollaboratorsGetter from '../Collaborators/CollaboratorsGetter.mjs'
 import ProjectEntityHandler from './ProjectEntityHandler.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import Features from '../../infrastructure/Features.mjs'
 import BrandVariationsHandler from '../BrandVariations/BrandVariationsHandler.mjs'
 import UserController from '../User/UserController.mjs'
@@ -694,7 +693,6 @@ const _ProjectController = {
           _id: 1,
           name: 1,
           active: 1,
-          deferredTpdsFlushCounter: 1,
           lastUpdated: 1,
           track_changes: 1,
           owner_ref: 1,
@@ -712,10 +710,7 @@ const _ProjectController = {
         userValues,
       } = responses
 
-      await Promise.all([
-        InactiveProjectManager.promises.reactivateProjectIfRequired(project),
-        TpdsProjectFlusher.promises.flushProjectToTpdsIfNeeded(project),
-      ])
+      await InactiveProjectManager.promises.reactivateProjectIfRequired(project)
 
       const {
         user,

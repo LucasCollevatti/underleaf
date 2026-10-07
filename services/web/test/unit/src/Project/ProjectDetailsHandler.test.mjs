@@ -86,12 +86,6 @@ describe('ProjectDetailsHandler', function () {
       default: ctx.UserGetter,
     }))
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsUpdateSender',
-      () => ({
-        default: ctx.TpdsUpdateSender,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/TokenGenerator/TokenGenerator',
@@ -196,14 +190,6 @@ describe('ProjectDetailsHandler', function () {
       )
     })
 
-    it('should tell the TpdsUpdateSender', async function (ctx) {
-      await ctx.handler.promises.renameProject(ctx.project._id, ctx.newName)
-      expect(ctx.TpdsUpdateSender.promises.moveEntity).to.have.been.calledWith({
-        projectId: ctx.project._id,
-        projectName: ctx.project.name,
-        newProjectName: ctx.newName,
-      })
-    })
 
     it('should not do anything with an invalid name', async function (ctx) {
       await expect(ctx.handler.promises.renameProject(ctx.project._id)).to.be

@@ -15,7 +15,6 @@ import path from 'node:path'
 import { callbackify } from 'node:util'
 import _ from 'lodash'
 import AnalyticsManager from '../Analytics/AnalyticsManager.mjs'
-import TpdsUpdateSender from '../ThirdPartyDataStore/TpdsUpdateSender.mjs'
 import SplitTestHandler from '../SplitTests/SplitTestHandler.mjs'
 import SplitTestUserGetter from '../SplitTests/SplitTestUserGetter.mjs'
 import ClsiCacheManager from '../Compile/ClsiCacheManager.mjs'
@@ -230,12 +229,7 @@ async function _addExampleProjectFiles(ownerId, projectName, project) {
   }
 }
 
-async function _createBlankProject(
-  ownerId,
-  projectName,
-  attributes = {},
-  { skipCreatingInTPDS = false } = {}
-) {
+async function _createBlankProject(ownerId, projectName, attributes = {}) {
   metrics.inc('project-creation')
   const timer = new metrics.Timer('project-creation')
   await ProjectDetailsHandler.promises.validateProjectName(projectName)
@@ -289,14 +283,6 @@ async function _createBlankProject(
   }
 
   await project.save()
-  if (!skipCreatingInTPDS) {
-    await TpdsUpdateSender.promises.createProject({
-      projectId: project._id,
-      projectName,
-      ownerId,
-      userId: ownerId,
-    })
-  }
   timer.done()
   return project
 }

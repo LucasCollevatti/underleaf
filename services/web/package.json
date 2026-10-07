@@ -86,8 +86,6 @@
     "@aws-sdk/client-sesv2": "^3.994.0",
     "@google-cloud/bigquery": "^8.1.1",
     "@google-cloud/storage": "^7.19.0",
-    "@node-oauth/oauth2-server": "patch:@node-oauth/oauth2-server@npm%3A5.3.0#~/.yarn/patches/@node-oauth-oauth2-server-npm-5.3.0-9d66d9183c.patch",
-    "@overleaf/access-token-encryptor": "workspace:*",
     "@overleaf/fetch-utils": "workspace:*",
     "@overleaf/logger": "workspace:*",
     "@overleaf/metrics": "workspace:*",

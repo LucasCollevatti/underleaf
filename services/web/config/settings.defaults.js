@@ -1028,7 +1028,6 @@ module.exports = {
     editorLeftMenuManageTemplate: [],
     menubarExtraComponents: [],
     insertMenuSections: [],
-    oauth2Server: [],
     managedGroupSubscriptionEnrollmentNotification: [],
     managedGroupEnrollmentInvite: [],
     ssoCertificateInfo: [],

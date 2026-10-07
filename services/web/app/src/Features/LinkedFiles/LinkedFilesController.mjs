@@ -30,12 +30,9 @@ import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
 import { expressify } from '@overleaf/promise-utils'
 import ProjectOutputFileAgent from './ProjectOutputFileAgent.mjs'
 import ProjectFileAgent from './ProjectFileAgent.mjs'
-import UrlAgent from './UrlAgent.mjs'
 
 const {
   CompileFailedError,
-  UrlFetchFailedError,
-  InvalidUrlError,
   AccessDeniedError,
   BadEntityTypeError,
   BadDataError,
@@ -43,8 +40,6 @@ const {
   V1ProjectNotFoundError,
   SourceFileNotFoundError,
   NotOriginalImporterError,
-  FeatureNotAvailableError,
-  RemoteServiceError,
   FileCannotRefreshError,
 } = LinkedFilesErrors
 
@@ -70,14 +65,6 @@ const createLinkedFileSchema = z.object({
     z.strictObject({
       name: z.string(),
       parent_folder_id: zz.objectId(),
-      provider: z.literal('url'),
-      data: z.strictObject({
-        url: z.string(),
-      }),
-    }),
-    z.strictObject({
-      name: z.string(),
-      parent_folder_id: zz.objectId(),
       provider: z.literal('project_file'),
       data: z.strictObject({
         source_project_id: zz.objectId().optional(),
@@ -95,31 +82,6 @@ const createLinkedFileSchema = z.object({
         source_output_file_path: z.string(),
         build_id: zz.buildId().optional(),
         clsiServerId: z.string().optional(),
-      }),
-    }),
-    z.strictObject({
-      name: z.string(),
-      parent_folder_id: zz.objectId(),
-      provider: z.literal('mendeley'),
-      data: z.strictObject({
-        group_id: zz.routeSegment().optional(),
-      }),
-    }),
-    z.strictObject({
-      name: z.string(),
-      parent_folder_id: zz.objectId(),
-      provider: z.literal('zotero'),
-      data: z.strictObject({
-        format: z.enum(['bibtex', 'biblatex']).optional(),
-        group_id: zz.routeSegment().optional(),
-      }),
-    }),
-    z.strictObject({
-      name: z.string(),
-      parent_folder_id: zz.objectId(),
-      provider: z.literal('papers'),
-      data: z.strictObject({
-        group_id: zz.routeSegment().optional(),
       }),
     }),
   ]),
@@ -171,8 +133,6 @@ const LINKED_FILE_DATA_ALLOW_LIST = [
   'v1_source_doc_id',
   'source_entity_path',
   'source_output_file_path',
-  'format',
-  'group_id',
   'clsiServerId',
 ]
 
@@ -324,7 +284,6 @@ export default LinkedFilesController = {
     if (!LinkedFilesController.Agents) {
       LinkedFilesController.Agents = _.extend(
         {
-          url: UrlAgent,
           project_file: ProjectFileAgent,
           project_output_file: ProjectOutputFileAgent,
         },
@@ -398,37 +357,13 @@ export default LinkedFilesController = {
     } else if (error instanceof OutputFileFetchFailedError) {
       res.status(404)
       plainTextResponse(res, 'Could not get output file')
-    } else if (error instanceof UrlFetchFailedError) {
-      res.status(422)
-      if (error.cause instanceof FileTooLargeError) {
-        plainTextResponse(res, 'File too large')
-      } else {
-        plainTextResponse(
-          res,
-          `Your URL could not be reached (${
-            error.info?.status || error.cause?.info?.status
-          } status code). Please check it and try again.`
-        )
-      }
-    } else if (error instanceof InvalidUrlError) {
-      res.status(422)
-      plainTextResponse(
-        res,
-        'Your URL is not valid. Please check it and try again.'
-      )
     } else if (error instanceof NotOriginalImporterError) {
       res.status(400)
       plainTextResponse(
         res,
         'You are not the user who originally imported this file'
       )
-    } else if (error instanceof FeatureNotAvailableError) {
-      res.status(400)
-      plainTextResponse(res, 'This feature is not enabled on your account')
-    } else if (error instanceof RemoteServiceError) {
-      if (error.info?.statusCode === 403) {
-        res.status(400).json({ relink: true })
-      } else if (error.info?.statusCode === 429) {
+ else if (error.info?.statusCode === 429) {
         res.status(429).json({ message: 'rate_limited' })
       } else {
         res.status(502)

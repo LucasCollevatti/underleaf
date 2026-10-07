@@ -6,11 +6,8 @@ import ProjectGetter from '../Project/ProjectGetter.mjs'
 import logger from '@overleaf/logger'
 import ContactManager from '../Contacts/ContactManager.mjs'
 import PrivilegeLevels from '../Authorization/PrivilegeLevels.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import CollaboratorsGetter from './CollaboratorsGetter.mjs'
-import CollaboratorsInviteHelper from './CollaboratorsInviteHelper.mjs'
 import Errors from '../Errors/Errors.js'
-import TpdsUpdateSender from '../ThirdPartyDataStore/TpdsUpdateSender.mjs'
 import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
 import ProjectAuditLogHandler from '../Project/ProjectAuditLogHandler.mjs'
 import AsyncLocalStorage from '../../infrastructure/AsyncLocalStorage.mjs'
@@ -177,21 +174,6 @@ async function addUserIdToProject(
     await Project.updateOne({ _id: projectId }, { $addToSet: level }).exec()
   }
 
-  // Ensure there is a dedicated folder for this "new" project.
-  await TpdsUpdateSender.promises.createProject({
-    projectId,
-    projectName: project.name,
-    ownerId: project.owner_ref,
-    userId,
-  })
-
-  // Flush to TPDS in background to add files to collaborator's Dropbox
-  TpdsProjectFlusher.promises.flushProjectToTpds(projectId).catch(err => {
-    logger.error(
-      { err, projectId, userId },
-      'error flushing to TPDS after adding collaborator'
-    )
-  })
 }
 
 async function transferProjects(fromUserId, toUserId) {
@@ -278,13 +260,6 @@ async function transferProjects(fromUserId, toUserId) {
     }
   ).exec()
 
-  // Flush in background, no need to block on this
-  _flushProjects(projectIds).catch(err => {
-    logger.err(
-      { err, projectIds, fromUserId, toUserId },
-      'error flushing tranferred projects to TPDS'
-    )
-  })
 }
 
 async function setCollaboratorPrivilegeLevel(
@@ -400,7 +375,7 @@ async function setCollaboratorPrivilegeLevel(
     auditInfo.ipAddress,
     {
       userId,
-      role: CollaboratorsInviteHelper.privilegeLevelToRole(privilegeLevel),
+      role: privilegeLevelToRole(privilegeLevel),
     }
   )
 
@@ -518,9 +493,16 @@ async function userIsTokenMember(userId, projectId) {
   }
 }
 
-async function _flushProjects(projectIds) {
-  for (const projectId of projectIds) {
-    await TpdsProjectFlusher.promises.flushProjectToTpds(projectId)
+function privilegeLevelToRole(privilegeLevel) {
+  switch (privilegeLevel) {
+    case PrivilegeLevels.READ_ONLY:
+      return 'Viewer'
+    case PrivilegeLevels.READ_AND_WRITE:
+      return 'Editor'
+    case PrivilegeLevels.REVIEW:
+      return 'Reviewer'
+    default:
+      return privilegeLevel
   }
 }
 

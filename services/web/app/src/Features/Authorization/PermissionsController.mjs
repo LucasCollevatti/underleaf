@@ -115,7 +115,7 @@ function requirePermission(...requiredCapabilities) {
     if (!Features.hasFeature('saas')) {
       return next()
     }
-    const user = req.user || req.oauth_user
+    const user = req.user
     if (!user) {
       return next(new Error('no user'))
     }

@@ -15,7 +15,6 @@
 git clone <URL-DO-REPOSITORIO> underleaf
 cd underleaf
 cp .env.example .env
-sed -i "s/^UNDERLEAF_INVITE_TOKEN_SECRET=.*/UNDERLEAF_INVITE_TOKEN_SECRET=$(openssl rand -base64 32)/" .env
 sed -i "s/^UNDERLEAF_SESSION_SECRET=.*/UNDERLEAF_SESSION_SECRET=$(openssl rand -base64 32)/" .env
 make config
 make build

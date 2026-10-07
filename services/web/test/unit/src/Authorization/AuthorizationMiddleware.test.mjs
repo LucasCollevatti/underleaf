@@ -225,21 +225,6 @@ describe('AuthorizationMiddleware', function () {
       })
     })
 
-    describe('with oauth user', function () {
-      setupOAuthUser()
-
-      describe('when user has permission', function () {
-        setupSiteAdmin(true)
-        invokeMiddleware('ensureUserIsSiteAdmin')
-        expectNext()
-      })
-
-      describe("when user doesn't have permission", function () {
-        setupSiteAdmin(false)
-        invokeMiddleware('ensureUserIsSiteAdmin')
-        expectRedirectToRestricted()
-      })
-    })
 
     describe('with anonymous user', function () {
       setupAnonymousUser()
@@ -297,21 +282,6 @@ describe('AuthorizationMiddleware', function () {
       })
     })
 
-    describe('with oauth user', function () {
-      setupOAuthUser()
-
-      beforeEach(function (ctx) {
-        ctx.AuthorizationManager.promises.canUserReadProject
-          .withArgs(ctx.userId, 'project1', ctx.token)
-          .resolves(true)
-        ctx.AuthorizationManager.promises.canUserReadProject
-          .withArgs(ctx.userId, 'project2', ctx.token)
-          .resolves(true)
-      })
-
-      invokeMiddleware('ensureUserCanReadMultipleProjects')
-      expectNext()
-    })
 
     describe('with anonymous user', function () {
       setupAnonymousUser()
@@ -438,21 +408,6 @@ function testMiddleware(middleware, permission) {
       })
     })
 
-    describe('with oauth user', function () {
-      setupOAuthUser()
-
-      describe('when user has permission', function () {
-        setupPermission(permission, true)
-        invokeMiddleware(middleware)
-        expectNext()
-      })
-
-      describe("when user doesn't have permission", function () {
-        setupPermission(permission, false)
-        invokeMiddleware(middleware)
-        expectForbidden()
-      })
-    })
 
     describe('with anonymous user', function () {
       setupAnonymousUser()
@@ -485,12 +440,6 @@ function setupAnonymousUser() {
   })
 }
 
-function setupOAuthUser() {
-  beforeEach(function (ctx) {
-    ctx.SessionManager.getLoggedInUserId.returns(null)
-    ctx.req.oauth_user = { _id: ctx.userId }
-  })
-}
 
 function setupPermission(permission, value) {
   beforeEach(function (ctx) {

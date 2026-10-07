@@ -13,11 +13,10 @@ Prepare the configuration:
 
 ```bash
 cp .env.example .env
-sed -i "s/^UNDERLEAF_INVITE_TOKEN_SECRET=.*/UNDERLEAF_INVITE_TOKEN_SECRET=$(openssl rand -base64 32)/" .env
 sed -i "s/^UNDERLEAF_SESSION_SECRET=.*/UNDERLEAF_SESSION_SECRET=$(openssl rand -base64 32)/" .env
 ```
 
-The two secrets must remain stable across restarts. Do not commit `.env`.
+The session secret must remain stable across restarts. Do not commit `.env`.
 
 Build and start the stack:
 

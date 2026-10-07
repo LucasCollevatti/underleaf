@@ -30,11 +30,12 @@ describe('LinkedFilesController', function () {
     // ObjectIds, so use well-formed values throughout.
     ctx.projectId = '507f1f77bcf86cd799439011'
     ctx.parentFolderId = '507f191e810c19729de860eb'
-    // must be one of the real, schema-validated provider literals; 'url' is
-    // the simplest shape (a single required `url` field in `data`).
-    ctx.provider = 'url'
+    ctx.provider = 'project_file'
     ctx.fileName = 'linked-file-name'
-    ctx.data = { url: 'https://example.com/foo' }
+    ctx.data = {
+      source_project_id: '507f1f77bcf86cd799439012',
+      source_entity_path: 'main.tex',
+    }
     ctx.LinkedFilesHandler = {
       promises: {
         getFileById: sinon.stub(),
@@ -45,7 +46,6 @@ describe('LinkedFilesController', function () {
       getLoggedInUserId: sinon.stub().returns(ctx.userId),
     }
     ctx.EditorRealTimeController = { emitToRoom: sinon.stub() }
-    ctx.UrlAgent = {}
     ctx.ProjectFileAgent = {}
     ctx.ProjectOutputFileAgent = {}
     ctx.EditorController = {}
@@ -101,9 +101,6 @@ describe('LinkedFilesController', function () {
       })
     )
 
-    vi.doMock('../../../../app/src/Features/LinkedFiles/UrlAgent', () => ({
-      default: ctx.UrlAgent,
-    }))
 
     vi.doMock(
       '../../../../app/src/Features/LinkedFiles/ProjectFileAgent',
@@ -165,7 +162,8 @@ describe('LinkedFilesController', function () {
             expect(ctx.Agent.promises.createLinkedFile).to.have.been.calledWith(
               ctx.projectId,
               {
-                url: 'https://example.com/foo',
+                source_project_id: '507f1f77bcf86cd799439012',
+                source_entity_path: 'main.tex',
                 provider: ctx.provider,
                 importedAt: ctx.fakeTime.toISOString(),
               },
@@ -209,22 +207,6 @@ describe('LinkedFilesController', function () {
       })
     })
 
-    it('rejects a mendeley group_id containing a path separator without calling the agent', async function (ctx) {
-      setReqValidationModeForTests('enforce')
-      ctx.req.body.provider = 'mendeley'
-      ctx.req.body.data = { group_id: 'abcd/../../etc' }
-      await new Promise(resolve => {
-        ctx.next = sinon.stub().callsFake(() => resolve())
-        ctx.res = {
-          json: () => resolve(),
-          sendStatus: () => resolve(),
-        }
-        ctx.LinkedFilesController.createLinkedFile(ctx.req, ctx.res, ctx.next)
-      })
-      expect(ctx.next).to.have.been.calledOnce
-      expect(ctx.next.firstCall.args[0]?.name).to.equal('InvalidRequestError')
-      expect(ctx.Agent.promises.createLinkedFile).to.not.have.been.called
-    })
 
     it('rejects a project_output_file build_id that is not in the hex-hyphen-hex shape without calling the agent', async function (ctx) {
       setReqValidationModeForTests('enforce')
@@ -420,27 +402,7 @@ describe('LinkedFilesController', function () {
       return ctx.lastLinkedFileWarning().linkedFileData
     }
 
-    it('keeps only the origin of a url', function (ctx) {
-      expect(
-        redactedDataFor(ctx, {
-          provider: 'url',
-          url: 'https://example.com/secret/path?token=secret',
-        })
-      ).to.deep.equal({
-        provider: 'url',
-        url: 'https://example.com/<redacted>',
-      })
-    })
 
-    it('reports a url it cannot parse, leaving the input alone', function (ctx) {
-      const linkedFileData = { provider: 'url', url: 'not-a-url' }
-
-      expect(redactedDataFor(ctx, linkedFileData)).to.deep.equal({
-        provider: 'url',
-        url: '<bad input>',
-      })
-      expect(linkedFileData.url).to.equal('not-a-url')
-    })
 
     it('redacts the build id of an output file', function (ctx) {
       expect(

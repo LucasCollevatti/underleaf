@@ -3,7 +3,6 @@ import ProjectGetter from './ProjectGetter.mjs'
 import UserGetter from '../User/UserGetter.mjs'
 import { Project } from '../../models/Project.mjs'
 import logger from '@overleaf/logger'
-import TpdsUpdateSender from '../ThirdPartyDataStore/TpdsUpdateSender.mjs'
 import PublicAccessLevels from '../Authorization/PublicAccessLevels.mjs'
 import Errors from '../Errors/Errors.js'
 import TokenGenerator from '../TokenGenerator/TokenGenerator.mjs'
@@ -112,13 +111,7 @@ async function renameProject(projectId, newName) {
     logger.warn({ projectId }, 'could not find project to rename')
     return
   }
-  const oldProjectName = project.name
   await Project.updateOne({ _id: projectId }, { name: newName }).exec()
-  await TpdsUpdateSender.promises.moveEntity({
-    projectId,
-    projectName: oldProjectName,
-    newProjectName: newName,
-  })
 }
 
 async function validateProjectName(name) {

@@ -149,14 +149,6 @@ describe('ProjectEntityUpdateHandler', function () {
         replaceFileWithDoc: sinon.stub(),
       },
     }
-    ctx.TpdsUpdateSender = {
-      promises: {
-        addFile: sinon.stub().resolves(),
-        addDoc: sinon.stub(),
-        deleteEntity: sinon.stub().resolves(),
-        moveEntity: sinon.stub().resolves(),
-      },
-    }
     ctx.FileStoreHandler = {
       promises: {
         uploadFileFromDisk: sinon.stub(),
@@ -256,12 +248,6 @@ describe('ProjectEntityUpdateHandler', function () {
       })
     )
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsUpdateSender',
-      () => ({
-        default: ctx.TpdsUpdateSender,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/Editor/EditorRealTimeController',
@@ -297,7 +283,6 @@ describe('ProjectEntityUpdateHandler', function () {
         },
         folder: ctx.parentFolder,
       })
-      ctx.TpdsUpdateSender.promises.addDoc.resolves()
     })
 
     describe('when the doc has been modified', function () {
@@ -352,16 +337,6 @@ describe('ProjectEntityUpdateHandler', function () {
         )
       })
 
-      it('should send the doc to the TPDS', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addDoc.should.have.been.calledWith({
-          projectId,
-          projectName: ctx.project.name,
-          docId,
-          rev: ctx.rev,
-          path: ctx.path,
-          folderId: ctx.parentFolder._id,
-        })
-      })
     })
 
     describe('when the doc has not been modified', function () {
@@ -386,9 +361,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.ProjectUpdater.promises.markAsUpdated.called.should.equal(false)
       })
 
-      it('should not send the doc the to the TPDS', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addDoc.called.should.equal(false)
-      })
     })
 
     describe('when the doc has been deleted', function () {
@@ -421,9 +393,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.ProjectUpdater.promises.markAsUpdated.called.should.equal(false)
       })
 
-      it('should not send the doc the to the TPDS', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addDoc.called.should.equal(false)
-      })
     })
 
     describe('when projects and docs collection are de-synced', function () {
@@ -460,9 +429,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.ProjectUpdater.promises.markAsUpdated.called.should.equal(false)
       })
 
-      it('should not send the doc the to the TPDS', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addDoc.called.should.equal(false)
-      })
     })
 
     describe('when the doc is not related to the project', function () {
@@ -513,18 +479,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.DocstoreManager.promises.updateDoc.called.should.equal(false)
       })
 
-      it('should not send the doc the to the TPDS', async function (ctx) {
-        let error
-
-        try {
-          await updateDocLinesPromise
-        } catch (err) {
-          error = err
-        }
-
-        expect(error).to.exist
-        ctx.TpdsUpdateSender.promises.addDoc.called.should.equal(false)
-      })
     })
 
     describe('when the project is not found', function () {
@@ -556,9 +510,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.DocstoreManager.promises.updateDoc.called.should.equal(false)
       })
 
-      it('should not send the doc the to the TPDS', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addDoc.called.should.equal(false)
-      })
     })
   })
 
@@ -645,7 +596,6 @@ describe('ProjectEntityUpdateHandler', function () {
           lines: false,
           rev: ctx.rev,
         })
-        ctx.TpdsUpdateSender.promises.addDoc.resolves()
         ctx.ProjectEntityMongoUpdateHandler.promises.addDoc.resolves({
           result: { path: { fileSystem: ctx.path } },
           project: ctx.project,
@@ -732,7 +682,6 @@ describe('ProjectEntityUpdateHandler', function () {
           fileRef: ctx.newFile,
           createdBlob: true,
         })
-        ctx.TpdsUpdateSender.promises.addFile.resolves()
         ctx.ProjectEntityMongoUpdateHandler.promises.addFile.resolves({
           result: { path: { fileSystem: ctx.path } },
           project: ctx.project,
@@ -768,20 +717,6 @@ describe('ProjectEntityUpdateHandler', function () {
           .should.equal(true)
       })
 
-      it('notifies the tpds', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addFile
-          .calledWith({
-            projectId,
-            historyId: ctx.project.overleaf.history.id,
-            projectName: ctx.project.name,
-            fileId,
-            hash: ctx.newFile.hash,
-            rev: 0,
-            path: ctx.path,
-            folderId,
-          })
-          .should.equal(true)
-      })
 
       it('sends the change in project structure to the doc updater', function (ctx) {
         const newFiles = [
@@ -815,7 +750,6 @@ describe('ProjectEntityUpdateHandler', function () {
           name: ctx.fileName,
           linkedFileData: ctx.linkedFileData,
         }
-        ctx.TpdsUpdateSender.promises.addFile.resolves()
         ctx.ProjectEntityMongoUpdateHandler.promises.addFile.resolves({
           result: { path: { fileSystem: ctx.path } },
           project: ctx.project,
@@ -1100,7 +1034,6 @@ describe('ProjectEntityUpdateHandler', function () {
         ctx.ProjectEntityMongoUpdateHandler.promises.replaceFileWithDoc.resolves(
           ctx.newProject
         )
-        ctx.TpdsUpdateSender.promises.addDoc.resolves()
 
         await ctx.ProjectEntityUpdateHandler.promises.upsertDoc(
           projectId,
@@ -1130,16 +1063,6 @@ describe('ProjectEntityUpdateHandler', function () {
         )
       })
 
-      it('sends the doc to TPDS', function (ctx) {
-        expect(ctx.TpdsUpdateSender.promises.addDoc).to.have.been.calledWith({
-          projectId,
-          docId: ctx.newDoc._id,
-          path: ctx.filePath,
-          projectName: ctx.newProject.name,
-          rev: ctx.existingFile.rev + 1,
-          folderId,
-        })
-      })
 
       it('sends the updates to the doc updater', function (ctx) {
         const oldFiles = [
@@ -1271,18 +1194,6 @@ describe('ProjectEntityUpdateHandler', function () {
         )
       })
 
-      it('notifies the tpds', function (ctx) {
-        ctx.TpdsUpdateSender.promises.addFile.should.have.been.calledWith({
-          projectId,
-          historyId: ctx.project.overleaf.history.id,
-          projectName: ctx.project.name,
-          fileId: ctx.newFile._id,
-          hash: ctx.newFile.hash,
-          rev: ctx.newFile.rev,
-          path: ctx.fileSystemPath,
-          folderId,
-        })
-      })
 
       it('updates the project structure in the doc updater', function (ctx) {
         const oldFiles = [
@@ -1855,16 +1766,6 @@ describe('ProjectEntityUpdateHandler', function () {
         .should.equal(true)
     })
 
-    it('it notifies the tpds', function (ctx) {
-      ctx.TpdsUpdateSender.promises.deleteEntity.should.have.been.calledWith({
-        projectId,
-        path: ctx.path,
-        projectName: ctx.projectBeforeDeletion.name,
-        entityId: docId,
-        entityType: 'doc',
-        subtreeEntityIds: [ctx.doc._id],
-      })
-    })
 
     it('retuns the entity_id', function () {
       expect(deleteEntityResult).to.equal(docId)
@@ -2052,20 +1953,6 @@ describe('ProjectEntityUpdateHandler', function () {
         .should.equal(true)
     })
 
-    it('notifies tpds', function (ctx) {
-      ctx.TpdsUpdateSender.promises.moveEntity
-        .calledWith({
-          projectId,
-          projectName: ctx.project_name,
-          startPath: ctx.startPath,
-          endPath: ctx.endPath,
-          rev: ctx.rev,
-          entityId: docId,
-          entityType: 'doc',
-          folderId,
-        })
-        .should.equal(true)
-    })
 
     it('sends the changes in project structure to the doc updater', function (ctx) {
       ctx.DocumentUpdaterHandler.promises.updateProjectStructure
@@ -2113,20 +2000,6 @@ describe('ProjectEntityUpdateHandler', function () {
           .should.equal(true)
       })
 
-      it('notifies tpds', function (ctx) {
-        ctx.TpdsUpdateSender.promises.moveEntity
-          .calledWith({
-            projectId,
-            projectName: ctx.project_name,
-            startPath: ctx.startPath,
-            endPath: ctx.endPath,
-            rev: ctx.rev,
-            entityId: docId,
-            entityType: 'doc',
-            folderId: null,
-          })
-          .should.equal(true)
-      })
 
       it('flushes the project in doc updater', function (ctx) {
         ctx.DocumentUpdaterHandler.promises.flushProjectToMongo.should.have.been.calledWith(

@@ -1,5 +1,4 @@
 import 'express'
-import OAuth2Server from '@node-oauth/oauth2-server'
 import type SessionData from 'express-session'
 import type { Capability } from '../../capabilities'
 
@@ -18,7 +17,6 @@ declare module 'express' {
   interface Request {
     session: SessionData
     userRestrictions?: Set
-    oauth_user?: OAuth2Server.User
     logger: RequestLogger
     requestId?: string
     // Set by a body-parser `verify` callback on routes that check a webhook

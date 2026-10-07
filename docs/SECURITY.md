@@ -28,9 +28,8 @@ da rede.
   privilégio administrativo.
 - Senhas são armazenadas pelo fluxo herdado de autenticação com bcrypt; o
   padrão de produção usa 12 rounds.
-- O app exige `UNDERLEAF_SESSION_SECRET` e
-  `UNDERLEAF_INVITE_TOKEN_SECRET`; ambos devem ser aleatórios, estáveis e
-  mantidos somente no `.env` ou no secret manager do operador.
+- O app exige `UNDERLEAF_SESSION_SECRET`; ele deve ser aleatório, estável e
+  mantido somente no `.env` ou no secret manager do operador.
 - CSRF é aplicado pelo middleware da aplicação, e o login possui limites por
   IP e por identificador de conta.
 - O overlay de produção habilita cookies `Secure`, mantém `SameSite=Lax`,

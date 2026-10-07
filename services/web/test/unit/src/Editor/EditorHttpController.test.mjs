@@ -26,112 +26,6 @@ describe('EditorHttpController', function () {
       { user: { _id: 'one' }, privilegeLevel: 'readOnly' },
     ]
     ctx.ownerMember = ctx.members[0]
-    ctx.invites = [{ _id: 'three' }, { _id: 'four' }]
-    ctx.projectView = {
-      _id: ctx.project._id,
-      owner: {
-        _id: 'owner',
-        email: 'owner@example.com',
-        other_property: true,
-      },
-      members: [
-        { _id: 'owner', privileges: 'owner' },
-        { _id: 'one', privileges: 'readOnly' },
-      ],
-      invites: [{ three: 3 }, { four: 4 }],
-    }
-    ctx.reducedProjectView = {
-      _id: ctx.projectView._id,
-      owner: { _id: ctx.projectView.owner._id },
-      members: [],
-      invites: [],
-    }
-    ctx.doc = { _id: new ObjectId(), name: 'excellent-original-idea.tex' }
-    ctx.file = { _id: new ObjectId() }
-    ctx.folder = { _id: new ObjectId() }
-    ctx.source = 'editor'
-
-    // parent_folder_id/entity_id/folder_id are all validated as Mongo ObjectIds
-    ctx.parentFolderId = new ObjectId().toString()
-    ctx.req = new MockRequest(vi)
-    ctx.res = new MockResponse(vi)
-    ctx.next = sinon.stub()
-    ctx.token = null
-    ctx.docLines = ['hello', 'overleaf']
-
-    ctx.AuthorizationManager = {
-      isRestrictedUser: sinon.stub().returns(false),
-      promises: {
-        getPrivilegeLevelForProjectWithProjectAccess: sinon
-          .stub()
-          .resolves('owner'),
-      },
-    }
-    const members = ctx.members
-    const ownerMember = ctx.ownerMember
-    const ownerId = ctx.ownerId
-    ctx.CollaboratorsGetter = {
-      ProjectAccess: class {
-        loadOwnerAndInvitedMembers() {
-          return { members, ownerMember }
-        }
-
-        loadOwner() {
-          return ownerMember
-        }
-
-        isUserTokenMember() {
-          return false
-        }
-
-        isUserInvitedMember() {
-          return false
-        }
-
-        getOwnerId() {
-          return ownerId
-        }
-
-        loadAccessRequestsView() {
-          return []
-        }
-
-        getAccessRequestForUser() {
-          return null
-        }
-
-        privilegeLevelForUser() {
-          return 'readOnly'
-        }
-      },
-      promises: {
-        isUserInvitedMemberOfProject: sinon.stub().resolves(false),
-      },
-    }
-    ctx.CollaboratorsHandler = {
-      promises: {
-        userIsTokenMember: sinon.stub().resolves(false),
-      },
-    }
-    ctx.invites = [
-      {
-        _id: 'invite_one',
-        email: 'user-one@example.com',
-        privileges: 'readOnly',
-        projectId: ctx.project._id,
-      },
-      {
-        _id: 'invite_two',
-        email: 'user-two@example.com',
-        privileges: 'readOnly',
-        projectId: ctx.project._id,
-      },
-    ]
-    ctx.CollaboratorsInviteGetter = {
-      promises: {
-        getAllInvites: sinon.stub().resolves(ctx.invites),
-      },
-    }
     ctx.EditorController = {
       promises: {
         addDoc: sinon.stub().resolves(ctx.doc),
@@ -223,12 +117,6 @@ describe('EditorHttpController', function () {
       '../../../../app/src/Features/Collaborators/CollaboratorsHandler.mjs',
       () => ({
         default: ctx.CollaboratorsHandler,
-      })
-    )
-    vi.doMock(
-      '../../../../app/src/Features/Collaborators/CollaboratorsInviteGetter.mjs',
-      () => ({
-        default: ctx.CollaboratorsInviteGetter,
       })
     )
     vi.doMock(

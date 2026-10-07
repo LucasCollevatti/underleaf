@@ -91,11 +91,6 @@ describe('TokenAccessController', function () {
       },
     }
 
-    ctx.CollaboratorsInviteHandler = {
-      promises: {
-        revokeInviteForUser: sinon.stub().resolves(),
-      },
-    }
 
     ctx.CollaboratorsHandler = {
       promises: {
@@ -211,12 +206,6 @@ describe('TokenAccessController', function () {
       })
     )
 
-    vi.doMock(
-      '../../../../app/src/Features/Collaborators/CollaboratorsInviteHandler',
-      () => ({
-        default: ctx.CollaboratorsInviteHandler,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/Collaborators/CollaboratorsGetter',

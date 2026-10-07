@@ -97,30 +97,6 @@ function redundantPersonalSubscription(affiliation, user) {
   }
 }
 
-function projectInvite(invite, project, sendingUser, user) {
-  return {
-    key: `project-invite-${invite._id}`,
-    async create() {
-      const messageOpts = {
-        userName: sendingUser.first_name,
-        projectName: project.name,
-        projectId: project._id.toString(),
-        token: invite.token,
-      }
-      return await NotificationsHandler.promises.createNotification(
-        user._id.toString(),
-        this.key,
-        'notification_project_invite',
-        messageOpts,
-        invite.expires
-      )
-    },
-    async read() {
-      return await NotificationsHandler.promises.markAsReadByKeyOnly(this.key)
-    },
-  }
-}
-
 function ipMatcherAffiliation(userId) {
   return {
     async create(ip) {
@@ -168,29 +144,6 @@ function ipMatcherAffiliation(userId) {
     async read(universityId) {
       const key = `ip-matched-affiliation-${universityId}`
       return await NotificationsHandler.promises.markAsReadWithKey(userId, key)
-    },
-  }
-}
-
-function tpdsFileLimit(userId) {
-  return {
-    key: `tpdsFileLimit-${userId}`,
-    async create(projectName, projectId) {
-      const messageOpts = {
-        projectName,
-        projectId,
-      }
-      return await NotificationsHandler.promises.createNotification(
-        userId,
-        this.key,
-        'notification_tpds_file_limit',
-        messageOpts,
-        null,
-        true
-      )
-    },
-    async read() {
-      return await NotificationsHandler.promises.markAsReadByKeyOnly(this.key)
     },
   }
 }
@@ -275,14 +228,8 @@ const NotificationsBuilder = {
   redundantPersonalSubscription(affiliation, user) {
     return callbackifyAll(redundantPersonalSubscription(affiliation, user))
   },
-  projectInvite(invite, project, sendingUser, user) {
-    return callbackifyAll(projectInvite(invite, project, sendingUser, user))
-  },
   ipMatcherAffiliation(userId) {
     return callbackifyAll(ipMatcherAffiliation(userId))
-  },
-  tpdsFileLimit(userId) {
-    return callbackifyAll(tpdsFileLimit(userId))
   },
   groupInvitation(userId, groupId, managedUsersEnabled) {
     return callbackifyAll(groupInvitation(userId, groupId, managedUsersEnabled))
@@ -300,9 +247,7 @@ NotificationsBuilder.promises = {
   featuresUpgradedByAffiliation,
   ipMatcherAffiliation,
   groupInvitation,
-  projectInvite,
   personalAndGroupSubscriptions,
-  tpdsFileLimit,
   oldDebugProjects,
 }
 

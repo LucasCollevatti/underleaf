@@ -69,11 +69,6 @@ const Features = {
         return Boolean(
           Settings.enabledLinkedFileTypes.includes('project_output_file')
         )
-      case 'link-url':
-        return Boolean(
-          _.get(Settings, ['apis', 'linkedUrlProxy', 'url']) &&
-          Settings.enabledLinkedFileTypes.includes('url')
-        )
       case 'support':
         return supportModuleAvailable
       case 'symbol-palette':

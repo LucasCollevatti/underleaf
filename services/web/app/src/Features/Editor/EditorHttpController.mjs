@@ -5,7 +5,6 @@ import ProjectGetter from '../Project/ProjectGetter.mjs'
 import AuthorizationManager from '../Authorization/AuthorizationManager.mjs'
 import ProjectEditorHandler from '../Project/ProjectEditorHandler.mjs'
 import Metrics from '@overleaf/metrics'
-import CollaboratorsInviteGetter from '../Collaborators/CollaboratorsInviteGetter.mjs'
 import PrivilegeLevels from '../Authorization/PrivilegeLevels.mjs'
 import SessionManager from '../Authentication/SessionManager.mjs'
 import Errors from '../Errors/Errors.js'
@@ -138,7 +137,6 @@ async function _buildJoinProjectView(projectId, userId, token) {
   } else {
     ;({ ownerMember, members } =
       await projectAccess.loadOwnerAndInvitedMembers())
-    invites = await CollaboratorsInviteGetter.promises.getAllInvites(projectId)
   }
   const accessRequestData = {}
   if (privilegeLevel === PrivilegeLevels.OWNER) {

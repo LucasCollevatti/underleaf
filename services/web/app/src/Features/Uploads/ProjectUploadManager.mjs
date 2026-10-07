@@ -14,7 +14,6 @@ import ProjectRootDocManager from '../Project/ProjectRootDocManager.mjs'
 import ProjectDetailsHandler from '../Project/ProjectDetailsHandler.mjs'
 import ProjectDeleter from '../Project/ProjectDeleter.mjs'
 import { DeletedProjectReasons } from '../Project/DeletedProjectReasons.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import logger from '@overleaf/logger'
 import OError from '@overleaf/o-error'
 
@@ -164,7 +163,6 @@ async function _initializeProjectWithZipContents(
     newDocs: docEntries,
     newProject: { version: projectVersion },
   })
-  await TpdsProjectFlusher.promises.flushProjectToTpds(project._id)
   return { fileEntries, docEntries }
 }
 

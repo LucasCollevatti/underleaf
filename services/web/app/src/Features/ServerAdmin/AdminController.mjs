@@ -2,8 +2,6 @@ import logger from '@overleaf/logger'
 import http from 'node:http'
 import https from 'node:https'
 import Settings from '@overleaf/settings'
-import TpdsUpdateSender from '../ThirdPartyDataStore/TpdsUpdateSender.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
 import SystemMessageManager from '../SystemMessages/SystemMessageManager.mjs'
 import ProjectGetter from '../Project/ProjectGetter.mjs'
@@ -36,18 +34,6 @@ const disconnectAllUsersFallbackSchema = z.object({
       .unknown()
       .optional()
       .transform(v => (v === undefined ? undefined : Number(v))),
-  }),
-})
-
-const flushProjectToTpdsSchema = z.object({
-  body: z.object({
-    project_id: zz.objectId(),
-  }),
-})
-
-const pollDropboxForUserSchema = z.object({
-  body: z.object({
-    user_id: zz.objectId(),
   }),
 })
 
@@ -127,25 +113,6 @@ const AdminController = {
     const { body } = parseReq(req, closeEditorSchema, { logOnly: true })
     Settings.editorIsOpen = body.isOpen
     res.redirect('/admin#open-close-editor')
-  },
-
-  flushProjectToTpds(req, res, next) {
-    const { body } = parseReq(req, flushProjectToTpdsSchema, {
-      logOnly: true,
-    })
-    TpdsProjectFlusher.flushProjectToTpds(body.project_id, error => {
-      if (error) {
-        return next(error)
-      }
-      res.sendStatus(200)
-    })
-  },
-
-  pollDropboxForUser(req, res) {
-    const { body } = parseReq(req, pollDropboxForUserSchema, {
-      logOnly: true,
-    })
-    TpdsUpdateSender.pollDropboxForUser(body.user_id, () => res.sendStatus(200))
   },
 
   createMessage(req, res, next) {

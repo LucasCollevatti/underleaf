@@ -5488,35 +5488,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-oauth/formats@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@node-oauth/formats@npm:1.0.0"
-  checksum: 10c0/cd89946031636feebc6b07bf44bb79841915d63a9908d5eb86f990d9fe7fa18d962645b1b8aab688dc62d796810b792ad871e2545dc04f449d358d382cc34fae
-  languageName: node
-  linkType: hard
-
-"@node-oauth/oauth2-server@npm:5.3.0":
-  version: 5.3.0
-  resolution: "@node-oauth/oauth2-server@npm:5.3.0"
-  dependencies:
-    "@node-oauth/formats": "npm:1.0.0"
-    basic-auth: "npm:2.0.1"
-    type-is: "npm:2.0.1"
-  checksum: 10c0/bb136a5569f71b2086686972680849f8fde90d861c20775ea59966a54a7473d2d61b1b9531a3585399e6a028c7078e7e32eaf1c0c475b4f6c7766db65a6a78b6
-  languageName: node
-  linkType: hard
-
-"@node-oauth/oauth2-server@patch:@node-oauth/oauth2-server@npm%3A5.3.0#~/.yarn/patches/@node-oauth-oauth2-server-npm-5.3.0-9d66d9183c.patch":
-  version: 5.3.0
-  resolution: "@node-oauth/oauth2-server@patch:@node-oauth/oauth2-server@npm%3A5.3.0#~/.yarn/patches/@node-oauth-oauth2-server-npm-5.3.0-9d66d9183c.patch::version=5.3.0&hash=acb1f1"
-  dependencies:
-    "@node-oauth/formats": "npm:1.0.0"
-    basic-auth: "npm:2.0.1"
-    type-is: "npm:2.0.1"
-  checksum: 10c0/e3b5c0303b9c13049ae65c93779b8e06bc63fae9ef554e37d2bd8cb0d1afb7fab279fe6d007267b50ab36570c1f692a61c8791cd148196623f276b9b0804a65e
-  languageName: node
-  linkType: hard
-
 "@node-rs/crc32@npm:^0.1.7":
   version: 0.1.8
   resolution: "@node-rs/crc32@npm:0.1.8"
@@ -7962,8 +7933,6 @@ __metadata:
     "@lezer/highlight": "npm:1.2.3"
     "@lezer/lr": "npm:1.4.7"
     "@lezer/markdown": "npm:1.6.3"
-    "@node-oauth/oauth2-server": "patch:@node-oauth/oauth2-server@npm%3A5.3.0#~/.yarn/patches/@node-oauth-oauth2-server-npm-5.3.0-9d66d9183c.patch"
-    "@overleaf/access-token-encryptor": "workspace:*"
     "@overleaf/codemirror-tree-view": "npm:^0.1.3"
     "@overleaf/cypress-pnp-reporter": "workspace:*"
     "@overleaf/dictionaries": "https://github.com/overleaf/dictionaries/archive/refs/tags/v0.0.3.tar.gz"

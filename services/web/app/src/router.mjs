@@ -7,7 +7,6 @@ import ProjectListController from './Features/Project/ProjectListController.mjs'
 import SpellingController from './Features/Spelling/SpellingController.mjs'
 import EditorRouter from './Features/Editor/EditorRouter.mjs'
 import Settings from '@overleaf/settings'
-import TpdsController from './Features/ThirdPartyDataStore/TpdsController.mjs'
 import UploadsRouter from './Features/Uploads/UploadsRouter.mjs'
 import metrics from '@overleaf/metrics'
 import AuthenticationController from './Features/Authentication/AuthenticationController.mjs'
@@ -350,11 +349,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     UserInfoController.getUserFeatures
   )
 
-  webRouter.get(
-    '/user/tpds/queues',
-    AuthenticationController.requireLogin(),
-    TpdsController.getQueues
-  )
 
   webRouter.post(
     '/tutorial/:tutorialKey/complete',
@@ -830,53 +824,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     DocumentController.trackChangesRejected
   )
 
-  privateApiRouter.post(
-    '/user/:user_id/project/new',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.createProject
-  )
-  privateApiRouter.post(
-    '/user/:user_id/project/resolve',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.resolveProject
-  )
-  privateApiRouter.post(
-    '/tpds/folder-update',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.updateFolder
-  )
-  privateApiRouter.post(
-    '/user/:user_id/update/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.mergeUpdate
-  )
-  privateApiRouter.delete(
-    '/user/:user_id/update/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.deleteUpdate
-  )
-  privateApiRouter.post(
-    '/project/:project_id/user/:user_id/update/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.mergeUpdate
-  )
-  privateApiRouter.delete(
-    '/project/:project_id/user/:user_id/update/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.deleteUpdate
-  )
-
-  privateApiRouter.post(
-    '/project/:project_id/contents/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.updateProjectContents
-  )
-  privateApiRouter.delete(
-    '/project/:project_id/contents/:path(.+)',
-    AuthenticationController.requirePrivateApiAuth(),
-    TpdsController.deleteProjectContents
-  )
-
   webRouter.post(
     '/spelling/learn',
     AuthenticationController.requireLogin(),
@@ -995,16 +942,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
       AdminController.disconnectAllUsers
     )
   }
-  webRouter.post(
-    '/admin/flushProjectToTpds',
-    AuthorizationMiddleware.ensureUserIsSiteAdmin,
-    AdminController.flushProjectToTpds
-  )
-  webRouter.post(
-    '/admin/pollDropboxForUser',
-    AuthorizationMiddleware.ensureUserIsSiteAdmin,
-    AdminController.pollDropboxForUser
-  )
   webRouter.post(
     '/admin/messages',
     AuthorizationMiddleware.ensureUserIsSiteAdmin,

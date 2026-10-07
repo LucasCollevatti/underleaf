@@ -307,11 +307,7 @@ function _getMessageId(req) {
 }
 
 function _getUserId(req) {
-  return (
-    SessionManager.getLoggedInUserId(req.session) ||
-    (req.oauth_user && req.oauth_user._id?.toString()) ||
-    null
-  )
+  return SessionManager.getLoggedInUserId(req.session) || null
 }
 
 function _redirectToRestricted(req, res, next) {

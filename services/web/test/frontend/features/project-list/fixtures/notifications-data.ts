@@ -4,8 +4,6 @@ import {
   NotificationDropboxDuplicateProjectNames,
   NotificationGroupInvitation,
   NotificationIPMatchedAffiliation,
-  NotificationProjectInvite,
-  NotificationTPDSFileLimit,
 } from '../../../../../types/project/dashboard/notification'
 
 export const notificationsInstitution = {
@@ -16,14 +14,6 @@ export const notificationsInstitution = {
   requestedEmail: 'requested@example.com',
 } as DeepReadonly<Institution>
 
-export const notificationProjectInvite = {
-  messageOpts: {
-    projectId: '123',
-    projectName: 'Abc Project',
-    userName: 'fakeUser',
-    token: 'abcdef',
-  },
-} as DeepReadonly<NotificationProjectInvite>
 
 export const notificationIPMatchedAffiliation = {
   messageOpts: {
@@ -33,12 +23,6 @@ export const notificationIPMatchedAffiliation = {
   },
 } as DeepReadonly<NotificationIPMatchedAffiliation>
 
-export const notificationTPDSFileLimit = {
-  messageOpts: {
-    projectName: 'Abc Project',
-    projectId: '123',
-  },
-} as DeepReadonly<NotificationTPDSFileLimit>
 
 export const notificationDropboxDuplicateProjectNames = {
   messageOpts: {

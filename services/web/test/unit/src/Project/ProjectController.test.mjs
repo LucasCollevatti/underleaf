@@ -434,12 +434,6 @@ describe('ProjectController', function () {
       })
     )
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher',
-      () => ({
-        default: ctx.TpdsProjectFlusher,
-      })
-    )
 
     vi.doMock('../../../../app/src/models/Project', () => ({}))
 
@@ -1227,17 +1221,6 @@ describe('ProjectController', function () {
       })
     })
 
-    it('flushes the project to TPDS if a flush is pending', async function (ctx) {
-      await new Promise(resolve => {
-        ctx.res.render = () => {
-          ctx.TpdsProjectFlusher.promises.flushProjectToTpdsIfNeeded.should.have.been.calledWith(
-            ctx.project
-          )
-          resolve()
-        }
-        ctx.ProjectController.loadEditor(ctx.req, ctx.res)
-      })
-    })
 
     it('should refresh the user features if the epoch is outdated', async function (ctx) {
       ctx.Features.hasFeature.withArgs('saas').returns(true)

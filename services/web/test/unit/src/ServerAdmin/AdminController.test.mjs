@@ -29,14 +29,6 @@ describe('AdminController', function () {
 
     vi.doMock('@overleaf/settings', () => ({ default: ctx.Settings }))
     vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsUpdateSender',
-      () => ({ default: ctx.TpdsUpdateSender })
-    )
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher',
-      () => ({ default: ctx.TpdsProjectFlusher })
-    )
-    vi.doMock(
       '../../../../app/src/Features/Editor/EditorRealTimeController',
       () => ({ default: ctx.EditorRealTimeController })
     )
@@ -117,43 +109,7 @@ describe('AdminController', function () {
     })
   })
 
-  describe('flushProjectToTpds', function () {
-    beforeEach(function (ctx) {
-      // project_id is validated as a Mongo ObjectId
-      ctx.projectId = '507f191e810c19729de860ea'
-      ctx.req.body = { project_id: ctx.projectId }
-    })
 
-    it('should flush the project and return 200', function (ctx) {
-      ctx.TpdsProjectFlusher.flushProjectToTpds.callsFake((id, cb) => cb())
-      ctx.controller.flushProjectToTpds(ctx.req, ctx.res, ctx.next)
-      ctx.TpdsProjectFlusher.flushProjectToTpds
-        .calledWith(ctx.projectId)
-        .should.equal(true)
-      ctx.res.sendStatus.calledWith(200).should.equal(true)
-    })
-
-    it('should call next with an error on failure', function (ctx) {
-      const error = new Error('failed')
-      ctx.TpdsProjectFlusher.flushProjectToTpds.callsFake((id, cb) => cb(error))
-      ctx.controller.flushProjectToTpds(ctx.req, ctx.res, ctx.next)
-      ctx.next.calledWith(error).should.equal(true)
-    })
-  })
-
-  describe('pollDropboxForUser', function () {
-    it('should poll dropbox for the user', function (ctx) {
-      // user_id is validated as a Mongo ObjectId
-      ctx.userId = '507f191e810c19729de860eb'
-      ctx.req.body = { user_id: ctx.userId }
-      ctx.TpdsUpdateSender.pollDropboxForUser.callsFake((id, cb) => cb())
-      ctx.controller.pollDropboxForUser(ctx.req, ctx.res)
-      ctx.TpdsUpdateSender.pollDropboxForUser
-        .calledWith(ctx.userId)
-        .should.equal(true)
-      ctx.res.sendStatus.calledWith(200).should.equal(true)
-    })
-  })
 
   describe('createMessage', function () {
     it('should create the message and redirect', function (ctx) {

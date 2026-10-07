@@ -10,7 +10,6 @@ import PrivilegeLevels, {
   isPrivilegeUpgrade,
 } from '../Authorization/PrivilegeLevels.mjs'
 import ProjectAuditLogHandler from '../Project/ProjectAuditLogHandler.mjs'
-import CollaboratorsInviteHandler from '../Collaborators/CollaboratorsInviteHandler.mjs'
 import CollaboratorsHandler from '../Collaborators/CollaboratorsHandler.mjs'
 import EditorRealTimeController from '../Editor/EditorRealTimeController.mjs'
 import CollaboratorsGetter from '../Collaborators/CollaboratorsGetter.mjs'
@@ -393,18 +392,12 @@ async function grantTokenAccessReadAndWrite(req, res, next) {
       { pendingEditor }
     )
 
-    // remove pending invite and notification
-    const userEmails = await UserGetter.promises.getUserConfirmedEmails(userId)
-    await CollaboratorsInviteHandler.promises.revokeInviteForUser(
-      project._id,
-      userEmails
-    )
     // Should be a noop if the user is already a member,
     // and would redirect transparently into the project.
     EditorRealTimeController.emitToRoom(
       project._id,
       'project:membership:changed',
-      { members: true, invites: true }
+      { members: true }
     )
 
     return res.json({

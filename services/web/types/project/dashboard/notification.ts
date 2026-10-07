@@ -1,8 +1,6 @@
 type TemplateKey =
-  | 'notification_project_invite'
   | 'wfh_2020_upgrade_offer'
   | 'notification_ip_matched_affiliation'
-  | 'notification_tpds_file_limit'
   | 'notification_dropbox_duplicate_project_names'
   | 'notification_dropbox_unlinked_due_to_lapsed_reconfirmation'
   | 'notification_group_invitation'
@@ -14,15 +12,6 @@ type NotificationBase = {
   templateKey: TemplateKey | string
 }
 
-export interface NotificationProjectInvite extends NotificationBase {
-  templateKey: Extract<TemplateKey, 'notification_project_invite'>
-  messageOpts: {
-    projectName: string
-    userName: string
-    projectId: number | string
-    token: string
-  }
-}
 
 interface NotificationWFH2020UpgradeOffer extends NotificationBase {
   templateKey: Extract<TemplateKey, 'wfh_2020_upgrade_offer'>
@@ -38,13 +27,6 @@ export interface NotificationIPMatchedAffiliation extends NotificationBase {
   }
 }
 
-export interface NotificationTPDSFileLimit extends NotificationBase {
-  templateKey: Extract<TemplateKey, 'notification_tpds_file_limit'>
-  messageOpts: {
-    projectName: string
-    projectId?: string
-  }
-}
 
 export interface NotificationDropboxDuplicateProjectNames extends NotificationBase {
   templateKey: Extract<
@@ -73,10 +55,8 @@ export interface NotificationGroupInvitation extends NotificationBase {
 }
 
 export type Notification =
-  | NotificationProjectInvite
   | NotificationWFH2020UpgradeOffer
   | NotificationIPMatchedAffiliation
-  | NotificationTPDSFileLimit
   | NotificationDropboxDuplicateProjectNames
   | NotificationDropboxUnlinkedDueToLapsedReconfirmation
   | NotificationGroupInvitation

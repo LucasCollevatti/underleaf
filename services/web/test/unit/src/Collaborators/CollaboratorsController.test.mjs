@@ -38,11 +38,6 @@ describe('CollaboratorsController', function () {
       },
       createTokenHashPrefix: sinon.stub().returns('abc123'),
     }
-    ctx.CollaboratorsInviteHandler = {
-      promises: {
-        revokeInviteForUser: sinon.stub().resolves(),
-      },
-    }
     ctx.projectAccess = {
       getOwnerId: sinon.stub().returns(ctx.user._id),
       accessRequestCount: sinon.stub().returns(0),
@@ -152,12 +147,6 @@ describe('CollaboratorsController', function () {
       })
     )
 
-    vi.doMock(
-      '../../../../app/src/Features/Collaborators/CollaboratorsInviteHandler.mjs',
-      () => ({
-        default: ctx.CollaboratorsInviteHandler,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/Collaborators/OwnershipTransferHandler.mjs',
@@ -1050,7 +1039,7 @@ describe('CollaboratorsController', function () {
       expect(ctx.EditorRealTimeController.emitToRoom).to.have.been.calledWith(
         ctx.projectId.toString(),
         'project:membership:changed',
-        { members: true, invites: true, accessRequests: true }
+        { members: true, accessRequests: true }
       )
       await new Promise(r => setImmediate(r))
       expect(ctx.EmailHandler.promises.sendEmail).to.have.been.calledWith(
@@ -1059,20 +1048,6 @@ describe('CollaboratorsController', function () {
       )
     })
 
-    it('clears any pending invite for the granted user', async function (ctx) {
-      await new Promise(resolve => {
-        ctx.res.sendStatus = sinon.spy(() => resolve())
-        ctx.CollaboratorsController.grantAccessRequest(ctx.req, ctx.res)
-      })
-      expect(
-        ctx.UserGetter.promises.getUserConfirmedEmails
-      ).to.have.been.calledWith(ctx.requesterId.toString())
-      expect(
-        ctx.CollaboratorsInviteHandler.promises.revokeInviteForUser
-      ).to.have.been.calledWith(ctx.projectId.toString(), [
-        { email: 'req@example.com' },
-      ])
-    })
 
     it('records an accept analytics event with the granted level', async function (ctx) {
       await new Promise(resolve => {

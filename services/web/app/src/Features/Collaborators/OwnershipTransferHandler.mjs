@@ -6,7 +6,6 @@ import CollaboratorsHandler from './CollaboratorsHandler.mjs'
 import EmailHandler from '../Email/EmailHandler.mjs'
 import Errors from '../Errors/Errors.js'
 import PrivilegeLevels from '../Authorization/PrivilegeLevels.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import ProjectAuditLogHandler from '../Project/ProjectAuditLogHandler.mjs'
 import AnalyticsManager from '../Analytics/AnalyticsManager.mjs'
 import OError from '@overleaf/o-error'
@@ -157,9 +156,6 @@ async function transferOwnership(projectId, newOwnerId, options = {}) {
       'failed to update notification preferences on ownership transfer'
     )
   }
-
-  // Flush project to TPDS
-  await TpdsProjectFlusher.promises.flushProjectToTpds(projectId)
 
   // Send confirmation emails
   if (!skipEmails && newOwner.email) {

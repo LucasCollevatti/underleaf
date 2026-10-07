@@ -225,12 +225,6 @@ describe('ProjectUploadManager', function () {
       default: ctx.ProjectDeleter,
     }))
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher',
-      () => ({
-        default: ctx.TpdsProjectFlusher,
-      })
-    )
 
     ctx.ProjectUploadManager = (await import(MODULE_PATH)).default
   })
@@ -285,11 +279,6 @@ describe('ProjectUploadManager', function () {
         )
       })
 
-      it('should flush the project to TPDS', function (ctx) {
-        ctx.TpdsProjectFlusher.promises.flushProjectToTpds.should.have.been.calledWith(
-          ctx.project._id
-        )
-      })
 
       it('should set the root document', function (ctx) {
         ctx.ProjectRootDocManager.promises.setRootDocFromName.should.have.been.calledWith(
@@ -418,11 +407,6 @@ describe('ProjectUploadManager', function () {
       )
     })
 
-    it('should flush the project to TPDS', function (ctx) {
-      ctx.TpdsProjectFlusher.promises.flushProjectToTpds.should.have.been.calledWith(
-        ctx.project._id
-      )
-    })
 
     it('should remove the destination directory afterwards', function (ctx) {
       ctx.fs.promises.rm.should.have.been.calledWith(ctx.extractedZipPath, {

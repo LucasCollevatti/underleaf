@@ -281,12 +281,6 @@ describe('ProjectDuplicator', function () {
       })
     )
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher',
-      () => ({
-        default: ctx.TpdsProjectFlusher,
-      })
-    )
 
     vi.doMock('../../../../app/src/Features/Tags/TagsHandler', () => ({
       default: ctx.TagsHandler,
@@ -397,11 +391,6 @@ describe('ProjectDuplicator', function () {
       )
     })
 
-    it('should flush the project to TPDS', function (ctx) {
-      ctx.TpdsProjectFlusher.promises.flushProjectToTpds.should.have.been.calledWith(
-        ctx.newProject._id
-      )
-    })
   })
 
   describe('without a root doc', function () {

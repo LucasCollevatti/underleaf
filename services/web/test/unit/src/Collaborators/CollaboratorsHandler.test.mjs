@@ -72,19 +72,7 @@ describe('CollaboratorsHandler', function () {
       Project,
     }))
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher',
-      () => ({
-        default: ctx.TpdsProjectFlusher,
-      })
-    )
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsUpdateSender',
-      () => ({
-        default: ctx.TpdsUpdateSender,
-      })
-    )
 
     vi.doMock('../../../../app/src/Features/Project/ProjectGetter', () => ({
       default: ctx.ProjectGetter,
@@ -188,11 +176,6 @@ describe('CollaboratorsHandler', function () {
         })
       })
 
-      it('should flush the project to the TPDS', function (ctx) {
-        expect(
-          ctx.TpdsProjectFlusher.promises.flushProjectToTpds
-        ).to.have.been.calledWith(ctx.project._id)
-      })
 
       it('should add the user as a contact for the adding user', function (ctx) {
         expect(ctx.ContactManager.addContact).to.have.been.calledWith(
@@ -275,11 +258,6 @@ describe('CollaboratorsHandler', function () {
         )
       })
 
-      it('should flush the project to the TPDS', function (ctx) {
-        expect(
-          ctx.TpdsProjectFlusher.promises.flushProjectToTpds
-        ).to.have.been.calledWith(ctx.project._id)
-      })
     })
 
     describe('as reviewer', function () {
@@ -312,11 +290,6 @@ describe('CollaboratorsHandler', function () {
           .should.equal(true)
       })
 
-      it('should flush the project to the TPDS', function (ctx) {
-        expect(
-          ctx.TpdsProjectFlusher.promises.flushProjectToTpds
-        ).to.have.been.calledWith(ctx.project._id)
-      })
     })
 
     describe('with invalid privilegeLevel', function () {
@@ -582,33 +555,8 @@ describe('CollaboratorsHandler', function () {
     })
 
     describe('successfully', function () {
-      it('should flush each project to the TPDS', async function (ctx) {
-        await ctx.CollaboratorsHandler.promises.transferProjects(
-          ctx.fromUserId,
-          ctx.toUserId
-        )
-        await sleep(10) // let the background tasks run
-        for (const project of ctx.projects) {
-          expect(
-            ctx.TpdsProjectFlusher.promises.flushProjectToTpds
-          ).to.have.been.calledWith(project._id)
-        }
-      })
     })
 
-    describe('when flushing to TPDS fails', function () {
-      it('should log an error but not fail', async function (ctx) {
-        ctx.TpdsProjectFlusher.promises.flushProjectToTpds.rejects(
-          new Error('oops')
-        )
-        await ctx.CollaboratorsHandler.promises.transferProjects(
-          ctx.fromUserId,
-          ctx.toUserId
-        )
-        await sleep(10) // let the background tasks run
-        expect(ctx.logger.err).toHaveBeenCalled()
-      })
-    })
   })
 
   describe('setCollaboratorPrivilegeLevel', function () {

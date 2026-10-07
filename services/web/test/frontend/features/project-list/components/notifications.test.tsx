@@ -19,8 +19,6 @@ import {
   notificationDropboxDuplicateProjectNames,
   notificationGroupInviteDefault,
   notificationIPMatchedAffiliation,
-  notificationProjectInvite,
-  notificationTPDSFileLimit,
   notificationsInstitution,
 } from '../fixtures/notifications-data'
 import Common from '../../../../../frontend/js/features/project-list/components/notifications/groups/common'
@@ -97,94 +95,7 @@ describe('<UserNotifications />', function () {
       fetchMock.removeRoutes().clearHistory()
     })
 
-    it('accepts project invite', async function () {
-      const reconfiguredNotification: DeepPartial<Notification> = {
-        _id: 1,
-        templateKey: 'notification_project_invite',
-      }
-      window.metaAttributesCache.set('ol-notifications', [
-        merge(cloneDeep(notificationProjectInvite), reconfiguredNotification),
-      ])
 
-      renderWithinProjectListProvider(Common)
-      await fetchMock.callHistory.flush(true)
-
-      const deleteMock = fetchMock.delete(
-        `/notifications/${reconfiguredNotification._id}`,
-        200
-      )
-      const acceptMock = fetchMock.post(
-        `/project/${notificationProjectInvite.messageOpts.projectId}/invite/token/${notificationProjectInvite.messageOpts.token}/accept`,
-        200
-      )
-
-      screen.getByRole('alert')
-      screen.getByText(/would like you to join/i)
-
-      const joinBtn = screen.getByRole('button', {
-        name: /join project/i,
-      }) as HTMLButtonElement
-
-      expect(joinBtn.disabled).to.be.false
-
-      fireEvent.click(joinBtn)
-
-      expect(joinBtn.disabled).to.be.true
-
-      await waitForElementToBeRemoved(() =>
-        screen.getByRole('button', { name: /joining/i })
-      )
-
-      expect(acceptMock.callHistory.called()).to.be.true
-      await screen.findByText(/joined/i)
-
-      expect(screen.queryByRole('button', { name: /join project/i })).to.be.null
-
-      const openProject = screen.getByRole('link', { name: /open project/i })
-      expect(openProject.getAttribute('href')).to.equal(
-        `/project/${notificationProjectInvite.messageOpts.projectId}`
-      )
-
-      const closeBtn = screen.getByRole('button', { name: /close/i })
-      fireEvent.click(closeBtn)
-
-      expect(deleteMock.callHistory.called()).to.be.true
-      expect(screen.queryByRole('alert')).to.be.null
-    })
-
-    it('fails to accept project invite', async function () {
-      const reconfiguredNotification: DeepPartial<Notification> = {
-        _id: 1,
-        templateKey: 'notification_project_invite',
-      }
-      window.metaAttributesCache.set('ol-notifications', [
-        merge(cloneDeep(notificationProjectInvite), reconfiguredNotification),
-      ])
-
-      renderWithinProjectListProvider(Common)
-      await fetchMock.callHistory.flush(true)
-      fetchMock.post(
-        `/project/${notificationProjectInvite.messageOpts.projectId}/invite/token/${notificationProjectInvite.messageOpts.token}/accept`,
-        500
-      )
-
-      screen.getByRole('alert')
-      screen.getByText(/would like you to join/i)
-
-      const joinBtn = screen.getByRole('button', {
-        name: /join project/i,
-      }) as HTMLButtonElement
-
-      fireEvent.click(joinBtn)
-
-      await waitForElementToBeRemoved(() =>
-        screen.getByRole('button', { name: /joining/i })
-      )
-
-      expect(fetchMock.callHistory.called()).to.be.true
-      screen.getByRole('button', { name: /join project/i })
-      expect(screen.queryByRole('button', { name: /open project/i })).to.be.null
-    })
 
     it('shows WFH2020', async function () {
       const reconfiguredNotification: DeepPartial<Notification> = {
@@ -287,30 +198,6 @@ describe('<UserNotifications />', function () {
       expect(screen.queryByRole('alert')).to.be.null
     })
 
-    it('shows tpds file limit', async function () {
-      const reconfiguredNotification: DeepPartial<Notification> = {
-        templateKey: 'notification_tpds_file_limit',
-      }
-      window.metaAttributesCache.set('ol-notifications', [
-        merge(cloneDeep(notificationTPDSFileLimit), reconfiguredNotification),
-      ])
-
-      renderWithinProjectListProvider(Common)
-      await fetchMock.callHistory.flush(true)
-
-      screen.getByRole('alert')
-      screen.getByText(/file limit/i)
-      screen.getByText(/You can't add more files to the project or sync it/i)
-
-      const accountSettings = screen.getByRole('link', {
-        name: /Open project/i,
-      })
-      expect(accountSettings.getAttribute('href')).to.equal('/project/123')
-      const closeBtn = screen.getByRole('button', { name: /close/i })
-      fireEvent.click(closeBtn)
-
-      expect(screen.queryByRole('alert')).to.be.null
-    })
 
     it('shows dropbox duplicate project names warning', async function () {
       const reconfiguredNotification: DeepPartial<Notification> = {

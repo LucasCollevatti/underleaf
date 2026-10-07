@@ -113,12 +113,6 @@ describe('OwnershipTransferHandler', function () {
       default: ctx.UserGetter,
     }))
 
-    vi.doMock(
-      '../../../../app/src/Features/ThirdPartyDataStore/TpdsProjectFlusher.mjs',
-      () => ({
-        default: ctx.TpdsProjectFlusher,
-      })
-    )
 
     vi.doMock(
       '../../../../app/src/Features/Project/ProjectAuditLogHandler.mjs',

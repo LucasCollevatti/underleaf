@@ -18,7 +18,6 @@ import ProjectGetter from './ProjectGetter.mjs'
 import ProjectLocator from './ProjectLocator.mjs'
 import ProjectOptionsHandler from './ProjectOptionsHandler.mjs'
 import SafePath from './SafePath.mjs'
-import TpdsProjectFlusher from '../ThirdPartyDataStore/TpdsProjectFlusher.mjs'
 import _ from 'lodash'
 import TagsHandler from '../Tags/TagsHandler.mjs'
 import ClsiCacheManager from '../Compile/ClsiCacheManager.mjs'
@@ -184,8 +183,6 @@ async function duplicate(
         newProject: { version: projectVersion },
       })
     }
-    await TpdsProjectFlusher.promises.flushProjectToTpds(newProject._id)
-
     if (tags?.length > 0) {
       await TagsHandler.promises.addProjectToTags(
         owner._id,

@@ -377,7 +377,7 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
         Settings.apis.thirdPartyDataStore?.dropboxAppName || 'Underleaf',
       ieeeBrandId: IEEE_BRAND_ID,
       hasAffiliationsFeature: Features.hasFeature('affiliations'),
-      hasLinkUrlFeature: Features.hasFeature('link-url'),
+      hasLinkUrlFeature: false,
       hasLinkedProjectFileFeature: Features.hasFeature('linked-project-file'),
       hasLinkedProjectOutputFileFeature: Features.hasFeature(
         'linked-project-output-file'
