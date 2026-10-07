@@ -1,8 +1,6 @@
 import { pipeline } from 'node:stream/promises'
 import Metrics from '@overleaf/metrics'
 import ProjectGetter from '../Project/ProjectGetter.mjs'
-import CompileManager from './CompileManager.mjs'
-import ClsiManager from './ClsiManager.mjs'
 import logger from '@overleaf/logger'
 import Settings from '@overleaf/settings'
 import Errors from '../Errors/Errors.js'
@@ -132,15 +130,19 @@ async function _syncTeX(
 ) {
   const userId = CompileController._getUserIdForCompile(req)
   try {
-    const body = await CompileManager.promises.syncTeX(projectId, userId, {
-      direction,
-      compileFromClsiCache: Features.hasFeature('saas'),
-      validatedOptions: {
-        ...validatedOptions,
-        editorId,
-        buildId,
+    const body = await UnderleafCompilerGateway.syncTeX({
+      projectId,
+      userId,
+      options: {
+        direction,
+        compileFromClsiCache: Features.hasFeature('saas'),
+        validatedOptions: {
+          ...validatedOptions,
+          editorId,
+          buildId,
+        },
+        clsiServerId,
       },
-      clsiServerId,
     })
     res.json(body)
   } catch (err) {
@@ -191,7 +193,7 @@ const compileSubmissionSchema = z.object({
   // This is the public compile-submission API used by external callers (see
   // modules/publish-modal/app/src/PublishModalRouter.mjs): the body is a
   // whole CLSI compile job spec ("resources" etc.) forwarded verbatim to
-  // ClsiManager.sendExternalRequest -- CLSI's own compileSchema
+  // the compiler service boundary -- CLSI's own compileSchema
   // (services/clsi/app/js/CompileController.js) is what actually validates
   // that job spec, so this is treated as a genuinely open map, letting the
   // few option flags below still be read out named without stripping the
@@ -598,7 +600,7 @@ const _CompileController = {
     const { params } = parseReq(req, stopCompileSchema, { logOnly: true })
     const projectId = params.Project_id
     const userId = SessionManager.getLoggedInUserId(req.session)
-    await CompileManager.promises.stopCompile(projectId, userId)
+    await UnderleafCompilerGateway.stopCompile({ projectId, userId })
     res.sendStatus(200)
   },
 
@@ -628,11 +630,11 @@ const _CompileController = {
       Settings.apis.clsi.submissionCompileBackendClass
     options.timeout = body?.timeout || Settings.defaultFeatures.compileTimeout
     const { status, outputFiles, clsiServerId, validationProblems } =
-      await ClsiManager.promises.sendExternalRequest(
+      await UnderleafCompilerGateway.compileSubmission({
         submissionId,
         body,
-        options
-      )
+        options,
+      })
     res.json({
       status,
       outputFiles,
@@ -709,11 +711,11 @@ const _CompileController = {
       fallbackSchema: deleteAuxFilesFallbackSchema,
     })
     const userId = CompileController._getUserIdForCompile(req)
-    await CompileManager.promises.deleteAuxFiles(
+    await UnderleafCompilerGateway.deleteAuxFiles({
       projectId,
       userId,
-      clsiserverid
-    )
+      clsiServerId: clsiserverid,
+    })
     res.sendStatus(200)
   },
 
@@ -726,9 +728,13 @@ const _CompileController = {
 
     let outputFiles, clsiServerId, buildId
     try {
-      ;({ outputFiles, clsiServerId, buildId } = await CompileManager.promises
-        // pass userId as null, since templates are an "anonymous" compile
-        .compile(projectId, null, {}))
+      ;({ outputFiles, clsiServerId, buildId } =
+        await UnderleafCompilerGateway.compile({
+          projectId,
+          // Templates are anonymous compiles.
+          userId: null,
+          options: {},
+        }))
     } catch (err) {
       logger.err(
         { err, projectId },
@@ -910,13 +916,13 @@ const _CompileController = {
     const { clsiserverid, rootResourcePath } = query
     const userId = CompileController._getUserIdForCompile(req)
 
-    const body = await CompileManager.promises.wordCount(
+    const body = await UnderleafCompilerGateway.wordCount({
       projectId,
       userId,
       file,
-      clsiserverid,
-      rootResourcePath
-    )
+      clsiServerId: clsiserverid,
+      rootResourcePath,
+    })
     res.json(body)
   },
 }
@@ -933,9 +939,9 @@ async function _downloadFromClsi(
   res
 ) {
   const { compileBackendClass } =
-    await CompileManager.promises.getProjectCompileLimits(
-      projectIdOrSubmissionId
-    )
+    await UnderleafCompilerGateway.getProjectCompileLimits({
+      projectId: projectIdOrSubmissionId,
+    })
   const url = getOutputZipURL(
     projectIdOrSubmissionId,
     userId,

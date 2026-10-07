@@ -1,18 +1,13 @@
-import CompileManager from './CompileManager.mjs'
+import { createCompilerService } from './CompilerService.mjs'
+import LegacyCompilerClient from './LegacyCompilerClient.mjs'
 
 /**
- * Internal boundary between the web application and the compile backend.
+ * Stable boundary between the web application and compilation.
  *
- * The gateway accepts a request object instead of exposing CompileManager's
- * argument order to callers. This keeps the web layer independent from the
- * current CLSI implementation while preserving the existing result shape for
- * the editor and output handlers.
+ * The legacy adapter intentionally remains behind this boundary for this
+ * commit. The next step can swap the transport/runtime without changing
+ * controller call sites or the request/result contract.
  */
-const UnderleafCompilerGateway = {
-  async compile({ projectId, userId, options }) {
-    return await CompileManager.promises.compile(projectId, userId, options)
-  },
-}
+const UnderleafCompilerGateway = createCompilerService(LegacyCompilerClient)
 
 export default UnderleafCompilerGateway
-
