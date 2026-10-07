@@ -1,19 +1,44 @@
 # Third-party notices
 
-Underleaf includes and depends on software distributed by third parties.
+Underleaf includes and depends on software, fonts, dictionaries, assets and
+other material distributed by third parties.
 
-The imported Overleaf Community Edition source includes package-level license
-files and notices. Those files remain alongside their respective packages.
-The root `LICENSE` file is the GNU Affero General Public License v3.0 used by
-the imported project.
+The root `LICENSE` is GNU Affero General Public License v3.0. Underleaf is a
+modified descendant of Overleaf Community Edition; origin and retained
+attribution are documented in `docs/ORIGIN.md`.
 
-When adding or updating a dependency:
+## Machine-readable inventory
 
-- keep its license and notice information;
-- preserve package-level `LICENSE` files;
-- record attribution required by the dependency;
-- do not remove copyright notices from imported source files.
+`THIRD_PARTY_NOTICES.md` is not the dependency inventory. The authoritative
+build-time inventory is generated from the installed dependency graph:
 
-This document is the root entry point for the notices. It must be expanded when
-Underleaf adds dependencies whose attribution is not already present beside the
-package that provides them.
+- `artifacts/sbom.cdx.json` — CycloneDX 1.6 SBOM;
+- `artifacts/third-party-licenses.csv` — package, version, license/SPDX field
+  and repository information.
+
+Generate them with `yarn node scripts/compliance/generate-sbom.mjs` after an
+immutable install. CI uploads both artifacts for review.
+
+## Preservation requirements
+
+When adding, updating, vendoring or removing third-party material:
+
+- preserve package-level and vendored `LICENSE`, `COPYING`, copyright and
+  notice files;
+- preserve license notices for fonts, dictionaries and other non-code assets;
+- keep required attribution with the redistributed material;
+- do not treat a package-manager license string as permission to delete an
+  upstream license file;
+- investigate `NOASSERTION`, `UNLICENSED`, custom and ambiguous
+  multi-license expressions before a public release;
+- record any approved exception with the exact package/version, license,
+  rationale and reviewer.
+
+## Corresponding Source
+
+Public deployments must make the Corresponding Source for the deployed
+AGPL-covered revision available to remote users in the manner required by
+AGPLv3 section 13. That source must include Underleaf modifications and the
+scripts/configuration needed to build and install that revision.
+
+See `docs/COMPLIANCE.md` for the generation and review procedure.

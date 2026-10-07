@@ -1,0 +1,31 @@
+name: Compliance inventory
+
+on:
+  push:
+    branches:
+      - refactor/underleaf-consolidation
+
+permissions:
+  contents: write
+
+jobs:
+  canonical-lock:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/underleaf-consolidation
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: corepack enable
+      - name: Regenerate canonical Yarn lockfile
+        run: yarn install --mode=update-lockfile
+      - name: Publish temporary canonical lock
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git commit -m "chore(temp): canonicalize yarn lock [skip ci]"
+          git push origin HEAD:refactor/underleaf-consolidation
