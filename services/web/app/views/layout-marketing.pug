@@ -24,7 +24,6 @@ block body
 			include layout/fat-footer
 
 	if !settings.underleaf && typeof suppressPugCookieBanner == 'undefined'
-		include _cookie_banner
 
 	if !settings.underleaf
 		!= moduleIncludes('contactModal-marketing', locals)

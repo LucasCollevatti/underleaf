@@ -1,11 +1,10 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode } from 'react'
 import {
   ProjectListProvider,
   useProjectListContext,
 } from '../context/project-list-context'
 import { SplitTestProvider } from '@/shared/context/split-test-context'
 import { ColorPickerProvider } from '../context/color-picker-context'
-import * as eventTracking from '../../../infrastructure/event-tracking'
 import { useTranslation } from 'react-i18next'
 import useWaitForI18n from '../../../shared/hooks/use-wait-for-i18n'
 import LoadingBranded from '../../../shared/components/loading-branded'
@@ -19,7 +18,6 @@ import Footer from '@/shared/components/footer/footer'
 import WelcomePageContent from '@/features/project-list/components/welcome-page-content'
 import { ProjectListDsNav } from '@/features/project-list/components/project-list-ds-nav'
 import { DsNavStyleProvider } from '@/features/project-list/components/use-is-ds-nav'
-import CookieBanner from '@/shared/components/cookie-banner'
 import useThemedPage from '@/shared/hooks/use-themed-page'
 import { UserSettingsProvider } from '@/shared/context/user-settings-context'
 import { TutorialProvider } from '@/shared/context/tutorial-context'
@@ -96,9 +94,6 @@ function ProjectListPageContent() {
     useProjectListContext()
   const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
 
-  useEffect(() => {
-    eventTracking.sendMB('loads_v2_dash', { page: 'projects' })
-  }, [])
 
   const { t } = useTranslation()
 
@@ -126,7 +121,6 @@ function ProjectListPageContent() {
         <DefaultPageContentWrapper>
           <WelcomePageContent />
         </DefaultPageContentWrapper>
-        <CookieBanner />
       </>
     )
   }

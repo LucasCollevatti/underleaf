@@ -43,7 +43,6 @@ import ContactRouter from './Features/Contacts/ContactRouter.mjs'
 import ReferencesController from './Features/References/ReferencesController.mjs'
 import AuthorizationMiddleware from './Features/Authorization/AuthorizationMiddleware.mjs'
 import BetaProgramController from './Features/BetaProgram/BetaProgramController.mjs'
-import AnalyticsRouter from './Features/Analytics/AnalyticsRouter.mjs'
 import MetaController from './Features/Metadata/MetaController.mjs'
 import TokenAccessController from './Features/TokenAccess/TokenAccessController.mjs'
 import TokenAccessRouter from './Features/TokenAccess/TokenAccessRouter.mjs'
@@ -51,7 +50,6 @@ import LinkedFilesRouter from './Features/LinkedFiles/LinkedFilesRouter.mjs'
 import TemplatesRouter from './Features/Templates/TemplatesRouter.mjs'
 import SystemMessageController from './Features/SystemMessages/SystemMessageController.mjs'
 import AnalyticsRegistrationSourceMiddleware from './Features/Analytics/AnalyticsRegistrationSourceMiddleware.mjs'
-import AnalyticsUTMTrackingMiddleware from './Features/Analytics/AnalyticsUTMTrackingMiddleware.mjs'
 import CaptchaMiddleware from './Features/Captcha/CaptchaMiddleware.mjs'
 import UnsupportedBrowserMiddleware from './infrastructure/UnsupportedBrowserMiddleware.mjs'
 import logger from '@overleaf/logger'
@@ -200,8 +198,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     webRouter.all('*', AuthenticationController.requireGlobalLogin)
   }
 
-  webRouter.get('*', AnalyticsRegistrationSourceMiddleware.setInbound())
-  webRouter.get('*', AnalyticsUTMTrackingMiddleware.recordUTMTags())
 
   if (process.env.NODE_ENV === 'development' && global.__coverage__) {
     // Expose code coverage via an endpoint when running with code coverage enabled
@@ -291,7 +287,6 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
   UploadsRouter.apply(webRouter, privateApiRouter)
   StaticPagesRouter.apply(webRouter, privateApiRouter)
   ContactRouter.apply(webRouter, privateApiRouter)
-  AnalyticsRouter.apply(webRouter, privateApiRouter, publicApiRouter)
   LinkedFilesRouter.apply(webRouter, privateApiRouter, publicApiRouter)
   TemplatesRouter.apply(webRouter)
   TokenAccessRouter.apply(webRouter)

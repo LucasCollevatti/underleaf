@@ -10,7 +10,6 @@ import PrivilegeLevels from '../Authorization/PrivilegeLevels.mjs'
 import SessionManager from '../Authentication/SessionManager.mjs'
 import Sources from '../Authorization/Sources.mjs'
 import UserGetter from '../User/UserGetter.mjs'
-import SurveyHandler from '../Survey/SurveyHandler.mjs'
 import TagsHandler from '../Tags/TagsHandler.mjs'
 import { expressify } from '@overleaf/promise-utils'
 import logger from '@overleaf/logger'
@@ -158,7 +157,6 @@ async function projectListPage(req, res, next) {
   let usersGroupSubscriptions = []
   /** @type {any[]} */
   let usersManagedGroupSubscriptions = []
-  let survey
   let userIsMemberOfGroupSubscription = false
   /** @type {any[]} */
   let groupSubscriptionsPendingEnrollment = []
@@ -265,11 +263,6 @@ async function projectListPage(req, res, next) {
       )
     }
 
-    try {
-      survey = await SurveyHandler.promises.getSurvey(userId)
-    } catch (error) {
-      logger.err({ err: error, userId }, 'Failed to load the active survey')
-    }
 
     onboardingDataCollection = await OnboardingDataCollection.findById(
       userId,
@@ -646,7 +639,6 @@ async function projectListPage(req, res, next) {
     initialTheme: UserSettingsHelper.getInitialTheme(userSettings.overallTheme),
     reconfirmedViaSAML,
     allInReconfirmNotificationPeriods,
-    survey,
     tags,
     portalTemplates,
     prefetchedProjectsBlob,
