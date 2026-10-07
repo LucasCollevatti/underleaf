@@ -3,8 +3,8 @@
 Date: 2026-10-07
 
 This file records the security baseline established after the SaaS/enterprise
-surface reduction. It is not a substitute for the automated audit in
-`.github/workflows/security-audit.yml`.
+surface reduction. Security checks are run explicitly on a developer or
+release machine; the repository does not rely on GitHub Actions for auditing.
 
 ## Dependency findings
 
@@ -17,8 +17,8 @@ surface reduction. It is not a substitute for the automated audit in
   import them. Removing them would make the current tree internally
   inconsistent; removal belongs to a later deletion of the remaining
   subscription backend.
-- The repository CI now runs `yarn npm audit --all --recursive --severity
-  moderate` against the immutable lockfile.
+- Run `yarn npm audit --all --recursive --severity moderate` locally against
+the immutable lockfile when dependencies change and before release.
 
 ## Runtime findings
 
@@ -50,7 +50,7 @@ version numbers are old.
 
 ## Accepted residual risk
 
-The audit workflow fails on fixable HIGH/CRITICAL vulnerabilities in the
-runtime database images and on MODERATE-or-higher npm advisories. A temporary
-exception must identify the advisory/CVE, affected component, exposure,
+Local release review must treat fixable HIGH/CRITICAL vulnerabilities in the
+runtime database images and MODERATE-or-higher npm advisories as blocking unless
+an explicit temporary exception must identify the advisory/CVE, affected component, exposure,
 mitigation, owner, and expiry date in this file before being accepted.

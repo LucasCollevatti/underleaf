@@ -16,8 +16,8 @@ build-time inventory is generated from the installed dependency graph:
 - `artifacts/third-party-licenses.csv` — package, version, license/SPDX field
   and repository information.
 
-Generate them with `yarn node scripts/compliance/generate-sbom.mjs` after an
-immutable install. CI uploads both artifacts for review.
+Generate them locally with `yarn node scripts/compliance/generate-sbom.mjs` after
+an immutable install and review the resulting artifacts before release.
 
 ## Preservation requirements
 

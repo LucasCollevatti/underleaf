@@ -19,8 +19,7 @@ The command generates:
 - `artifacts/third-party-licenses.csv`: package/version/license/repository
   inventory using package metadata as the SPDX-oriented source field.
 
-CI generates and uploads both artifacts on every relevant push and pull
-request. Missing license metadata (`NOASSERTION`) and `UNLICENSED` packages
+Generate both artifacts locally when preparing a release or reviewing dependency changes. Missing license metadata (`NOASSERTION`) and `UNLICENSED` packages
 cause the generator to fail so they cannot silently pass a public-release
 review.
 
