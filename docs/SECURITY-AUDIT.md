@@ -36,13 +36,16 @@ are still referenced by lockfile entries, so they are retained. A patch may be
 deleted only together with every matching lockfile descriptor and after
 `yarn install --immutable` plus the relevant tests pass.
 
-## server-ce hotfixes
+## server-ce provenance and upgrades
 
-`server-ce/hotfix` is treated as imported upgrade/provenance material rather
-than application runtime code. It is not copied by the current application or
-compiler Dockerfiles. The directories are therefore retained for upgrade
-history and provenance. They must not be bulk-deleted solely because their
-version numbers are old.
+The historical `server-ce/hotfix/` distribution tree and its patch-import/build
+helpers are not part of the supported Underleaf runtime or release process and
+have been removed from HEAD. Provenance remains in Git history, the imported
+snapshot/tag, `docs/ORIGIN.md`, `LICENSE` and `THIRD_PARTY_NOTICES.md`.
+
+Underleaf releases are built through the root `Makefile` and supported Compose
+configuration. Legacy ShareLaTeX-to-Overleaf migration checks and the upstream
+Google Cloud Build pipeline are not supported deployment mechanisms.
 
 ## Accepted residual risk
 
