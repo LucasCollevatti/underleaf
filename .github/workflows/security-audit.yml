@@ -1,0 +1,46 @@
+name: Security audit
+
+on:
+  push:
+    branches:
+      - main
+      - refactor/underleaf-consolidation
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Audit npm dependencies
+        run: yarn npm audit --all --recursive --severity moderate
+
+  containers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - mongo:7.0.43
+          - redis:6.2.21-alpine
+    steps:
+      - name: Scan runtime image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ matrix.image }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
