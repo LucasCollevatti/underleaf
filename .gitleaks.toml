@@ -1,0 +1,12 @@
+title = "Underleaf secret scanning policy"
+
+[extend]
+useDefault = true
+
+# Keep allowlists narrow and evidence-based. Do not allowlist entire directories,
+# file extensions, or generic credential-shaped patterns.
+[allowlist]
+description = "Documented non-secret placeholders only"
+regexes = [
+  '''UNDERLEAF_(INVITE_TOKEN|SESSION)_SECRET=$''',
+]
