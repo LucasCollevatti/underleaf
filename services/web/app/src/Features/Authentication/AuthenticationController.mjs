@@ -590,7 +590,7 @@ function _afterLoginSessionSetup(req, user, callback) {
       }
       UserSessionsManager.trackSession(user, req.sessionID, function () {})
       if (!req.deviceHistory) {
-        // Captcha disabled or SSO-based login.
+        // Captcha disabled.
         return callback()
       }
       req.deviceHistory.add(user.username)
@@ -615,9 +615,7 @@ function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
   AuthenticationController._recordSuccessfulLogin(user._id, () => {})
   AuthenticationController.ipMatchCheck(req, user)
   Analytics.recordEventForMongoUserInBackground(user, 'user-logged-in', {
-    source: req.session.saml
-      ? 'saml'
-      : req.user_info?.auth_provider || 'username-password',
+    source: req.user_info?.auth_provider || 'username-password',
   })
   Analytics.identifyUser(
     user._id,

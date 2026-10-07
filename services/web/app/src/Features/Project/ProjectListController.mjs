@@ -67,37 +67,6 @@ const getProjectsJsonSchema = z.object({
  */
 
 /**
- * @param {Affiliation} affiliation
- * @param {any} session
- * @param {string[]} linkedInstitutionIds
- * @returns {boolean}
- * @private
- */
-const _ssoAvailable = (affiliation, session, linkedInstitutionIds) => {
-  if (!affiliation.institution) return false
-
-  // institution.confirmed is for the domain being confirmed, not the email
-  // Do not show SSO UI for unconfirmed domains
-  if (!affiliation.institution.confirmed) return false
-
-  // If ssoEnabled = true and group.domainCaptureEnabled = true
-  // then Commons is migrating to group subscription and we do not want to prompt
-  // linking through Commons SSO
-  if (affiliation?.group?.domainCaptureEnabled) return false
-
-  // Could have multiple emails at the same institution, and if any are
-  // linked to the institution then do not show notification for others
-  if (
-    linkedInstitutionIds.indexOf(affiliation.institution.id.toString()) === -1
-  ) {
-    if (affiliation.institution.ssoEnabled) return true
-    if (affiliation.institution.ssoBeta && session.samlBeta) return true
-    return false
-  }
-  return false
-}
-
-/**
  * @param {Affiliation[]} affiliations
  * @returns {Array<{ name: string, url: string }>}
  */
@@ -348,107 +317,6 @@ async function projectListPage(req, res, next) {
     )
   }
 
-  const notificationsInstitution = []
-  // Institution and group SSO Notifications
-  let groupSsoSetupSuccess
-  let viaDomainCapture
-  let joinedGroupName = ''
-  let reconfirmedViaSAML
-  if (Features.hasFeature('saml')) {
-    reconfirmedViaSAML = _.get(req.session, ['saml', 'reconfirmed'])
-    const samlSession = req.session.saml
-    // Notification: SSO Available
-    /** @type {string[]} */
-    const linkedInstitutionIds = []
-    userEmails.forEach(email => {
-      if (email.samlProviderId) {
-        linkedInstitutionIds.push(email.samlProviderId)
-      }
-    })
-    if (Array.isArray(userAffiliations)) {
-      userAffiliations.forEach(affiliation => {
-        if (_ssoAvailable(affiliation, req.session, linkedInstitutionIds)) {
-          notificationsInstitution.push({
-            email: affiliation.email,
-            institutionId: affiliation.institution.id,
-            institutionName: affiliation.institution.name,
-            templateKey: 'notification_institution_sso_available',
-          })
-        }
-      })
-    }
-
-    if (samlSession) {
-      // Notification institution SSO: After SSO Linked
-      if (samlSession.linked) {
-        let templateKey = 'notification_institution_sso_linked'
-
-        if (
-          samlSession.userCreatedViaDomainCapture &&
-          samlSession.managedUsersEnabled
-        ) {
-          templateKey =
-            'notification_account_created_via_group_domain_capture_and_managed_users_enabled'
-        } else if (samlSession.domainCaptureEnabled) {
-          templateKey = 'notification_group_sso_linked'
-        }
-        notificationsInstitution.push({
-          email: samlSession.institutionEmail,
-          institutionName:
-            samlSession.linked.universityName ||
-            samlSession.linked.providerName,
-          templateKey,
-        })
-      }
-
-      // Notification group SSO: After SSO Linked
-      if (samlSession.linkedGroup) {
-        groupSsoSetupSuccess = true
-        viaDomainCapture = samlSession.domainCaptureJoin
-        joinedGroupName = samlSession.universityName
-      }
-
-      // Notification institution SSO: After SSO Linked or Logging in
-      // The requested email does not match primary email returned from
-      // the institution
-      if (
-        samlSession.requestedEmail &&
-        samlSession.emailNonCanonical &&
-        !samlSession.error
-      ) {
-        notificationsInstitution.push({
-          institutionEmail: samlSession.emailNonCanonical,
-          requestedEmail: samlSession.requestedEmail,
-          templateKey: 'notification_institution_sso_non_canonical',
-        })
-      }
-
-      // Notification institution SSO: Tried to register, but account already existed
-      // registerIntercept is set before the institution callback.
-      // institutionEmail is set after institution callback.
-      // Check for both in case SSO flow was abandoned
-      if (
-        samlSession.registerIntercept &&
-        samlSession.institutionEmail &&
-        !samlSession.error
-      ) {
-        notificationsInstitution.push({
-          email: samlSession.institutionEmail,
-          templateKey: 'notification_institution_sso_already_registered',
-        })
-      }
-
-      // Notification: When there is a session error
-      if (samlSession.error) {
-        notificationsInstitution.push({
-          templateKey: 'notification_institution_sso_error',
-          error: samlSession.error,
-        })
-      }
-    }
-    delete req.session.saml
-  }
-
   const prefetchedProjectsBlob = await projectsBlobPending
   Metrics.inc('project-list-prefetch-projects', 1, {
     status: prefetchedProjectsBlob ? 'success' : 'error',
@@ -631,13 +499,11 @@ async function projectListPage(req, res, next) {
     title: 'your_projects',
     usersBestSubscription,
     notifications,
-    notificationsInstitution,
     user,
     userAffiliations,
     userEmails,
     userSettings,
     initialTheme: UserSettingsHelper.getInitialTheme(userSettings.overallTheme),
-    reconfirmedViaSAML,
     allInReconfirmNotificationPeriods,
     tags,
     portalTemplates,
@@ -650,9 +516,6 @@ async function projectListPage(req, res, next) {
     recommendedCurrency,
     showInrGeoBanner,
     projectDashboardReact: true, // used in navbar
-    groupSsoSetupSuccess,
-    joinedGroupName,
-    viaDomainCapture,
     groupSubscriptionsPendingEnrollment:
       groupSubscriptionsPendingEnrollment.map(subscription => ({
         groupId: subscription._id,

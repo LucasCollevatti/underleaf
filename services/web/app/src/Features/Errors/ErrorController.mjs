@@ -107,11 +107,6 @@ async function handleError(error, req, res, next) {
       res.status(422)
       plainTextResponse(res, error.message)
     }
-  } else if (error instanceof Errors.SAMLSessionDataMissing) {
-    req.logger.setLevel('warn')
-    if (shouldSendErrorResponse) {
-      HttpErrorHandler.badRequest(req, res, error.message)
-    }
   } else if (error instanceof Errors.FileTooLargeError) {
     req.logger.setLevel('warn')
     if (shouldSendErrorResponse) {

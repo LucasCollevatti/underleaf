@@ -58,15 +58,11 @@ const Features = {
         return Boolean(Settings.enableGithubSync)
       case 'git-bridge':
         return !Settings.underleaf && Boolean(Settings.enableGitBridge)
-      case 'oauth':
-        return false
       case 'templates-server-pro':
         return Boolean(Settings.templates?.user_id)
       case 'affiliations':
       case 'analytics':
         return Boolean(_.get(Settings, ['apis', 'v1', 'url']))
-      case 'saml':
-        return false
       case 'linked-project-file':
         return Boolean(Settings.enabledLinkedFileTypes.includes('project_file'))
       case 'linked-project-output-file':

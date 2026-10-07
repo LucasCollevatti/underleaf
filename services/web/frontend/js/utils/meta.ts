@@ -4,7 +4,6 @@ import type { UnderleafSystemPageData } from '../../../types/underleaf-system'
 import { User as MinimalUser } from '../../../types/admin/user'
 import { User as ManagedUser } from '../../../types/group-management/user'
 import { UserSettings } from '../../../types/user-settings'
-import { OAuthProviders } from '../../../types/oauth-providers'
 import { ExposedSettings } from '../../../types/exposed-settings'
 import {
   type ImageName,
@@ -41,21 +40,13 @@ import { ValidationStatus } from '../../../types/group-management/validation'
 import { ManagedInstitution } from '../../../types/subscription/dashboard/managed-institution'
 import { OnboardingFormData } from '../../../types/onboarding'
 import { GroupSSOTestResult } from '../../../modules/group-settings/frontend/js/utils/types'
-import {
-  AccessToken,
-  InstitutionLink,
-  SAMLError,
-} from '../../../types/settings-page'
+import { AccessToken, InstitutionLink } from '../../../types/settings-page'
 import { SuggestedLanguage } from '../../../types/system-message'
 import type { TeamInvite } from '../../../types/team-invite'
 import {
   GroupPlans,
   GroupPlansData,
 } from '../../../types/subscription/dashboard/group-plans'
-import {
-  GroupSSOLinkingStatus,
-  SSOConfig,
-} from '../../../types/subscription/sso'
 import { PasswordStrengthOptions } from '../../../types/password-strength-options'
 import { Subscription as ProjectDashboardSubscription } from '../../../types/project/dashboard/subscription'
 import { ThirdPartyIds } from '../../../types/third-party-ids'
@@ -102,8 +93,6 @@ export interface Meta {
   'ol-cannot-delete-own-account': boolean
   'ol-cannot-join-subscription': boolean
   'ol-cannot-leave-group-subscription': boolean
-  'ol-cannot-link-google-sso': boolean
-  'ol-cannot-link-other-third-party-sso': boolean
   'ol-cannot-reactivate-subscription': boolean
   'ol-cannot-use-ai': boolean
   'ol-capabilities': Array<'dropbox' | 'chat' | 'use-ai' | 'link-sharing'>
@@ -154,18 +143,13 @@ export interface Meta {
   'ol-groupPlans': GroupPlans
   'ol-groupPlansData': GroupPlansData
   'ol-groupPolicy': GroupPolicy
-  'ol-groupSSOActive': boolean
-  'ol-groupSSOConfig'?: SSOConfig
-  'ol-groupSSOTestResult': GroupSSOTestResult
   'ol-groupSettingsAdvertisedFor': string[]
   'ol-groupSettingsEnabledFor': string[]
   'ol-groupSize': number
-  'ol-groupSsoSetupSuccess': boolean
   'ol-groupSubscriptionsPendingEnrollment': PendingGroupSubscriptionEnrollment[]
   'ol-groupsAndEnterpriseBannerVariant': GroupsAndEnterpriseBannerVariant
   'ol-hasAiAssistViaWritefull': boolean
   'ol-hasAiFreeTier': boolean
-  'ol-hasGroupSSOFeature': boolean
   'ol-hasIndividualPaidSubscription': boolean
   'ol-hasManagedUsersFeature': boolean
   'ol-hasModifyGroupManagerAccess': boolean
@@ -236,7 +220,6 @@ export interface Meta {
   'ol-maxDocLength': number
   'ol-maxReconnectGracefullyIntervalMs': number
   'ol-memberGroupSubscriptions': MemberGroupSubscription[]
-  'ol-memberOfSSOEnabledGroups': GroupSSOLinkingStatus[]
   'ol-members': MinimalUser[]
   'ol-multiple-group-subscriptions': Array<
     Pick<GroupSubscription, 'teamName'> & { id: string; email: string }
@@ -246,7 +229,6 @@ export interface Meta {
   'ol-no-single-dollar': boolean
   'ol-notifications': NotificationType[]
   'ol-notificationsInstitution': InstitutionType[]
-  'ol-oauthProviders': OAuthProviders
   'ol-odcData': OnboardingFormData
   'ol-otMigrationStage': number
   'ol-overallThemes': OverallThemeMeta[]
@@ -277,7 +259,6 @@ export interface Meta {
   'ol-purchaseReferrer': string
   'ol-recommendedCurrency': CurrencyCode
   'ol-reconfirmationRemoveEmail': string
-  'ol-reconfirmedViaSAML': string
   'ol-recurlyAccount':
     | {
         code: string
@@ -300,10 +281,8 @@ export interface Meta {
   }
   'ol-referenceLinkingErrorMessage': string
   'ol-ro-mirror-on-client-no-local-storage': boolean
-  'ol-samlError': SAMLError | undefined
   'ol-script-log': ScriptLogType
   'ol-script-logs': ScriptLogType[]
-  'ol-settingsGroupSSO': { enabled: boolean } | undefined
   'ol-settingsPlans': Plan[]
   'ol-sharedWorkspaceEnabled': boolean
   'ol-sharingPermissions': SharingPermissions
@@ -324,9 +303,6 @@ export interface Meta {
   'ol-splitTestInfo': { [name: string]: SplitTestInfo }
   'ol-splitTestName': string
   'ol-splitTestVariants': { [name: string]: string }
-  'ol-ssoDisabled': boolean
-  'ol-ssoErrorMessage': string
-  'ol-ssoInitPath': string
   'ol-standardPlanPricing': {
     monthly?: number
     annual?: number

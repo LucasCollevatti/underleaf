@@ -18,8 +18,6 @@ export type ExposedSettings = {
   hasLinkUrlFeature: boolean
   hasLinkedProjectFileFeature: boolean
   hasLinkedProjectOutputFileFeature: boolean
-  hasSamlBeta?: boolean
-  hasSamlFeature: boolean
   hotjarId?: string
   hotjarVersion?: string
   ieeeBrandId: number
@@ -40,7 +38,6 @@ export type ExposedSettings = {
   recaptchaSiteKeyV3?: string
   recaptchaSiteKey?: string
   recaptchaEnterpriseSiteKey?: string
-  samlInitPath?: string
   sentryAllowedOriginRegex: string
   sentryDsn?: string
   sentryEnvironment?: string

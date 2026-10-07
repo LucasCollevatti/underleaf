@@ -376,10 +376,7 @@ export default async function (webRouter, privateApiRouter, publicApiRouter) {
       dropboxAppName:
         Settings.apis.thirdPartyDataStore?.dropboxAppName || 'Underleaf',
       ieeeBrandId: IEEE_BRAND_ID,
-      hasSamlBeta: req.session.samlBeta,
       hasAffiliationsFeature: Features.hasFeature('affiliations'),
-      hasSamlFeature: Features.hasFeature('saml'),
-      samlInitPath: _.get(Settings, ['saml', 'ukamf', 'initPath']),
       hasLinkUrlFeature: Features.hasFeature('link-url'),
       hasLinkedProjectFileFeature: Features.hasFeature('linked-project-file'),
       hasLinkedProjectOutputFileFeature: Features.hasFeature(
