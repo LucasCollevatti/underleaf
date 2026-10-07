@@ -2,33 +2,34 @@ COMPOSE ?= docker compose
 DOCKER ?= docker
 ENV_FILE ?= .env
 COMPOSE_FILES ?= -f compose.yaml
-WEB_BASE_IMAGE ?= underleaf/base:web
-WEB_BASE_UPSTREAM ?= sharelatex/sharelatex-base:latest
+BASE_IMAGE ?= underleaf/base:local
 
-.PHONY: config build-base build-web-base build-web web dev test up down logs health backup restore
+.PHONY: config require-base build-base build-web web dev test up down logs health backup restore
 
 config:
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) config --quiet
 
+require-base:
+	@$(DOCKER) image inspect $(BASE_IMAGE) >/dev/null 2>&1 || { \
+		echo "Missing required base image: $(BASE_IMAGE)" >&2; \
+		echo "Build it once with: make build-base" >&2; \
+		echo "Then rebuild only the app with: make web" >&2; \
+		exit 1; \
+	}
+
 build-base:
-	$(DOCKER) build --file server-ce/Dockerfile-base --tag underleaf/base:local .
+	$(DOCKER) build --file server-ce/Dockerfile-base --tag $(BASE_IMAGE) .
 
-build-web-base:
-	$(DOCKER) build \
-		--file server-ce/Dockerfile-web-base \
-		--build-arg OVERLEAF_WEB_BASE_TAG=$(WEB_BASE_UPSTREAM) \
-		--tag $(WEB_BASE_IMAGE) \
-		.
-
-build-web: build-web-base
-	UNDERLEAF_BASE_IMAGE=$(WEB_BASE_IMAGE) \
+build-web: require-base
+	UNDERLEAF_BASE_IMAGE=$(BASE_IMAGE) \
 		$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app
 
 web: build-web
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up -d --no-deps app
 
 build: build-base
-	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app
+	UNDERLEAF_BASE_IMAGE=$(BASE_IMAGE) \
+		$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app
 
 up:
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up -d
