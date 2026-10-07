@@ -1,0 +1,64 @@
+- const underleafSidebarUser = getSessionUser()
+- const underleafSidebarAdmin = hasAdminAccess()
+- const underleafSidebarTheme = typeof initialTheme !== 'undefined' ? initialTheme : 'dark'
+- const underleafSidebarDisplayName = underleafSidebarUser && (underleafSidebarUser.displayName || underleafSidebarUser.username)
+- const underleafSidebarInitials = underleafSidebarDisplayName ? underleafSidebarDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() : 'U'
+
+aside.project-list-sidebar-wrapper-react.underleaf-sidebar
+	.underleaf-sidebar-brand
+		a(href=underleafSidebarUser ? '/project' : '/login' aria-label='Underleaf')
+			img.underleaf-brand.underleaf-static-brand-light(src='/underleaf-wordmark.svg?v=2026-10-07-brand-5' alt='Underleaf' width='150' height='28')
+			img.underleaf-brand.underleaf-static-brand-dark(src='/underleaf-wordmark-dark.svg?v=2026-10-07-brand-5' alt='Underleaf' width='150' height='28')
+	.underleaf-sidebar-sections
+		nav.underleaf-sidebar-navigation(aria-label=translate('primary'))
+			.underleaf-sidebar-project-navigation
+				a.ds-nav-page-switcher-item(href=underleafSidebarUser ? '/project' : '/login')
+					span.material-symbols folder
+					span.ds-nav-page-switcher-item-label= translate('projects')
+				if underleafSidebarUser
+					a.ds-nav-page-switcher-item(href='/project?filter=owned')
+						span.ds-nav-page-switcher-item-label= translate('your_projects')
+					a.ds-nav-page-switcher-item(href='/project?filter=shared')
+						span.ds-nav-page-switcher-item-label= translate('shared_with_you')
+					a.ds-nav-page-switcher-item(href='/project?filter=archived')
+						span.ds-nav-page-switcher-item-label= translate('archived_projects')
+					a.ds-nav-page-switcher-item(href='/project?filter=trashed')
+						span.ds-nav-page-switcher-item-label= translate('trash')
+					.underleaf-sidebar-static-tags
+						.underleaf-sidebar-static-tags-header
+							span TAGS
+							a(href='/project' aria-label=translate('new_tag'))
+								span.material-symbols add
+			a.ds-nav-page-switcher-item(href='/user/settings')
+				span.material-symbols settings
+				span.ds-nav-page-switcher-item-label= translate('account_settings')
+			if underleafSidebarAdmin
+				.underleaf-sidebar-administration
+					p.underleaf-sidebar-section-label ADMIN
+					a.ds-nav-page-switcher-item(href='/admin')
+						span.material-symbols shield_person
+						span.ds-nav-page-switcher-item-label= translate('underleaf_administration')
+					a.ds-nav-page-switcher-item(href='/admin/users')
+						span.material-symbols group
+						span.ds-nav-page-switcher-item-label= translate('underleaf_users')
+					a.ds-nav-page-switcher-item(href='/status')
+						span.material-symbols monitor_heart
+						span.ds-nav-page-switcher-item-label= translate('underleaf_system')
+		.underleaf-sidebar-lower
+			if underleafSidebarUser
+				fieldset.theme-toggle
+					legend= translate('theme')
+					.theme-toggle-radios
+						span.theme-toggle-radio(class=underleafSidebarTheme === 'dark' ? 'is-selected' : '')
+							span.material-symbols dark_mode
+						span.theme-toggle-radio(class=underleafSidebarTheme === 'light' ? 'is-selected' : '')
+							span.material-symbols light_mode
+						span.theme-toggle-radio(class=underleafSidebarTheme === 'system' ? 'is-selected' : '')
+							span.material-symbols computer
+				.underleaf-sidebar-account
+					a(href='/user/settings' aria-label=translate('account_settings'))
+						span.underleaf-sidebar-account-avatar= underleafSidebarInitials
+						span.underleaf-sidebar-account-copy
+							span.underleaf-sidebar-account-name= underleafSidebarDisplayName
+							span.underleaf-sidebar-account-role= underleafSidebarAdmin ? 'Administrator' : 'User'
+						span.material-symbols unfold_more

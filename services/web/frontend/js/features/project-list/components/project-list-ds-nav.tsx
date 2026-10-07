@@ -1,36 +1,36 @@
-import { useProjectListContext } from '../context/project-list-context'
-import { useTranslation } from 'react-i18next'
-import CurrentPlanWidget from './current-plan-widget/current-plan-widget'
-import NewProjectButton from './new-project-button'
-import ProjectListTable from './table/project-list-table'
-import UserNotifications from './notifications/user-notifications'
-import SearchForm from './search-form'
-import NavigationDropdown from './dropdown/navigation-dropdown'
-import SortByDropdown from './dropdown/sort-by-dropdown'
-import ProjectTools from './table/project-tools/project-tools'
-import ProjectListTitle from './title/project-list-title'
-import TrashPageTabs from './trash/trash-page-tabs'
-import LoadMore from './load-more'
-import OLCol from '@/shared/components/ol/ol-col'
-import OLRow from '@/shared/components/ol/ol-row'
-import { TableContainer } from '@/shared/components/ol/ol-table'
-import DashApiError from '@/features/project-list/components/dash-api-error'
-import getMeta from '@/utils/meta'
-import DefaultNavbar from '@/shared/components/navbar/default-navbar'
-import Footer from '@/shared/components/footer/footer'
-import SidebarDsNav from '@/features/project-list/components/sidebar/sidebar-ds-nav'
-import SystemMessages from '@/shared/components/system-messages'
-import CookieBanner from '@/shared/components/cookie-banner'
-import NoProjects from '@/features/project-list/components/no-projects'
-import { useActiveOverallTheme } from '@/shared/hooks/use-active-overall-theme'
-import { useFeatureFlag } from '@/shared/context/split-test-context'
-import { UnderleafAppShell } from '@/shared/components/underleaf/underleaf-app-shell'
+import { useProjectListContext } from "../context/project-list-context";
+import { useTranslation } from "react-i18next";
+import CurrentPlanWidget from "./current-plan-widget/current-plan-widget";
+import NewProjectButton from "./new-project-button";
+import ProjectListTable from "./table/project-list-table";
+import UserNotifications from "./notifications/user-notifications";
+import SearchForm from "./search-form";
+import NavigationDropdown from "./dropdown/navigation-dropdown";
+import SortByDropdown from "./dropdown/sort-by-dropdown";
+import ProjectTools from "./table/project-tools/project-tools";
+import ProjectListTitle from "./title/project-list-title";
+import TrashPageTabs from "./trash/trash-page-tabs";
+import LoadMore from "./load-more";
+import OLCol from "@/shared/components/ol/ol-col";
+import OLRow from "@/shared/components/ol/ol-row";
+import { TableContainer } from "@/shared/components/ol/ol-table";
+import DashApiError from "@/features/project-list/components/dash-api-error";
+import getMeta from "@/utils/meta";
+import DefaultNavbar from "@/shared/components/navbar/default-navbar";
+import Footer from "@/shared/components/footer/footer";
+import SidebarDsNav from "@/features/project-list/components/sidebar/sidebar-ds-nav";
+import SystemMessages from "@/shared/components/system-messages";
+import CookieBanner from "@/shared/components/cookie-banner";
+import NoProjects from "@/features/project-list/components/no-projects";
+import { useActiveOverallTheme } from "@/shared/hooks/use-active-overall-theme";
+import { useFeatureFlag } from "@/shared/context/split-test-context";
+import { UnderleafAppShell } from "@/shared/components/underleaf/underleaf-app-shell";
 
 export function ProjectListDsNav() {
-  const navbarProps = getMeta('ol-navbar')
-  const footerProps = getMeta('ol-footer')
-  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
-  const { t } = useTranslation()
+  const navbarProps = getMeta("ol-navbar");
+  const footerProps = getMeta("ol-footer");
+  const isUnderleaf = getMeta("ol-ExposedSettings")?.underleaf;
+  const { t } = useTranslation();
   const {
     error,
     searchText,
@@ -40,14 +40,14 @@ export function ProjectListDsNav() {
     tags,
     selectedTagId,
     currentFilterProjectsCount,
-  } = useProjectListContext()
-  const activeOverallTheme = useActiveOverallTheme()
-  const isSharedWorkspaceEnabled = useFeatureFlag('shared-workspace')
+  } = useProjectListContext();
+  const activeOverallTheme = useActiveOverallTheme();
+  const isSharedWorkspaceEnabled = useFeatureFlag("shared-workspace");
 
-  const selectedTag = tags.find(tag => tag._id === selectedTagId)
-  const showTrashHeader = filter === 'trashed'
+  const selectedTag = tags.find((tag) => tag._id === selectedTagId);
+  const showTrashHeader = filter === "trashed";
   const showNewProjectButton =
-    filter !== 'shared' && filter !== 'archived' && filter !== 'trashed'
+    filter !== "shared" && filter !== "archived" && filter !== "trashed";
 
   const tableTopArea = (
     <div className="pt-2 pb-3 d-md-none d-flex gap-2">
@@ -66,7 +66,7 @@ export function ProjectListDsNav() {
         />
       )}
     </div>
-  )
+  );
 
   return (
     <UnderleafAppShell
@@ -76,11 +76,11 @@ export function ProjectListDsNav() {
           <DefaultNavbar
             {...navbarProps}
             customLogo={
-              activeOverallTheme === 'dark'
+              activeOverallTheme === "dark"
                 ? navbarProps.customLogoDark
                 : navbarProps.customLogo
             }
-            overleafLogo={`/underleaf-lockup${activeOverallTheme === 'dark' ? '-dark' : ''}.svg`}
+            overleafLogo={`/underleaf-lockup${activeOverallTheme === "dark" ? "-dark" : ""}.svg?v=2026-10-07-brand-5`}
             showCloseIcon
           />
         )
@@ -90,7 +90,7 @@ export function ProjectListDsNav() {
       <div className="project-ds-nav-content-and-messages">
         <div className="project-ds-nav-content">
           <div className="project-ds-nav-main">
-            {error ? <DashApiError /> : ''}
+            {error ? <DashApiError /> : ""}
             {!isUnderleaf && <UserNotifications />}
             <main aria-labelledby="main-content">
               <div className="project-list-header-row">
@@ -100,7 +100,7 @@ export function ProjectListDsNav() {
                     tabIndex={-1}
                     className="project-list-title text-truncate d-none d-md-block mb-0"
                   >
-                    {t('trash')}
+                    {t("trash")}
                   </h1>
                 ) : (
                   <ProjectListTitle
@@ -181,22 +181,22 @@ export function ProjectListDsNav() {
         {!isUnderleaf && <CookieBanner />}
       </div>
     </UnderleafAppShell>
-  )
+  );
 }
 
 function ProjectsToolbarMobile() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <div className="mt-1 d-md-none">
       <div
         role="toolbar"
         className="projects-toolbar"
-        aria-label={t('projects')}
+        aria-label={t("projects")}
       >
         <NavigationDropdown activePage="projects" />
         <SortByDropdown />
       </div>
     </div>
-  )
+  );
 }

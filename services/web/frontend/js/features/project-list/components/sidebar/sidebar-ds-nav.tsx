@@ -1,128 +1,135 @@
-import { JSXElementConstructor } from 'react'
-import { useTranslation } from 'react-i18next'
-import classnames from 'classnames'
-import { Trash } from '@phosphor-icons/react'
-import SidebarFilters from './sidebar-filters'
-import AddAffiliation, { useAddAffiliation } from '../add-affiliation'
-import { usePersistedResize } from '@/shared/hooks/use-resize'
-import { useScrolled } from '@/features/project-list/components/sidebar/use-scroll'
-import { SurveyWidgetDsNav } from '@/features/project-list/components/survey-widget-ds-nav'
-import { UnderleafSidebar } from '@/shared/components/underleaf/underleaf-sidebar'
-import { useProjectListContext } from '@/features/project-list/context/project-list-context'
-import importOverleafModules from '../../../../../macros/import-overleaf-module.macro'
-import { ActivePage } from '../../util/navigation-state'
-import getMeta from '@/utils/meta'
+import { JSXElementConstructor } from "react";
+import { useTranslation } from "react-i18next";
+import classnames from "classnames";
+import { Trash } from "@phosphor-icons/react";
+import SidebarFilters from "./sidebar-filters";
+import AddAffiliation, { useAddAffiliation } from "../add-affiliation";
+import { usePersistedResize } from "@/shared/hooks/use-resize";
+import { useScrolled } from "@/features/project-list/components/sidebar/use-scroll";
+import { SurveyWidgetDsNav } from "@/features/project-list/components/survey-widget-ds-nav";
+import { UnderleafSidebar } from "@/shared/components/underleaf/underleaf-sidebar";
+import { useProjectListContext } from "@/features/project-list/context/project-list-context";
+import importOverleafModules from "../../../../../macros/import-overleaf-module.macro";
+import { ActivePage } from "../../util/navigation-state";
+import getMeta from "@/utils/meta";
 
 function SidebarDsNav({
   activePage,
   trashActive = false,
 }: {
-  activePage: ActivePage
+  activePage: ActivePage;
 
   /**
    * Whether the trash is active. This is only relevant when the active page is
    * "library" as which project page is active is determined by the selected filter.
    */
-  trashActive?: boolean
+  trashActive?: boolean;
 }) {
-  const { t } = useTranslation()
-  const isUnderleaf = getMeta('ol-ExposedSettings')?.underleaf
-  const { show: showAddAffiliationWidget } = useAddAffiliation()
-  const { filter, selectedTagId, selectFilter } = useProjectListContext()
+  const { t } = useTranslation();
+  const isUnderleaf = getMeta("ol-ExposedSettings")?.underleaf;
+  const { show: showAddAffiliationWidget } = useAddAffiliation();
+  const { filter, selectedTagId, selectFilter } = useProjectListContext();
   const isTrashActive =
-    activePage === 'library'
+    activePage === "library"
       ? trashActive
-      : selectedTagId === undefined && filter === 'trashed'
-  const [dsNavLibraryLinkModule] = importOverleafModules('dsNavLibraryLink')
+      : selectedTagId === undefined && filter === "trashed";
+  const [dsNavLibraryLinkModule] = importOverleafModules("dsNavLibraryLink");
   const DsNavLibraryLink: JSXElementConstructor<{
-    active?: boolean
-    inLibrary?: boolean
-  }> = dsNavLibraryLinkModule?.import.default
+    active?: boolean;
+    inLibrary?: boolean;
+  }> = dsNavLibraryLinkModule?.import.default;
   const { mousePos, getHandleProps, getTargetProps } = usePersistedResize({
-    name: 'project-sidebar',
-  })
-  const { containerRef, scrolledUp } = useScrolled()
+    name: "project-sidebar",
+  });
+  const { containerRef, scrolledUp } = useScrolled();
+  const targetProps = isUnderleaf
+    ? {}
+    : getTargetProps({
+        style: {
+          ...(mousePos?.x && { flexBasis: `${mousePos.x}px` }),
+        },
+      });
 
-  const trashItemClassName = classnames('ds-nav-page-switcher-item', {
+  const trashItemClassName = classnames("ds-nav-page-switcher-item", {
     active: isTrashActive,
-  })
+  });
   const trashItemContent = (
     <>
       <Trash size={20} />
-      <span className="ds-nav-page-switcher-item-label">{t('trash')}</span>
+      <span className="ds-nav-page-switcher-item-label">{t("trash")}</span>
     </>
-  )
+  );
 
   return (
     <UnderleafSidebar
       activePage="projects"
-      {...getTargetProps({
-        style: {
-          ...(mousePos?.x && { flexBasis: `${mousePos.x}px` }),
-        },
-      })}
+      {...targetProps}
       navigation={
         <div
           className="project-list-sidebar-scroll"
           ref={containerRef}
           data-testid="project-list-sidebar-scroll"
         >
-          <SidebarFilters activePage={activePage} />
+          <SidebarFilters activePage={activePage} underleaf={isUnderleaf} />
           {!isUnderleaf && showAddAffiliationWidget && <hr />}
           {!isUnderleaf && <AddAffiliation />}
         </div>
       }
       footer={
-        <div className={classnames(scrolledUp && 'show-shadow')}>
-          {DsNavLibraryLink && (
-            <DsNavLibraryLink
-              active={activePage === 'library' && !trashActive}
-              inLibrary={activePage === 'library'}
-            />
-          )}
-          {/* The trash view defaults to the location the user is navigating from: the
+        isUnderleaf ? null : (
+          <div className={classnames(scrolledUp && "show-shadow")}>
+            {DsNavLibraryLink && (
+              <DsNavLibraryLink
+                active={activePage === "library" && !trashActive}
+                inLibrary={activePage === "library"}
+              />
+            )}
+            {/* The trash view defaults to the location the user is navigating from: the
           library trash when on the library, the project trash everywhere else. */}
-          {activePage === 'library' ? (
-            <a
-              href="/library/trashed"
-              className={trashItemClassName}
-              aria-current={isTrashActive ? 'page' : undefined}
-            >
-              {trashItemContent}
-            </a>
-          ) : (
-            <button
-              type="button"
-              className={trashItemClassName}
-              aria-current={isTrashActive ? 'page' : undefined}
-              onClick={() => selectFilter('trashed')}
-            >
-              {trashItemContent}
-            </button>
-          )}
-          {!isUnderleaf && (
-            <div className="project-list-sidebar-survey-wrapper">
-              <SurveyWidgetDsNav />
-            </div>
-          )}
-        </div>
+            {activePage === "library" ? (
+              <a
+                href="/library/trashed"
+                className={trashItemClassName}
+                aria-current={isTrashActive ? "page" : undefined}
+              >
+                {trashItemContent}
+              </a>
+            ) : (
+              <button
+                type="button"
+                className={trashItemClassName}
+                aria-current={isTrashActive ? "page" : undefined}
+                onClick={() => selectFilter("trashed")}
+              >
+                {trashItemContent}
+              </button>
+            )}
+            {!isUnderleaf && (
+              <div className="project-list-sidebar-survey-wrapper">
+                <SurveyWidgetDsNav />
+              </div>
+            )}
+          </div>
+        )
       }
       resizeHandle={
-        <div
-          {...getHandleProps({
-            style: {
-              position: 'absolute',
-              zIndex: 1,
-              top: 0,
-              right: '-2px',
-              height: '100%',
-              width: '4px',
-            },
-          })}
-        />
+        !isUnderleaf && (
+          <div
+            {...getHandleProps({
+              style: {
+                position: "absolute",
+                zIndex: 1,
+                top: 0,
+                right: "-2px",
+                height: "100%",
+                width: "4px",
+              },
+            })}
+          />
+        )
       }
     />
-  )
+  );
 }
 
-export default SidebarDsNav
+export default SidebarDsNav;

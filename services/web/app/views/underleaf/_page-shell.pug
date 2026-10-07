@@ -1,0 +1,6 @@
+mixin underleaf-page-shell
+	.project-ds-nav-page.website-redesign.underleaf-app-shell.underleaf-static-shell(data-static-theme=(typeof initialTheme !== 'undefined' ? initialTheme : 'dark'))
+		.project-list-wrapper.underleaf-app-layout
+			include ./_static-sidebar
+			.underleaf-app-content
+				block

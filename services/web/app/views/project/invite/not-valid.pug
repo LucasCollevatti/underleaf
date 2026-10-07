@@ -1,4 +1,5 @@
 extends ../../layout-website-redesign
+include ../../underleaf/_page-shell
 
 block vars
 	- isWebsiteRedesign = true
@@ -10,5 +11,10 @@ block append meta
 	meta(name='ol-user' data-type='json' content=user)
 
 block content
-	main#main-content.content.content-alt
-		#project-invite-not-valid-page
+	if settings.underleaf
+		+underleaf-page-shell
+			main#main-content.content.content-alt
+				#project-invite-not-valid-page
+	else
+		main#main-content.content.content-alt
+			#project-invite-not-valid-page

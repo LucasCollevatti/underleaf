@@ -24,27 +24,27 @@ function AccountInfoSection() {
       <h3 id="update-account-info">{t('update_account_info')}</h3>
       <form
         id="account-info-form"
-        onSubmit={event => {
+        onSubmit={(event) => {
           event.preventDefault()
           runAsync(
             postJSON('/user/settings', {
               body: { displayName: displayName.trim() },
-            })
+            }),
           ).catch(() => {})
         }}
       >
         <OLFormGroup controlId="username-input">
-          <OLFormLabel>Username</OLFormLabel>
+          <OLFormLabel>{t('underleaf_username')}</OLFormLabel>
           <OLFormControl readOnly value={username} autoComplete="username" />
-          <OLFormText>Your administrator manages your username.</OLFormText>
+          <OLFormText>{t('underleaf_username_managed_hint')}</OLFormText>
         </OLFormGroup>
         <ReadOrWriteFormGroup
           id="display-name-input"
           type="text"
-          label="Display name"
+          label={t('underleaf_display_name')}
           value={displayName}
           maxLength={255}
-          handleChange={event => setDisplayName(event.target.value)}
+          handleChange={(event) => setDisplayName(event.target.value)}
           canEdit
           required
         />
@@ -98,7 +98,7 @@ function ReadOrWriteFormGroup({
   }
 
   const handleChangeAndValidity = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     handleChange(event)
     setValidationMessage(event.target.validationMessage)

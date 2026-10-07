@@ -1,38 +1,38 @@
-@import '../../abstracts/variables';
+@import "../../abstracts/variables";
 
 :root {
-  --toolbar-border-color: var(--neutral-80);
-  --toolbar-header-bg-color: var(--neutral-90);
-  --toolbar-header-btn-border-color: var(--neutral-80);
-  --toolbar-btn-color: var(--white);
-  --toolbar-btn-hover-bg-color: var(--neutral-80);
-  --toolbar-btn-hover-color: var(--white);
-  --toolbar-btn-active-color: var(--white);
-  --toolbar-btn-active-bg-color: var(--green-50);
+  --toolbar-border-color: #3a4556;
+  --toolbar-header-bg-color: #1b222c;
+  --toolbar-header-btn-border-color: #4d5a6e;
+  --toolbar-btn-color: #f1f4f8;
+  --toolbar-btn-hover-bg-color: rgb(255 255 255 / 8%);
+  --toolbar-btn-hover-color: #ffffff;
+  --toolbar-btn-active-color: #ffffff;
+  --toolbar-btn-active-bg-color: #1f6e3d;
   --toolbar-height: #{$toolbar-height};
   --toolbar-small-height: #{$toolbar-small-height};
-  --toolbar-alt-bg-color: var(--neutral-80);
-  --formatting-btn-color: var(--white);
-  --formatting-btn-bg: var(--neutral-80);
-  --formatting-btn-border: var(--neutral-70);
-  --project-name-color: var(--neutral-40);
-  --toolbar-filetree-bg-color: var(--neutral-80);
-  --project-rename-link-color: var(--neutral-40);
-  --project-rename-link-color-hover: var(--neutral-20);
-  --editor-header-logo-background: url('../../../../public/underleaf-logo.png')
+  --toolbar-alt-bg-color: #222b37;
+  --formatting-btn-color: #f1f4f8;
+  --formatting-btn-bg: #252f3d;
+  --formatting-btn-border: #4d5a6e;
+  --project-name-color: #bac3cf;
+  --toolbar-filetree-bg-color: #222b37;
+  --project-rename-link-color: #bac3cf;
+  --project-rename-link-color-hover: #f1f4f8;
+  --editor-header-logo-background: url("../../../../public/underleaf-mark-dark.svg?v=2026-10-07-brand-5")
     center / contain no-repeat;
-  --editor-toolbar-bg: var(--neutral-80);
+  --editor-toolbar-bg: #1b222c;
   --editor-toolbar-popover-border-color: var(--border-primary);
   --toolbar-dropdown-divider-color: var(--border-dark-divider);
 }
 
 .ide-redesign-main {
-  --toolbar-alt-bg-color: var(--bg-dark-secondary);
-  --toolbar-btn-color: var(--content-primary-dark);
-  --toolbar-btn-hover-bg-color: var(--neutral-80);
-  --toolbar-btn-hover-color: var(--white);
-  --editor-toolbar-bg: var(--bg-dark-primary);
-  --toolbar-filetree-bg-color: var(--neutral-80);
+  --toolbar-alt-bg-color: #222b37;
+  --toolbar-btn-color: #f1f4f8;
+  --toolbar-btn-hover-bg-color: rgb(255 255 255 / 8%);
+  --toolbar-btn-hover-color: #ffffff;
+  --editor-toolbar-bg: #1b222c;
+  --toolbar-filetree-bg-color: #222b37;
 
   .ol-cm-toolbar-portal {
     display: flex;
@@ -54,35 +54,35 @@
   }
 }
 
-@include theme('light') {
-  --toolbar-border-color: var(--neutral-20);
-  --toolbar-header-bg-color: var(--white);
-  --toolbar-header-btn-border-color: var(--neutral-20);
-  --toolbar-btn-color: var(--neutral-70);
-  --toolbar-btn-hover-bg-color: var(--neutral-10);
-  --toolbar-btn-hover-color: var(--neutral-70);
-  --toolbar-btn-active-bg-color: var(--green-50);
-  --toolbar-alt-bg-color: var(--white);
-  --formatting-btn-color: var(--neutral-70);
+@include theme("light") {
+  --toolbar-border-color: #e1e4e9;
+  --toolbar-header-bg-color: #ffffff;
+  --toolbar-header-btn-border-color: #c9cfd8;
+  --toolbar-btn-color: #1b222c;
+  --toolbar-btn-hover-bg-color: rgb(27 34 44 / 7%);
+  --toolbar-btn-hover-color: #1b222c;
+  --toolbar-btn-active-bg-color: #0f8241;
+  --toolbar-alt-bg-color: #f4f5f7;
+  --formatting-btn-color: #1b222c;
   --formatting-btn-bg: transparent;
-  --formatting-btn-border: var(--neutral-20);
-  --project-name-color: var(--neutral-70);
-  --toolbar-filetree-bg-color: var(--white);
-  --project-rename-link-color: var(--neutral-70);
-  --project-rename-link-color-hover: var(--neutral-70);
-  --editor-header-logo-background: url('../../../../public/underleaf-logo.png')
+  --formatting-btn-border: #c9cfd8;
+  --project-name-color: #4b5565;
+  --toolbar-filetree-bg-color: #f4f5f7;
+  --project-rename-link-color: #4b5565;
+  --project-rename-link-color-hover: #1b222c;
+  --editor-header-logo-background: url("../../../../public/underleaf-mark.svg?v=2026-10-07-brand-5")
     center / contain no-repeat;
-  --editor-toolbar-bg: var(--white);
+  --editor-toolbar-bg: #ffffff;
   --editor-toolbar-popover-border-color: rgba(125 125 125 / 20%);
   --toolbar-dropdown-divider-color: var(--border-divider);
 
   .ide-redesign-main {
-    --toolbar-alt-bg-color: var(--bg-light-secondary);
-    --toolbar-btn-color: var(--content-primary);
-    --toolbar-btn-hover-bg-color: var(--neutral-80);
-    --toolbar-btn-hover-color: var(--white);
-    --editor-toolbar-bg: var(--white);
-    --toolbar-filetree-bg-color: var(--white);
+    --toolbar-alt-bg-color: #f4f5f7;
+    --toolbar-btn-color: #1b222c;
+    --toolbar-btn-hover-bg-color: rgb(27 34 44 / 7%);
+    --toolbar-btn-hover-color: #1b222c;
+    --editor-toolbar-bg: #ffffff;
+    --toolbar-filetree-bg-color: #f4f5f7;
   }
 }
 

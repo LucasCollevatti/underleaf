@@ -16,8 +16,8 @@
       "purpose": "any"
     }
   ],
-  "theme_color": "#138a45",
-  "background_color": "#ffffff",
+  "theme_color": "#1B222C",
+  "background_color": "#2C3646",
   "start_url": "/project",
   "scope": "/",
   "display": "standalone"

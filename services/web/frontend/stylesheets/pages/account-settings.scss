@@ -239,3 +239,135 @@
     }
   }
 }
+
+.underleaf-settings-page {
+  .underleaf-settings-main {
+    width: 100%;
+    max-width: 1136px;
+    padding: 40px 28px 56px;
+    margin: 0 auto;
+  }
+
+  .underleaf-settings-heading {
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+  }
+
+  .underleaf-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  .underleaf-settings-card {
+    min-width: 0;
+    padding: 24px;
+    background: var(--underleaf-app-surface);
+    border: 1px solid var(--underleaf-app-line);
+    border-radius: 14px;
+
+    h2,
+    h3 {
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .theme-toggle {
+      margin: 0;
+    }
+  }
+
+  @include media-breakpoint-down(lg) {
+    .underleaf-settings-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @include media-breakpoint-down(sm) {
+    .underleaf-settings-main {
+      padding: 28px 16px 40px;
+    }
+
+    .underleaf-settings-card {
+      padding: 20px;
+    }
+  }
+
+  #main-content {
+    color: var(--content-primary-themed);
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .form-label {
+      color: var(--content-primary-themed);
+    }
+
+    .form-text,
+    p {
+      color: var(--content-secondary-themed);
+    }
+
+    .form-control {
+      color: var(--content-primary-themed);
+      background-color: var(--bg-secondary-themed);
+      border-color: var(--border-primary-themed);
+
+      &:focus {
+        color: var(--content-primary-themed);
+        background-color: var(--bg-secondary-themed);
+        border-color: var(--border-active-themed);
+        box-shadow: 0 0 0 3px rgb(40 184 92 / 20%);
+      }
+
+      &::placeholder {
+        color: var(--content-placeholder-themed);
+      }
+    }
+
+    hr {
+      border-color: var(--border-divider-themed);
+      opacity: 1;
+    }
+
+    a {
+      color: var(--link-web-themed);
+
+      &:hover,
+      &:focus-visible {
+        color: var(--link-web-hover-themed);
+      }
+    }
+
+    .btn-primary {
+      color: var(--content-primary-dark);
+      background-color: var(--bg-accent-01);
+      border-color: var(--bg-accent-01);
+
+      &:hover,
+      &:focus-visible {
+        color: var(--content-primary-dark);
+        background-color: var(--bg-accent-02);
+        border-color: var(--bg-accent-02);
+      }
+
+      &:disabled {
+        color: var(--content-disabled-themed);
+        background-color: var(--bg-disabled-themed);
+        border-color: var(--bg-disabled-themed);
+      }
+    }
+  }
+}

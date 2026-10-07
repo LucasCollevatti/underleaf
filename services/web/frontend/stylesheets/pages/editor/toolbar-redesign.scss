@@ -1,25 +1,25 @@
-@use 'sass:math';
+@use "sass:math";
 
 :root {
-  --redesign-toolbar-home-button-hover-background: var(--bg-dark-secondary);
-  --redesign-toolbar-border-divider: var(--border-divider-dark);
-  --redesign-toolbar-background: var(--bg-dark-primary);
-  --redesign-toolbar-home-link-color: var(--content-primary-dark);
-  --redesign-toolbar-logo-url: url('../../../../public/underleaf-mark-dark.svg');
-  --redesign-subdued-button-color: var(--content-primary-dark);
-  --redesign-subdued-button-hover-background: var(--bg-dark-tertiary);
-  --redesign-toolbar-feedback-link-color: var(--link-ui-dark);
+  --redesign-toolbar-home-button-hover-background: rgb(255 255 255 / 8%);
+  --redesign-toolbar-border-divider: #3a4556;
+  --redesign-toolbar-background: #1b222c;
+  --redesign-toolbar-home-link-color: #f1f4f8;
+  --redesign-toolbar-logo-url: url("../../../../public/underleaf-mark-dark.svg?v=2026-10-07-brand-5");
+  --redesign-subdued-button-color: #f1f4f8;
+  --redesign-subdued-button-hover-background: rgb(255 255 255 / 8%);
+  --redesign-toolbar-feedback-link-color: #58c98a;
 }
 
-@include theme('light') {
-  --redesign-toolbar-home-button-hover-background: var(--neutral-20);
-  --redesign-toolbar-border-divider: var(--border-divider);
-  --redesign-toolbar-background: var(--bg-light-primary);
-  --redesign-toolbar-home-link-color: var(--content-primary);
-  --redesign-toolbar-logo-url: url('../../../../public/underleaf-mark.svg');
-  --redesign-subdued-button-color: var(--content-primary);
-  --redesign-subdued-button-hover-background: var(--bg-light-tertiary);
-  --redesign-toolbar-feedback-link-color: var(--link-ui);
+@include theme("light") {
+  --redesign-toolbar-home-button-hover-background: rgb(27 34 44 / 7%);
+  --redesign-toolbar-border-divider: #e1e4e9;
+  --redesign-toolbar-background: #ffffff;
+  --redesign-toolbar-home-link-color: #1b222c;
+  --redesign-toolbar-logo-url: url("../../../../public/underleaf-mark.svg?v=2026-10-07-brand-5");
+  --redesign-subdued-button-color: #1b222c;
+  --redesign-subdued-button-hover-background: rgb(27 34 44 / 7%);
+  --redesign-toolbar-feedback-link-color: #0b7438;
 }
 
 .ide-redesign-toolbar {

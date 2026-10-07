@@ -72,7 +72,9 @@ export const UserSettingsProvider: FC<React.PropsWithChildren> = ({
       (!getMeta('ol-user_id') && !getMeta('ol-navbar')?.sessionUser) ||
       (getMeta('ol-ExposedSettings')?.underleaf && !savedSettings)
     ) {
-      settings.overallTheme = readBrowserOverallTheme() ?? 'system'
+      settings.overallTheme =
+        readBrowserOverallTheme() ??
+        (getMeta('ol-underleafAuthPage') ? '' : 'system')
     }
     return settings
   })
@@ -82,7 +84,7 @@ export const UserSettingsProvider: FC<React.PropsWithChildren> = ({
       userSettings,
       setUserSettings,
     }),
-    [userSettings, setUserSettings]
+    [userSettings, setUserSettings],
   )
 
   return (
@@ -96,7 +98,7 @@ export function useUserSettingsContext() {
   const context = useContext(UserSettingsContext)
   if (!context) {
     throw new Error(
-      'useUserSettingsContext is only available inside UserSettingsProvider'
+      'useUserSettingsContext is only available inside UserSettingsProvider',
     )
   }
   return context

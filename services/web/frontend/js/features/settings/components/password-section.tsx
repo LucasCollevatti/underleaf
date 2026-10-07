@@ -28,7 +28,7 @@ function PasswordSection() {
       {hasPassword ? (
         <PasswordForm />
       ) : (
-        <p>Ask your administrator to reset your password.</p>
+        <p>{t('underleaf_password_admin_reset_hint')}</p>
       )}
     </>
   )
@@ -47,27 +47,27 @@ function PasswordForm() {
   const [isFormValid, setIsFormValid] = useState(false)
 
   const handleCurrentPasswordChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setCurrentPassword(event.target.value)
   }
 
   const handleNewPassword1Change = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setNewPassword1(event.target.value)
     setIsNewPasswordValid(event.target.validity.valid)
   }
 
   const handleNewPassword2Change = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setNewPassword2(event.target.value)
   }
 
   useEffect(() => {
     setIsFormValid(
-      !!currentPassword && isNewPasswordValid && newPassword1 === newPassword2
+      !!currentPassword && isNewPasswordValid && newPassword1 === newPassword2,
     )
   }, [currentPassword, newPassword1, newPassword2, isNewPasswordValid])
 
@@ -83,7 +83,7 @@ function PasswordForm() {
           newPassword1,
           newPassword2,
         },
-      })
+      }),
     ).catch(() => {})
   }
 
@@ -174,7 +174,7 @@ function PasswordFormGroup({
   }
 
   const handleChangeAndValidity = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     handleChange(event)
     setHadInteraction(true)
@@ -182,7 +182,7 @@ function PasswordFormGroup({
   }
 
   const isInvalid = Boolean(
-    hadInteraction && (parentValidationMessage || validationMessage)
+    hadInteraction && (parentValidationMessage || validationMessage),
   )
 
   return (

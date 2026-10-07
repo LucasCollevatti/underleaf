@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import classNames from 'classnames'
 import { SplitTestProvider } from '@/shared/context/split-test-context'
 import { UserSettingsProvider } from '@/shared/context/user-settings-context'
 import { DsNavStyleProvider } from '@/features/project-list/components/use-is-ds-nav'
@@ -23,16 +24,23 @@ export function UnderleafAppShell({
   children,
   header,
   sidebar,
+  pageClassName,
   ...sidebarProps
 }: UnderleafSidebarProps & {
   children: ReactNode
   header?: ReactNode
   sidebar?: ReactNode
+  pageClassName?: string
 }) {
   useThemedPage()
 
   return (
-    <div className="project-ds-nav-page website-redesign underleaf-app-shell">
+    <div
+      className={classNames(
+        'project-ds-nav-page website-redesign underleaf-app-shell',
+        pageClassName,
+      )}
+    >
       {header && <div className="underleaf-app-header">{header}</div>}
       <div className="project-list-wrapper underleaf-app-layout">
         {sidebar ?? <UnderleafSidebar {...sidebarProps} />}

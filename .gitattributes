@@ -1,0 +1,11 @@
+# Shell scripts are executed inside Linux containers; keep their line endings
+# independent of the developer's Windows Git configuration.
+*.sh text eol=lf
+*.ps1 text eol=lf
+server-ce/init_scripts/** text eol=lf
+server-ce/init_preshutdown_scripts/** text eol=lf
+server-ce/runit/** text eol=lf
+server-ce/cron/** text eol=lf
+server-ce/bin/** text eol=lf
+server-ce/hotfix/**/bin/** text eol=lf
+server-ce/hotfix/**/910_* text eol=lf

@@ -1,4 +1,5 @@
 extends ../../layout-website-redesign
+include ../../underleaf/_page-shell
 
 block vars
 	- isWebsiteRedesign = true
@@ -13,5 +14,10 @@ block append meta
 	meta(name='ol-project_id' data-type='string' content=projectId)
 
 block content
-	main#main-content.content.content-alt
-		#project-invite-page
+	if settings.underleaf
+		+underleaf-page-shell
+			main#main-content.content.content-alt
+				#project-invite-page
+	else
+		main#main-content.content.content-alt
+			#project-invite-page

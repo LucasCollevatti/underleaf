@@ -4,7 +4,8 @@
 
 - Docker Desktop ou Docker Engine com Compose v2;
 - Git;
-- `openssl`;
+- `openssl` no Linux/WSL/Git Bash (o helper PowerShell gera os segredos no
+  Windows);
 - pelo menos 8 GB de RAM disponíveis durante o build;
 - espaço livre suficiente para a imagem base, a imagem do app e o TeX Live.
 
@@ -20,6 +21,26 @@ make config
 make build
 make up
 ```
+
+## Windows
+
+Instale o Docker Desktop com Linux containers e, de preferência, a integração
+com WSL2. No PowerShell, a instalação local é:
+
+```powershell
+git clone <URL-DO-REPOSITORIO> underleaf
+Set-Location underleaf
+.\scripts\underleaf.ps1 init
+.\scripts\underleaf.ps1 config
+.\scripts\underleaf.ps1 build
+.\scripts\underleaf.ps1 up
+```
+
+Para a operação diária, use `.\scripts\underleaf.ps1 health`, `logs` e `down`.
+O script também expõe `create-admin` e `test`. Não é necessário instalar TeX
+Live, Node ou `make` no Windows; o Docker Desktop executa o runtime Linux do
+Underleaf dentro dos containers. Os scripts de backup e restore ainda são
+Bash, portanto devem ser executados por WSL ou Git Bash.
 
 Abra <http://localhost:8080>. Uma instalação nova abre `/welcome`: avance em
 **Começar**, crie o administrador e aguarde o login automático em `/project`.

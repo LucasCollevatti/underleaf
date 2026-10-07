@@ -1,8 +1,8 @@
 .underleaf-admin-main {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1136px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 40px 28px 56px;
 
   @include media-breakpoint-down(md) {
     padding: 20px 16px;
@@ -19,6 +19,9 @@
 
   h1 {
     margin-bottom: 8px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
 
   p {
@@ -36,7 +39,7 @@
     padding: 24px;
     background: var(--bg-primary-themed);
     border: 1px solid var(--border-divider-themed);
-    border-radius: 8px;
+    border-radius: 14px;
   }
 
   dt {
@@ -62,7 +65,7 @@
   padding: 24px;
   background: var(--bg-primary-themed);
   border: 1px solid var(--border-divider-themed);
-  border-radius: 8px;
+  border-radius: 14px;
 }
 
 .underleaf-admin-search {

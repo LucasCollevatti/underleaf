@@ -1,6 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <style>.mark-stroke{stroke:#138a45}.mark-fill{fill:#138a45}@media(prefers-color-scheme:dark){.mark-stroke{stroke:#7de2a3}.mark-fill{fill:#7de2a3}}</style>
-  <path class="mark-stroke" d="M7 10v17c0 8 5 13 13 13s13-5 13-13v-9" fill="none" stroke-width="7" stroke-linecap="round"/>
-  <path class="mark-fill" d="M22 15C22 5 29 1 39 2c1 10-5 17-15 17l-2-4Z"/>
-  <circle cx="36" cy="36" r="11" fill="#138a45"/><path d="m30 36 4 4 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Underleaf compiled">
+  <svg x="1" y="1" width="38" height="42" viewBox="320 318 615 663" aria-hidden="true">
+    <style>.mark-base{fill:#056046}.mark-leaf{fill:#28B85C}@media(prefers-color-scheme:dark){.mark-base{fill:#F2FAF4}}</style>
+    <path class="mark-base" d="M326 327 H420 C500 327 550 385 550 452 V758 C550 805 578 842 622 846 C590 900 545 945 492 952 C395 930 326 840 326 730 Z"/>
+    <path class="mark-leaf" d="M929 323 V715 C929 860 805 975 625 975 C585 975 548 970 515 965 C575 945 612 905 645 848 C690 760 750 630 873 492 C770 572 690 690 603 838 V652 C603 505 735 425 929 323 Z"/>
+  </svg>
+  <circle cx="37" cy="37" r="10" fill="#0F8241"/>
+  <path d="m31.5 37 3.5 3.5 7-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -132,9 +132,13 @@ if settings.robotsNoindex
 	meta(name='robots' content='noindex')
 
 //- Icons
-link(rel='icon' href='/underleaf-favicon.png' type='image/png')
 if settings.underleaf
-	link(rel='icon' href=buildBaseAssetPath() + 'underleaf-favicon.svg' type='image/svg+xml')
+	link(rel='preconnect' href='https://fonts.googleapis.com')
+	link(rel='preconnect' href='https://fonts.gstatic.com' crossorigin='anonymous')
+	link(rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap')
+	link(rel='icon' href=buildBaseAssetPath() + 'underleaf-favicon.svg?v=2026-10-07-brand-5' type='image/svg+xml')
+else
+	link(rel='icon' href='/underleaf-favicon.png' type='image/png')
 link(rel='apple-touch-icon' href=buildBaseAssetPath() + 'underleaf-apple-touch-icon.png')
 
 //- Canonical Tag for SEO

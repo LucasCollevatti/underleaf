@@ -12,7 +12,7 @@ block append meta
 block body
 	if typeof suppressNavbar == 'undefined'
 		if settings.underleaf
-			include underleaf/navbar
+			include underleaf/_navbar
 		else
 			include layout/navbar-marketing
 
@@ -20,7 +20,7 @@ block body
 
 	if typeof suppressFooter == 'undefined'
 		if settings.underleaf
-			include underleaf/footer
+			include underleaf/_footer
 		else if showThinFooter
 			include layout/thin-footer
 		else

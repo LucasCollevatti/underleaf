@@ -2,8 +2,6 @@ import { JSXElementConstructor } from 'react'
 import { useTranslation } from 'react-i18next'
 import Common from './groups/common'
 import Institution from './groups/institution'
-import ConfirmEmail from './groups/confirm-email'
-import ReconfirmationInfo from './groups/affiliation/reconfirmation-info'
 import GroupsAndEnterpriseBanner from './groups-and-enterprise-banner'
 import GroupSsoSetupSuccess from './groups/group-sso-setup-success'
 import getMeta from '../../../../utils/meta'
@@ -51,8 +49,6 @@ function UserNotifications() {
         <GroupSsoSetupSuccess />
         <Common />
         <Institution />
-        <ConfirmEmail />
-        <ReconfirmationInfo />
         <GeoBanners />
         <GroupsAndEnterpriseBanner />
         {USGovBanner && <USGovBanner />}

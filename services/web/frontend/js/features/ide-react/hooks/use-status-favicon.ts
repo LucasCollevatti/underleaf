@@ -1,85 +1,85 @@
-import { useDetachCompileContext as useCompileContext } from '@/shared/context/detach-compile-context'
-import { useEffect, useState } from 'react'
-import usePreviousValue from '@/shared/hooks/use-previous-value'
-import getMeta from '@/utils/meta'
+import { useDetachCompileContext as useCompileContext } from "@/shared/context/detach-compile-context";
+import { useEffect, useState } from "react";
+import usePreviousValue from "@/shared/hooks/use-previous-value";
+import getMeta from "@/utils/meta";
 
-const RESET_AFTER_MS = 5_000
+const RESET_AFTER_MS = 5_000;
 
 const COMPILE_ICONS = {
-  ERROR: 'favicon-error.svg',
-  COMPILING: 'favicon-compiling.svg',
-  COMPILED: 'favicon-compiled.svg',
-  UNCOMPILED: 'underleaf-favicon.png',
-} as const
+  ERROR: "favicon-error.svg",
+  COMPILING: "favicon-compiling.svg",
+  COMPILED: "favicon-compiled.svg",
+  UNCOMPILED: "underleaf-favicon.png",
+} as const;
 
 const UNDERLEAF_COMPILE_ICONS = {
-  ERROR: 'underleaf-favicon-error.svg',
-  COMPILING: 'underleaf-favicon-compiling.svg',
-  COMPILED: 'underleaf-favicon-compiled.svg',
-  UNCOMPILED: 'underleaf-favicon.svg',
-} as const
+  ERROR: "underleaf-favicon-error.svg?v=2026-10-07-brand-5",
+  COMPILING: "underleaf-favicon-compiling.svg?v=2026-10-07-brand-5",
+  COMPILED: "underleaf-favicon-compiled.svg?v=2026-10-07-brand-5",
+  UNCOMPILED: "underleaf-favicon.svg?v=2026-10-07-brand-5",
+} as const;
 
-type CompileStatus = keyof typeof COMPILE_ICONS
+type CompileStatus = keyof typeof COMPILE_ICONS;
 
 const useCompileStatus = (): CompileStatus => {
-  const compileContext = useCompileContext()
-  if (compileContext.uncompiled) return 'UNCOMPILED'
-  if (compileContext.compiling) return 'COMPILING'
-  if (compileContext.error) return 'ERROR'
-  return 'COMPILED'
-}
+  const compileContext = useCompileContext();
+  if (compileContext.uncompiled) return "UNCOMPILED";
+  if (compileContext.compiling) return "COMPILING";
+  if (compileContext.error) return "ERROR";
+  return "COMPILED";
+};
 
 const removeFavicon = () => {
   document.head
     .querySelectorAll("link[rel='icon']")
-    .forEach(favicon => favicon.parentNode?.removeChild(favicon))
-}
+    .forEach((favicon) => favicon.parentNode?.removeChild(favicon));
+};
 
-const updateFavicon = (status: CompileStatus = 'UNCOMPILED') => {
-  removeFavicon()
-  const linkElement = document.createElement('link')
-  linkElement.rel = 'icon'
-  const icons = getMeta('ol-ExposedSettings').underleaf
+const updateFavicon = (status: CompileStatus = "UNCOMPILED") => {
+  removeFavicon();
+  const linkElement = document.createElement("link");
+  linkElement.rel = "icon";
+  const icons = getMeta("ol-ExposedSettings").underleaf
     ? UNDERLEAF_COMPILE_ICONS
-    : COMPILE_ICONS
-  linkElement.href = getMeta('ol-baseAssetPath') + icons[status]
-  linkElement.type = icons[status].endsWith('.svg')
-    ? 'image/svg+xml'
-    : 'image/png'
-  linkElement.setAttribute('data-compile-status', 'true')
-  document.head.appendChild(linkElement)
-}
+    : COMPILE_ICONS;
+  linkElement.href = getMeta("ol-baseAssetPath") + icons[status];
+  linkElement.type = icons[status].includes(".svg")
+    ? "image/svg+xml"
+    : "image/png";
+  linkElement.setAttribute("data-compile-status", "true");
+  document.head.appendChild(linkElement);
+};
 
-const isActive = () => !document.hidden
+const isActive = () => !document.hidden;
 
 const useIsWindowActive = () => {
-  const [isWindowActive, setIsWindowActive] = useState(isActive())
+  const [isWindowActive, setIsWindowActive] = useState(isActive());
   useEffect(() => {
-    const handleVisibilityChange = () => setIsWindowActive(isActive())
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    const handleVisibilityChange = () => setIsWindowActive(isActive());
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-  return isWindowActive
-}
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+  return isWindowActive;
+};
 
 export const useStatusFavicon = () => {
-  const compileStatus = useCompileStatus()
-  const previousCompileStatus = usePreviousValue(compileStatus)
-  const isWindowActive = useIsWindowActive()
+  const compileStatus = useCompileStatus();
+  const previousCompileStatus = usePreviousValue(compileStatus);
+  const isWindowActive = useIsWindowActive();
 
   useEffect(() => {
     if (previousCompileStatus !== compileStatus) {
-      return updateFavicon(compileStatus)
+      return updateFavicon(compileStatus);
     }
 
     if (
       isWindowActive &&
-      (compileStatus === 'COMPILED' || compileStatus === 'ERROR')
+      (compileStatus === "COMPILED" || compileStatus === "ERROR")
     ) {
-      const timeout = setTimeout(updateFavicon, RESET_AFTER_MS)
-      return () => clearTimeout(timeout)
+      const timeout = setTimeout(updateFavicon, RESET_AFTER_MS);
+      return () => clearTimeout(timeout);
     }
-  }, [compileStatus, isWindowActive, previousCompileStatus])
-}
+  }, [compileStatus, isWindowActive, previousCompileStatus]);
+};

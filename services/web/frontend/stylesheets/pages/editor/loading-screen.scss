@@ -1,29 +1,29 @@
-@use 'sass:math';
+@use "sass:math";
 
 @mixin loading-screen-dark {
-  --underleaf-loading-mark: url('../../../../public/underleaf-mark-dark.svg');
-  --underleaf-loading-wordmark: url('../../../../public/underleaf-wordmark-dark.svg');
-  --loading-screen-ol-logo-empty-url: url('../../../../public/underleaf-logo.png');
-  --loading-screen-ol-logo-full-url: url('../../../../public/underleaf-logo.png');
-  --loading-screen-bg-color: var(--bg-dark-primary);
-  --loading-screen-color: var(--content-secondary-dark);
-  --loading-screen-danger-color: var(--content-danger-dark);
+  --underleaf-loading-wordmark: url("../../../../public/underleaf-wordmark-dark.svg?v=2026-10-07-brand-5");
+  --underleaf-loading-mark-base: #f2faf4;
+  --loading-screen-ol-logo-empty-url: url("../../../../public/underleaf-logo.png");
+  --loading-screen-ol-logo-full-url: url("../../../../public/underleaf-logo.png");
+  --loading-screen-bg-color: #2c3646;
+  --loading-screen-color: #bac3cf;
+  --loading-screen-danger-color: #ff8a80;
 }
 
 @mixin loading-screen-light {
-  --underleaf-loading-mark: url('../../../../public/underleaf-mark.svg');
-  --underleaf-loading-wordmark: url('../../../../public/underleaf-wordmark.svg');
-  --loading-screen-ol-logo-empty-url: url('../../../../public/underleaf-logo.png');
-  --loading-screen-ol-logo-full-url: url('../../../../public/underleaf-logo.png');
-  --loading-screen-bg-color: var(--bg-light-primary);
-  --loading-screen-color: var(--content-secondary);
-  --loading-screen-danger-color: var(--content-danger);
+  --underleaf-loading-wordmark: url("../../../../public/underleaf-wordmark.svg?v=2026-10-07-brand-5");
+  --underleaf-loading-mark-base: #056046;
+  --loading-screen-ol-logo-empty-url: url("../../../../public/underleaf-logo.png");
+  --loading-screen-ol-logo-full-url: url("../../../../public/underleaf-logo.png");
+  --loading-screen-bg-color: #ffffff;
+  --loading-screen-color: #4b5565;
+  --loading-screen-danger-color: #b3261e;
 }
 
 :root {
   @include loading-screen-light;
 
-  @include theme('default') {
+  @include theme("default") {
     @include loading-screen-dark;
   }
 
@@ -58,6 +58,19 @@
   }
 }
 
+@keyframes underleaf-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .loading-screen {
   display: flex;
   flex-direction: column;
@@ -81,7 +94,17 @@
   .underleaf-loading-mark {
     width: 96px;
     height: 96px;
-    background: var(--underleaf-loading-mark) no-repeat center / contain;
+  }
+
+  .underleaf-loading-mark-base {
+    fill: var(--underleaf-loading-mark-base);
+  }
+
+  .underleaf-loading-mark-leaf {
+    fill: #28b85c;
+    transform-box: view-box;
+    transform-origin: 540px 965px;
+    animation: underleaf-loading-pulse 1.4s ease-in-out infinite;
   }
 
   .underleaf-loading-wordmark {
@@ -100,7 +123,7 @@
     span {
       display: block;
       height: 100%;
-      background: #138a45;
+      background: #28b85c;
       transition: width 0.5s;
     }
   }
@@ -112,7 +135,7 @@
     background: var(--loading-screen-ol-logo-empty-url) no-repeat bottom / 100%;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       height: inherit;
       right: 0;

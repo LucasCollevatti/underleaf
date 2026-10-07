@@ -12,7 +12,8 @@ importado e as obrigações legais estão registrados em
 ## Início rápido
 
 Requisitos: Docker com Compose v2, pelo menos 8 GB de RAM disponíveis durante
-o build e `openssl`.
+o build. O caminho Linux usa `openssl`; no Windows, o helper PowerShell gera os
+segredos.
 
 ```bash
 cp .env.example .env
@@ -22,6 +23,20 @@ make config
 make build
 make up
 ```
+
+No Windows, instale o Docker Desktop configurado para Linux containers e rode
+os mesmos containers pelo PowerShell:
+
+```powershell
+.\scripts\underleaf.ps1 init
+.\scripts\underleaf.ps1 config
+.\scripts\underleaf.ps1 build
+.\scripts\underleaf.ps1 up
+```
+
+O helper também oferece `health`, `logs`, `down`, `create-admin` e `test`.
+Não é necessário instalar TeX Live, Node ou `make` no host: essas dependências
+ficam dentro dos containers.
 
 Acesse <http://localhost:8080>. Em uma instalação nova, conclua o Welcome para
 criar o primeiro administrador e entrar automaticamente em Projects.
