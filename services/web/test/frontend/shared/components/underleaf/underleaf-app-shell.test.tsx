@@ -1,4 +1,11 @@
-import { act, cleanup, render, screen, within } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect } from 'chai'
 import fetchMock from 'fetch-mock'
@@ -8,6 +15,7 @@ import {
   UnderleafAppShell,
 } from '@/shared/components/underleaf/underleaf-app-shell'
 import ThemeToggle from '@/shared/components/sidebar/theme-toggle'
+import UnderleafPageSkeleton from '@/shared/components/underleaf/underleaf-page-skeleton'
 import { defaultSettings } from '@/shared/context/user-settings-context'
 import {
   readBrowserOverallTheme,
@@ -89,6 +97,53 @@ describe('<UnderleafAppShell />', function () {
         .getByRole('link', { name: 'Account settings' })
         .getAttribute('href')
     ).to.equal('/user/settings')
+  })
+
+  it('collapses project filters away from the projects page', function () {
+    window.metaAttributesCache.set('ol-navbar', {
+      sessionUser: { username: 'ada', displayName: 'Ada' },
+    })
+    renderPage('authenticated')
+
+    expect(screen.getByRole('link', { name: 'Projects' })).to.exist
+    expect(screen.queryByRole('link', { name: 'Your projects' })).to.be.null
+  })
+
+  it('renders a page-shaped skeleton for each Underleaf loading state', function () {
+    const page = render(<UnderleafPageSkeleton variant="projects" />)
+
+    expect(screen.getByRole('status', { name: 'Loading' })).to.exist
+    expect(
+      page.container.querySelector('.underleaf-skeleton-project-table')
+    ).to.exist
+
+    page.rerender(<UnderleafPageSkeleton variant="settings" />)
+    expect(
+      page.container.querySelector('.underleaf-skeleton-card-grid')
+    ).to.exist
+
+    page.rerender(<UnderleafPageSkeleton variant="admin" />)
+    expect(
+      page.container.querySelector('.underleaf-skeleton-stat-grid')
+    ).to.exist
+
+    page.rerender(<UnderleafPageSkeleton variant="users" />)
+    expect(
+      page.container.querySelector('.underleaf-skeleton-admin-search')
+    ).to.exist
+  })
+
+  it('opens the account menu and closes it when clicking outside', async function () {
+    window.metaAttributesCache.set('ol-navbar', {
+      sessionUser: { username: 'ada', displayName: 'Ada' },
+    })
+    renderPage('authenticated')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
+    expect(screen.getByRole('button', { name: 'Log out' })).to.exist
+
+    fireEvent.mouseDown(document.body)
+    expect(screen.queryByRole('button', { name: 'Log out' })).to.be.null
   })
 
   it('persists guest theme across login/setup mounts without saving account settings', async function () {

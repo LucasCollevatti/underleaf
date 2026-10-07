@@ -41,6 +41,10 @@ import {
   isDeletableProject,
   isLeavableProject,
 } from '../util/project'
+import {
+  getProjectFilterCounts,
+  ProjectFilterCounts,
+} from '../util/project-counts'
 import { debugConsole } from '@/utils/debugging'
 import { useLocation } from '@/shared/hooks/use-location'
 
@@ -81,6 +85,7 @@ export type ProjectListContextValue = {
   selectOrUnselectAllProjects: React.Dispatch<React.SetStateAction<boolean>>
   visibleProjects: Project[]
   totalProjectsCount: number
+  projectCounts: ProjectFilterCounts
   error: Error | null
   isLoading: ReturnType<typeof useAsync>['isLoading']
   loadProgress: number
@@ -388,6 +393,10 @@ export function ProjectListProvider({
     () => arrayFilter(loadedProjects, filters[filter]).length,
     [loadedProjects, filter]
   )
+  const projectCounts = useMemo(
+    () => getProjectFilterCounts(loadedProjects),
+    [loadedProjects]
+  )
 
   const selectFilter = useCallback(
     (filter: Filter) => {
@@ -568,6 +577,7 @@ export function ProjectListProvider({
       tags,
       toggleSelectedProject,
       totalProjectsCount,
+      projectCounts,
       untaggedProjectsCount,
       updateProjectViewData,
       updateTag,
@@ -608,6 +618,7 @@ export function ProjectListProvider({
       tags,
       toggleSelectedProject,
       totalProjectsCount,
+      projectCounts,
       untaggedProjectsCount,
       updateProjectViewData,
       updateTag,

@@ -15,12 +15,14 @@ type SidebarFilterProps = {
   text: React.ReactNode;
   activePage: ActivePage;
   icon?: React.ReactNode;
+  count?: number;
 };
 
 export function SidebarFilter({
   filter,
   text,
   icon,
+  count,
   activePage,
 }: SidebarFilterProps) {
   const { selectFilter } = useProjectListContext();
@@ -42,7 +44,16 @@ export function SidebarFilter({
             onClick={() => selectFilter(filter)}
           >
             {icon && <span className="icon">{icon}</span>}
-            {text}
+            {count === undefined ? (
+              text
+            ) : (
+              <>
+                <span className="sidebar-filter-label">{text}</span>
+                <span className="underleaf-sidebar-item-count" aria-hidden="true">
+                  {count}
+                </span>
+              </>
+            )}
           </button>
         </li>
       )}
@@ -58,8 +69,14 @@ export default function SidebarFilters({
   underleaf?: boolean;
 }) {
   const { t } = useTranslation();
+  const { projectCounts } = useProjectListContext();
   return (
-    <ul className="list-unstyled project-list-filters">
+    <ul
+      className={classNames(
+        "list-unstyled project-list-filters",
+        underleaf && "underleaf-project-list-filters",
+      )}
+    >
       <SidebarFilter
         activePage={activePage}
         filter="all"
@@ -70,22 +87,26 @@ export default function SidebarFilters({
         activePage={activePage}
         filter="owned"
         text={t("your_projects")}
+        count={underleaf ? projectCounts.owned : undefined}
       />
       <SidebarFilter
         activePage={activePage}
         filter="shared"
         text={t("shared_with_you")}
+        count={underleaf ? projectCounts.shared : undefined}
       />
       <SidebarFilter
         activePage={activePage}
         filter="archived"
         text={t("archived_projects")}
+        count={underleaf ? projectCounts.archived : undefined}
       />
       {underleaf && (
         <SidebarFilter
           activePage={activePage}
           filter="trashed"
           text={t("trash")}
+          count={projectCounts.trashed}
         />
       )}
       <li aria-hidden="true">

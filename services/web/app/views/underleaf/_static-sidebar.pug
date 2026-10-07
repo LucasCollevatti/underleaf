@@ -1,6 +1,7 @@
 - const underleafSidebarUser = getSessionUser()
 - const underleafSidebarAdmin = hasAdminAccess()
 - const underleafSidebarTheme = typeof initialTheme !== 'undefined' ? initialTheme : 'dark'
+- const underleafSidebarProjectsExpanded = typeof currentUrl === 'string' && currentUrl.indexOf('/project') === 0
 - const underleafSidebarDisplayName = underleafSidebarUser && (underleafSidebarUser.displayName || underleafSidebarUser.username)
 - const underleafSidebarInitials = underleafSidebarDisplayName ? underleafSidebarDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() : 'U'
 
@@ -11,39 +12,44 @@ aside.project-list-sidebar-wrapper-react.underleaf-sidebar
 			img.underleaf-brand.underleaf-static-brand-dark(src='/underleaf-wordmark-dark.svg?v=2026-10-07-brand-5' alt='Underleaf' width='150' height='28')
 	.underleaf-sidebar-sections
 		nav.underleaf-sidebar-navigation(aria-label=translate('primary'))
-			.underleaf-sidebar-project-navigation
+			.underleaf-sidebar-project-navigation(class=underleafSidebarProjectsExpanded ? 'is-expanded' : undefined)
 				a.ds-nav-page-switcher-item(href=underleafSidebarUser ? '/project' : '/login')
 					span.material-symbols folder
 					span.ds-nav-page-switcher-item-label= translate('projects')
 				if underleafSidebarUser
-					a.ds-nav-page-switcher-item(href='/project?filter=owned')
-						span.ds-nav-page-switcher-item-label= translate('your_projects')
-					a.ds-nav-page-switcher-item(href='/project?filter=shared')
-						span.ds-nav-page-switcher-item-label= translate('shared_with_you')
-					a.ds-nav-page-switcher-item(href='/project?filter=archived')
-						span.ds-nav-page-switcher-item-label= translate('archived_projects')
-					a.ds-nav-page-switcher-item(href='/project?filter=trashed')
-						span.ds-nav-page-switcher-item-label= translate('trash')
-					.underleaf-sidebar-static-tags
-						.underleaf-sidebar-static-tags-header
-							span TAGS
-							a(href='/project' aria-label=translate('new_tag'))
-								span.material-symbols add
+					.underleaf-sidebar-project-children
+						a.ds-nav-page-switcher-item(href='/project?filter=owned')
+							span.ds-nav-page-switcher-item-label= translate('your_projects')
+							span.underleaf-sidebar-item-count(data-project-count='owned' aria-hidden='true') 0
+						a.ds-nav-page-switcher-item(href='/project?filter=shared')
+							span.ds-nav-page-switcher-item-label= translate('shared_with_you')
+							span.underleaf-sidebar-item-count(data-project-count='shared' aria-hidden='true') 0
+						a.ds-nav-page-switcher-item(href='/project?filter=archived')
+							span.ds-nav-page-switcher-item-label= translate('archived_projects')
+							span.underleaf-sidebar-item-count(data-project-count='archived' aria-hidden='true') 0
+						a.ds-nav-page-switcher-item(href='/project?filter=trashed')
+							span.ds-nav-page-switcher-item-label= translate('trash')
+							span.underleaf-sidebar-item-count(data-project-count='trashed' aria-hidden='true') 0
+						.underleaf-sidebar-static-tags
+							.underleaf-sidebar-static-tags-header
+								span TAGS
+								a(href='/project' aria-label=translate('new_tag'))
+									span.material-symbols add
 			a.ds-nav-page-switcher-item(href='/user/settings')
 				span.material-symbols settings
 				span.ds-nav-page-switcher-item-label= translate('account_settings')
-			if underleafSidebarAdmin
-				.underleaf-sidebar-administration
-					p.underleaf-sidebar-section-label ADMIN
-					a.ds-nav-page-switcher-item(href='/admin')
-						span.material-symbols shield_person
-						span.ds-nav-page-switcher-item-label= translate('underleaf_administration')
-					a.ds-nav-page-switcher-item(href='/admin/users')
-						span.material-symbols group
-						span.ds-nav-page-switcher-item-label= translate('underleaf_users')
-					a.ds-nav-page-switcher-item(href='/status')
-						span.material-symbols monitor_heart
-						span.ds-nav-page-switcher-item-label= translate('underleaf_system')
+		if underleafSidebarAdmin
+			.underleaf-sidebar-administration
+				p.underleaf-sidebar-section-label ADMIN
+				a.ds-nav-page-switcher-item(href='/admin')
+					span.material-symbols shield_person
+					span.ds-nav-page-switcher-item-label= translate('underleaf_administration')
+				a.ds-nav-page-switcher-item(href='/admin/users')
+					span.material-symbols group
+					span.ds-nav-page-switcher-item-label= translate('underleaf_users')
+				a.ds-nav-page-switcher-item(href='/status')
+					span.material-symbols monitor_heart
+					span.ds-nav-page-switcher-item-label= translate('underleaf_system')
 		.underleaf-sidebar-lower
 			if underleafSidebarUser
 				fieldset.theme-toggle
@@ -56,9 +62,15 @@ aside.project-list-sidebar-wrapper-react.underleaf-sidebar
 						span.theme-toggle-radio(class=underleafSidebarTheme === 'system' ? 'is-selected' : '')
 							span.material-symbols computer
 				.underleaf-sidebar-account
-					a(href='/user/settings' aria-label=translate('account_settings'))
+					button.underleaf-sidebar-account-trigger(type='button' aria-label=translate('account_settings') aria-expanded='false' aria-controls='underleaf-sidebar-account-menu')
 						span.underleaf-sidebar-account-avatar= underleafSidebarInitials
 						span.underleaf-sidebar-account-copy
 							span.underleaf-sidebar-account-name= underleafSidebarDisplayName
 							span.underleaf-sidebar-account-role= underleafSidebarAdmin ? 'Administrator' : 'User'
 						span.material-symbols unfold_more
+					#underleaf-sidebar-account-menu.underleaf-sidebar-account-menu(hidden)
+						form(method='POST' action='/logout')
+							input(type='hidden' name='_csrf' value=csrfToken)
+							button(type='submit')
+								span.material-symbols logout
+								= translate('log_out')

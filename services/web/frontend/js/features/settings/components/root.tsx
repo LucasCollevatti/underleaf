@@ -10,6 +10,7 @@ import {
   UnderleafAppProviders,
   UnderleafAppShell,
 } from "@/shared/components/underleaf/underleaf-app-shell";
+import UnderleafPageSkeleton from "@/shared/components/underleaf/underleaf-page-skeleton";
 
 function SettingsPageRoot() {
   const { isReady } = useWaitForI18n();
@@ -21,7 +22,13 @@ function SettingsPageRoot() {
         activePage="settings"
         pageClassName="underleaf-settings-page"
       >
-        <UserProvider>{isReady && <SettingsPageContent />}</UserProvider>
+        <UserProvider>
+          {isReady ? (
+            <SettingsPageContent />
+          ) : (
+            <UnderleafPageSkeleton variant="settings" />
+          )}
+        </UserProvider>
       </UnderleafAppShell>
     </UnderleafAppProviders>
   );

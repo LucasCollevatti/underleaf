@@ -9,6 +9,7 @@ import * as eventTracking from '../../../infrastructure/event-tracking'
 import { useTranslation } from 'react-i18next'
 import useWaitForI18n from '../../../shared/hooks/use-wait-for-i18n'
 import LoadingBranded from '../../../shared/components/loading-branded'
+import UnderleafPageSkeleton from '../../../shared/components/underleaf/underleaf-page-skeleton'
 import SystemMessages from '../../../shared/components/system-messages'
 import withErrorBoundary from '../../../infrastructure/error-boundary'
 import { GenericErrorBoundaryFallback } from '@/shared/components/generic-error-boundary-fallback'
@@ -22,12 +23,25 @@ import CookieBanner from '@/shared/components/cookie-banner'
 import useThemedPage from '@/shared/hooks/use-themed-page'
 import { UserSettingsProvider } from '@/shared/context/user-settings-context'
 import { TutorialProvider } from '@/shared/context/tutorial-context'
+import SidebarDsNav from '@/features/project-list/components/sidebar/sidebar-ds-nav'
+import {
+  UnderleafAppProviders,
+  UnderleafAppShell,
+} from '@/shared/components/underleaf/underleaf-app-shell'
 
 function ProjectListRoot() {
   const { isReady } = useWaitForI18n()
 
   if (!isReady) {
-    return null
+    if (!getMeta('ol-ExposedSettings')?.underleaf) return null
+
+    return (
+      <UnderleafAppProviders>
+        <UnderleafAppShell activePage="projects">
+          <UnderleafPageSkeleton variant="projects" />
+        </UnderleafAppShell>
+      </UnderleafAppProviders>
+    )
   }
 
   return <ProjectListRootInner />
@@ -89,6 +103,16 @@ function ProjectListPageContent() {
   const { t } = useTranslation()
 
   if (isLoading) {
+    if (isUnderleaf) {
+      return (
+        <UnderleafAppShell
+          sidebar={<SidebarDsNav activePage="projects" />}
+        >
+          <UnderleafPageSkeleton variant="projects" />
+        </UnderleafAppShell>
+      )
+    }
+
     const loadingComponent = (
       <LoadingBranded loadProgress={loadProgress} label={t('loading')} />
     )
