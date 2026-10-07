@@ -81,7 +81,7 @@ describe('<UnderleafAdminPage />', function () {
         }}
       />
     )
-    expect(screen.getByRole('heading', { name: 'Overview' })).to.exist
+    expect(screen.getByRole('heading', { name: 'Administration' })).to.exist
     expect(
       screen
         .getByRole('link', { name: 'Administration' })
@@ -90,11 +90,13 @@ describe('<UnderleafAdminPage />', function () {
     expect(
       screen.getByRole('radio', { name: 'Light', exact: true })
     ).to.have.property('checked', true)
-    expect(screen.getByRole('link', { name: 'Manage users' })).to.have.property(
-      'href',
-      'http://localhost/admin/users'
-    )
-    expect(document.querySelector('dl')?.textContent).to.include(
+    expect(
+      screen.getByRole('link', { name: /Create accounts/ })
+    ).to.have.property('href', 'http://localhost/admin/users')
+    expect(
+      screen.getByRole('link', { name: /Check the web process/ })
+    ).to.have.property('href', 'http://localhost/status')
+    expect(document.querySelector('.underleaf-admin-stats')?.textContent).to.include(
       'Active projects12'
     )
   })

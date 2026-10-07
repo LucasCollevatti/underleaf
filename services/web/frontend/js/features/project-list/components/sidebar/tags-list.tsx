@@ -62,9 +62,9 @@ export default function TagsList() {
               <TagSimple weight="fill" className="tag-list-icon" />
             )}
           </span>
-          <span className="name">
-            {tag.name}{" "}
-            <span className="subdued">({projectsPerTag[tag._id].length})</span>
+          <span className="name">{tag.name}</span>
+          <span className="underleaf-sidebar-item-count">
+            ({projectsPerTag[tag._id].length})
           </span>
         </button>
 
@@ -110,8 +110,9 @@ export default function TagsList() {
           className="tag-name"
           onClick={() => selectTag(UNCATEGORIZED_KEY)}
         >
-          <span className="name fst-italic">
-            {t("uncategorized")} <span className="subdued">({untaggedProjectsCount})</span>
+          <span className="name fst-italic">{t("uncategorized")}</span>
+          <span className="underleaf-sidebar-item-count">
+            ({untaggedProjectsCount})
           </span>
         </button>
       </li>,

@@ -281,8 +281,263 @@
       letter-spacing: -0.01em;
     }
 
-    .theme-toggle {
+    h3 {
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      margin-bottom: 6px;
+    }
+
+    &--appearance,
+    &--sessions {
+      align-self: stretch;
+    }
+
+    .underleaf-settings-card-description {
+      margin: 0 0 16px;
+      color: var(--underleaf-app-muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .theme-toggle-settings {
+      display: block;
+      padding: 0;
       margin: 0;
+      background: transparent;
+      border: 0;
+
+      legend {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .theme-toggle-description {
+        margin: 0 0 16px;
+        color: var(--underleaf-app-muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .theme-toggle-radios {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+        padding: 0;
+        background: transparent;
+        border: 0;
+      }
+
+      .theme-toggle-radio {
+        display: block;
+        min-width: 0;
+        width: 100%;
+
+        input {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        label {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 6px;
+          min-height: 80px;
+          padding: 6px;
+          color: var(--underleaf-app-ink);
+          cursor: pointer;
+          background: var(--underleaf-app-surface-2);
+          border: 1px solid var(--underleaf-app-line-strong);
+          border-radius: 10px;
+          transition:
+            border-color 120ms ease,
+            box-shadow 120ms ease,
+            transform 120ms ease;
+
+          &:hover {
+            border-color: var(--underleaf-app-accent);
+            transform: translateY(-1px);
+          }
+        }
+
+        input:checked + label {
+          border-color: var(--underleaf-app-accent);
+          box-shadow: 0 0 0 1px var(--underleaf-app-accent);
+        }
+
+        input:focus-visible + label {
+          outline: 2px solid var(--underleaf-app-accent);
+          outline-offset: 2px;
+        }
+      }
+
+      .theme-toggle-preview {
+        position: relative;
+        display: block;
+        width: min(100%, 58px);
+        aspect-ratio: 1;
+        height: auto;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid rgb(0 0 0 / 15%);
+        border-radius: 7px;
+
+        &::before,
+        &::after {
+          position: absolute;
+          display: block;
+          height: 5px;
+          content: "";
+          border-radius: 999px;
+        }
+
+        &::before {
+          top: 12px;
+          left: 12px;
+          width: 16px;
+        }
+
+        &::after {
+          top: 24px;
+          left: 16px;
+          width: 9px;
+        }
+      }
+
+      .theme-toggle-preview-dark {
+        background: #0b241b;
+
+        &::before {
+          background: #3b8967;
+        }
+
+        &::after {
+          background: #65c979;
+        }
+      }
+
+      .theme-toggle-preview-light {
+        background: #f5f7f6;
+
+        &::before {
+          background: #cbd3ce;
+        }
+
+        &::after {
+          background: #65b86a;
+        }
+      }
+
+      .theme-toggle-preview-system {
+        background: linear-gradient(90deg, #0b241b 0 50%, #f5f7f6 50%);
+
+        &::before {
+          left: 50%;
+          width: 14px;
+          background: linear-gradient(90deg, #6a9d81 0 50%, #8f9992 50%);
+        }
+
+        &::after {
+          left: calc(50% + 3px);
+          width: 9px;
+          background: linear-gradient(90deg, #65c979 0 50%, #65b86a 50%);
+        }
+      }
+
+      .theme-toggle-label {
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .underleaf-session-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 78px;
+      padding: 12px;
+      background: var(--underleaf-app-surface-2);
+      border: 1px solid var(--underleaf-app-line-strong);
+      border-radius: 10px;
+      color: var(--underleaf-app-ink);
+      text-decoration: none;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+
+      &:hover,
+      &:focus-visible {
+        background: var(--underleaf-app-surface);
+        border-color: var(--underleaf-app-accent);
+        text-decoration: none;
+      }
+    }
+
+    .underleaf-session-item-icon {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      place-items: center;
+      color: var(--underleaf-app-accent);
+      background: var(--underleaf-app-accent-soft);
+      border-radius: 8px;
+
+      .material-symbols {
+        font-size: 18px;
+      }
+    }
+
+    .underleaf-session-item-details {
+      display: flex;
+      min-width: 0;
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: 3px;
+
+      strong {
+        overflow: hidden;
+        color: var(--underleaf-app-ink);
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      span {
+        color: var(--underleaf-app-muted);
+        font-size: 12px;
+      }
+    }
+
+    .underleaf-session-item-action {
+      flex: 0 0 auto;
+      color: var(--underleaf-app-accent);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--link-web-hover-themed);
+        text-decoration: underline;
+      }
     }
   }
 
@@ -299,6 +554,19 @@
 
     .underleaf-settings-card {
       padding: 20px;
+
+      .theme-toggle-settings .theme-toggle-radios {
+        gap: 6px;
+      }
+
+      .theme-toggle-settings .theme-toggle-radio label {
+        padding: 6px;
+      }
+
+      .underleaf-session-item {
+        gap: 8px;
+        padding: 10px;
+      }
     }
   }
 

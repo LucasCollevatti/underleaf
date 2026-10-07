@@ -95,9 +95,16 @@ function UnderleafAccountSection({
       </button>
       {menuOpen && (
         <div className="underleaf-sidebar-account-menu" id={menuId}>
+          <a className="underleaf-sidebar-account-menu-item" href="/user/settings">
+            <MaterialIcon type="settings" />
+            {t("account_settings")}
+          </a>
           <form method="POST" action="/logout">
             <input type="hidden" name="_csrf" value={getMeta("ol-csrfToken")} />
-            <button type="submit">
+            <button
+              type="submit"
+              className="underleaf-sidebar-account-menu-item underleaf-sidebar-account-menu-logout"
+            >
               <MaterialIcon type="logout" />
               {t("log_out")}
             </button>
@@ -193,24 +200,37 @@ export function UnderleafSidebar({
             </span>
             <ProjectCount value={projectCounts?.owned} />
           </a>
-          <a className="ds-nav-page-switcher-item" href="/project?filter=shared">
+          <a
+            className="ds-nav-page-switcher-item"
+            href="/project?filter=shared"
+          >
             <span className="ds-nav-page-switcher-item-label">
               {t("shared_with_you")}
             </span>
             <ProjectCount value={projectCounts?.shared} />
           </a>
-          <a className="ds-nav-page-switcher-item" href="/project?filter=archived">
+          <a
+            className="ds-nav-page-switcher-item"
+            href="/project?filter=archived"
+          >
             <span className="ds-nav-page-switcher-item-label">
               {t("archived_projects")}
             </span>
             <ProjectCount value={projectCounts?.archived} />
           </a>
-          <a className="ds-nav-page-switcher-item" href="/project?filter=trashed">
-            <span className="ds-nav-page-switcher-item-label">{t("trash")}</span>
+          <a
+            className="ds-nav-page-switcher-item"
+            href="/project?filter=trashed"
+          >
+            <span className="ds-nav-page-switcher-item-label">
+              {t("trash")}
+            </span>
             <ProjectCount value={projectCounts?.trashed} />
           </a>
           <div className="underleaf-sidebar-tag-navigation">
-            <p className="underleaf-sidebar-section-label">{t("organize_tags")}</p>
+            <p className="underleaf-sidebar-section-label">
+              {t("organize_tags")}
+            </p>
             <a className="ds-nav-page-switcher-item" href="/project">
               <MaterialIcon type="add" />
               <span className="ds-nav-page-switcher-item-label">
@@ -260,36 +280,29 @@ export function UnderleafSidebar({
                   : t("underleaf_guest_description")}
               </p>
             ))}
-          {authenticated &&
-            link(
-              "settings",
-              "/user/settings",
-              t("account_settings"),
-              "settings",
-            )}
         </nav>
-        {authenticated && navbar?.canDisplayAdminMenu && (
-          <nav
-            className="underleaf-sidebar-administration"
-            aria-label={t("underleaf_administration")}
-          >
-            <p className="underleaf-sidebar-section-label">ADMIN</p>
-            {link(
-              "admin",
-              "/admin",
-              t("underleaf_administration"),
-              "admin_panel_settings",
-            )}
-            {link("users", "/admin/users", t("underleaf_users"), "group")}
-            {link(
-              "system",
-              "/status",
-              t("underleaf_system"),
-              "monitor_heart",
-            )}
-          </nav>
-        )}
         <div className="ds-nav-sidebar-lower underleaf-sidebar-lower">
+          {authenticated && navbar?.canDisplayAdminMenu && (
+            <nav
+              className="underleaf-sidebar-administration"
+              aria-label={t("underleaf_administration")}
+            >
+              <p className="underleaf-sidebar-section-label">ADMIN</p>
+              {link(
+                "admin",
+                "/admin",
+                t("underleaf_administration"),
+                "admin_panel_settings",
+              )}
+              {link("users", "/admin/users", t("underleaf_users"), "group")}
+              {link(
+                "system",
+                "/status",
+                t("underleaf_system"),
+                "monitor_heart",
+              )}
+            </nav>
+          )}
           {footer}
           <ThemeToggle />
           {authenticated && navbar?.sessionUser && (

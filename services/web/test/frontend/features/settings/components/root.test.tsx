@@ -49,6 +49,10 @@ describe('<SettingsPageRoot /> local Underleaf accounts', function () {
     const appearance = screen.getByRole('region', { name: 'Appearance' })
     for (const name of ['System', 'Light', 'Dark'])
       expect(within(appearance).getByRole('radio', { name })).to.exist
+    expect(within(appearance).getByText('Applies to this browser.')).to.exist
+    expect(screen.getByText('Browsers currently signed in to your account.')).to
+      .exist
+    expect(screen.getByText('1 active session')).to.exist
   })
   it('omits SaaS account sections even if inherited flags are enabled', async function () {
     render(<SettingsPageRoot />)

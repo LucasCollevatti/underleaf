@@ -4,8 +4,8 @@
   margin: 0 auto;
   padding: 40px 28px 56px;
 
-  @include media-breakpoint-down(md) {
-    padding: 20px 16px;
+  @include media-breakpoint-down(sm) {
+    padding: 28px 16px 40px;
   }
 }
 
@@ -18,7 +18,8 @@
   margin-bottom: 24px;
 
   h1 {
-    margin-bottom: 8px;
+    margin: 0 0 8px;
+    color: var(--content-primary-themed);
     font-size: 30px;
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -26,6 +27,7 @@
 
   p {
     margin-bottom: 0;
+    color: var(--content-secondary-themed);
   }
 }
 
@@ -33,23 +35,43 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-  margin: 16px 0 32px;
+  margin: 0 0 22px;
 
-  > div {
-    padding: 24px;
-    background: var(--bg-primary-themed);
-    border: 1px solid var(--border-divider-themed);
+  .underleaf-admin-stat-card {
+    min-height: 128px;
+    padding: 18px;
+    background: var(--underleaf-app-surface);
+    border: 1px solid var(--underleaf-app-line);
     border-radius: 14px;
   }
 
-  dt {
-    font-weight: 400;
+  .underleaf-admin-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--underleaf-app-muted);
+    font-size: 12px;
+
+    .material-symbols {
+      color: var(--underleaf-app-muted);
+      font-size: 18px;
+    }
   }
 
-  dd {
-    margin: 8px 0 0;
+  strong {
+    display: block;
+    margin-top: 8px;
+    color: var(--content-primary-themed);
     font-size: 2rem;
     font-weight: 600;
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+    color: var(--underleaf-app-muted);
+    font-size: 11px;
   }
 
   @include media-breakpoint-down(lg) {
@@ -57,6 +79,126 @@
   }
 
   @include media-breakpoint-down(sm) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.underleaf-admin-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.underleaf-admin-action-card,
+.underleaf-admin-instance-card {
+  min-height: 205px;
+  padding: 20px;
+  background: var(--underleaf-app-surface);
+  border: 1px solid var(--underleaf-app-line);
+  border-radius: 14px;
+}
+
+.underleaf-admin-action-card {
+  display: flex;
+  flex-direction: column;
+  color: var(--content-primary-themed);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    transform 120ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--content-primary-themed);
+    background: var(--underleaf-app-surface-2);
+    border-color: var(--underleaf-app-accent);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .underleaf-admin-action-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    margin-bottom: 12px;
+    color: var(--underleaf-app-accent);
+    background: var(--underleaf-app-accent-soft);
+    border-radius: 8px;
+
+    .material-symbols {
+      font-size: 21px;
+    }
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    color: var(--content-primary-themed);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--content-secondary-themed);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .underleaf-admin-action-link {
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--underleaf-app-accent);
+    font-size: 12px;
+    font-weight: 700;
+  }
+}
+
+.underleaf-admin-instance-card {
+  h2 {
+    margin: 0 0 14px;
+    color: var(--content-primary-themed);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--underleaf-app-line);
+  }
+
+  dt,
+  dd {
+    margin: 0;
+    color: var(--underleaf-app-muted);
+    font-size: 12px;
+  }
+
+  dd {
+    overflow: hidden;
+    color: var(--content-primary-themed);
+    font-family: monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  .underleaf-admin-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .underleaf-admin-overview-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -49,7 +49,10 @@ export function SidebarFilter({
             ) : (
               <>
                 <span className="sidebar-filter-label">{text}</span>
-                <span className="underleaf-sidebar-item-count" aria-hidden="true">
+                <span
+                  className="underleaf-sidebar-item-count"
+                  aria-hidden="true"
+                >
                   {count}
                 </span>
               </>

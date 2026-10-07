@@ -55,13 +55,16 @@ function SettingsPageContent() {
           <PasswordSection />
         </section>
         <section
-          className="underleaf-settings-card"
+          className="underleaf-settings-card underleaf-settings-card--appearance"
           aria-labelledby="appearance-heading"
         >
           <h2 id="appearance-heading">{t("appearance")}</h2>
-          <ThemeToggle />
+          <ThemeToggle variant="settings" />
         </section>
-        <section className="underleaf-settings-card" aria-label={t("sessions")}>
+        <section
+          className="underleaf-settings-card underleaf-settings-card--sessions"
+          aria-label={t("sessions")}
+        >
           <SessionsSection />
         </section>
       </div>

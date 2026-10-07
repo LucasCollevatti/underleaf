@@ -74,6 +74,7 @@ import { SharingPermissions } from '../../../modules/sharing-permissions/app/src
 import { FullHistoryFailure } from '@ol-types/history/projectHistory'
 
 export interface Meta {
+  'ol-currentSession': UserSessionMetadata
   'ol-underleafSystem': UnderleafSystemPageData
   'ol-underleafAdmin': UnderleafAdminPageData
   'ol-underleafAuthPage': 'welcome' | 'login'
@@ -120,6 +121,7 @@ export interface Meta {
   'ol-currentManagedUserAdminEmail': string
   'ol-currentPlanCode': string | null
   'ol-currentUrl': string
+  'ol-sessions': UserSessionMetadata[]
   'ol-customerIoEnabled': boolean
   'ol-debugPdfDetach': boolean
   'ol-defaultLatexCompiler': ProjectCompiler
@@ -398,6 +400,11 @@ export interface Meta {
   'ol-writefullEnabled': boolean
   'ol-writefullEnv': WritefullPublicEnv
   'ol-wsUrl': string
+}
+
+export type UserSessionMetadata = {
+  ip_address?: string
+  session_created?: string
 }
 
 type DeepPartial<T> =

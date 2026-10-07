@@ -88,14 +88,32 @@ describe('<UnderleafAppShell />', function () {
     ).to.equal('/status')
   })
 
-  it('omits administrator navigation for ordinary users', function () {
+  it('keeps administrator navigation in the fixed lower sidebar section', function () {
+    window.metaAttributesCache.set('ol-navbar', {
+      canDisplayAdminMenu: true,
+    })
+    renderPage('authenticated')
+
+    const administration = screen.getByRole('navigation', {
+      name: 'Underleaf administration',
+    })
+    const lowerSection = administration.closest('.underleaf-sidebar-lower')
+
+    expect(lowerSection).to.exist
+    expect(
+      lowerSection?.contains(screen.getByRole('radio', { name: 'System' }))
+    ).to.be.true
+  })
+
+  it('moves account settings into the account menu for ordinary users', async function () {
     renderPage('authenticated')
     expect(screen.getByRole('link', { name: 'Projects' })).to.exist
     expect(screen.queryByRole('link', { name: 'Administration' })).to.be.null
+    expect(screen.queryByRole('link', { name: 'Account settings' })).to.be.null
+
+    await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     expect(
-      screen
-        .getByRole('link', { name: 'Account settings' })
-        .getAttribute('href')
+      screen.getByRole('link', { name: 'Account settings' }).getAttribute('href')
     ).to.equal('/user/settings')
   })
 
@@ -140,6 +158,7 @@ describe('<UnderleafAppShell />', function () {
     renderPage('authenticated')
 
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
+    expect(screen.getByRole('link', { name: 'Account settings' })).to.exist
     expect(screen.getByRole('button', { name: 'Log out' })).to.exist
 
     fireEvent.mouseDown(document.body)

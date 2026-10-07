@@ -7,6 +7,7 @@ import {
 import OLButton from '@/shared/components/ol/ol-button'
 import OLFormControl from '@/shared/components/ol/ol-form-control'
 import OLFormLabel from '@/shared/components/ol/ol-form-label'
+import MaterialIcon from '@/shared/components/material-icon'
 import type {
   UnderleafAdminPageData,
   UnderleafUserAction,
@@ -43,44 +44,102 @@ function Overview({
 }) {
   const { t } = useTranslation()
   const metrics = [
-    ['underleaf_users', stats.userCount],
-    ['underleaf_active_users', stats.activeUsers],
-    ['underleaf_active_administrators', stats.adminUsers],
-    ['underleaf_active_projects', stats.projectCount],
-  ] as const
+    {
+      label: t('underleaf_users', { defaultValue: 'Users' }),
+      value: stats.userCount,
+      description: 'All accounts',
+      icon: 'group',
+    },
+    {
+      label: t('underleaf_active_users', { defaultValue: 'Active users' }),
+      value: stats.activeUsers,
+      description: 'Signed in last 30 days',
+      icon: 'person_check',
+    },
+    {
+      label: 'Administrators',
+      value: stats.adminUsers,
+      description: 'Full access',
+      icon: 'shield',
+    },
+    {
+      label: t('underleaf_active_projects', { defaultValue: 'Active projects' }),
+      value: stats.projectCount,
+      description: 'Excluding trash',
+      icon: 'description',
+    },
+  ]
+
   return (
     <>
       <header className="underleaf-admin-heading">
         <div>
           <h1>{t('underleaf_administration')}</h1>
-          <p>{t('underleaf_admin_intro')}</p>
+          <p>
+            {t('underleaf_admin_overview_intro', {
+              defaultValue: 'Overview of this Underleaf instance.',
+            })}
+          </p>
         </div>
       </header>
-      <section aria-labelledby="underleaf-overview-heading">
-        <h2 id="underleaf-overview-heading">{t('underleaf_overview')}</h2>
-        <dl className="underleaf-admin-stats">
-          {metrics.map(([key, value]) => (
-            <div key={key}>
-              <dt>{t(key)}</dt>
-              <dd>{value.toLocaleString()}</dd>
+      <section className="underleaf-admin-stats" aria-label="Overview">
+        {metrics.map(metric => (
+          <div className="underleaf-admin-stat-card" key={metric.label}>
+            <div className="underleaf-admin-stat-header">
+              <span>{metric.label}</span>
+              <MaterialIcon type={metric.icon} />
             </div>
-          ))}
-        </dl>
+            <strong>{metric.value.toLocaleString()}</strong>
+            <small>{metric.description}</small>
+          </div>
+        ))}
       </section>
-      <section
-        className="underleaf-admin-panel"
-        aria-labelledby="underleaf-user-management-heading"
-      >
-        <h2 id="underleaf-user-management-heading">
-          {t('underleaf_user_management')}
-        </h2>
-        <p>{t('underleaf_user_management_intro')}</p>
-        <div className="d-flex flex-wrap gap-2">
-          <OLButton href="/admin/users">{t('underleaf_manage_users')}</OLButton>
-          <OLButton href="/status" variant="secondary">
-            {t('underleaf_application_status')}
-          </OLButton>
-        </div>
+      <section className="underleaf-admin-overview-grid" aria-label="Administration links">
+        <a className="underleaf-admin-action-card" href="/admin/users">
+          <span className="underleaf-admin-action-icon" aria-hidden="true">
+            <MaterialIcon type="group" />
+          </span>
+          <h2>{t('underleaf_users', { defaultValue: 'Users' })}</h2>
+          <p>Create accounts, reset passwords and manage roles.</p>
+          <span className="underleaf-admin-action-link">
+            {t('underleaf_manage_users', { defaultValue: 'Manage users' })} →
+          </span>
+        </a>
+        <a className="underleaf-admin-action-card" href="/status">
+          <span className="underleaf-admin-action-icon" aria-hidden="true">
+            <MaterialIcon type="monitor_heart" />
+          </span>
+          <h2>
+            {t('underleaf_system_status_title', {
+              defaultValue: 'System status',
+            })}
+          </h2>
+          <p>Check the web process, site access and editor.</p>
+          <span className="underleaf-admin-action-link">
+            View status →
+          </span>
+        </a>
+        <section className="underleaf-admin-instance-card" aria-labelledby="instance-heading">
+          <h2 id="instance-heading">Instance</h2>
+          <dl>
+            <div>
+              <dt>Version</dt>
+              <dd>1.0.0</dd>
+            </div>
+            <div>
+              <dt>URL</dt>
+              <dd>{window.location.host}</dd>
+            </div>
+            <div>
+              <dt>Registration</dt>
+              <dd>Invite only</dd>
+            </div>
+            <div>
+              <dt>TeX</dt>
+              <dd>TeX Live 2026</dd>
+            </div>
+          </dl>
+        </section>
       </section>
     </>
   )

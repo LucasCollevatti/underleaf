@@ -7,6 +7,10 @@ describe('<SessionsSection />', function () {
   it('shows link to sessions', async function () {
     render(<SessionsSection />)
 
+    expect(screen.getByText('Browsers currently signed in to your account.')).to
+      .exist
+    expect(screen.getByText('1 active session')).to.exist
+
     const link = screen.getByRole('link', {
       name: 'Manage sessions',
     })
