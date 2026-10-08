@@ -62,6 +62,16 @@ function getOutputDir(projectId, userId) {
   return Path.join(Settings.path.outputDir, getCompileName(projectId, userId))
 }
 
+async function shouldForceFullCompile(compileDir) {
+  try {
+    await fsPromises.access(Path.join(compileDir, 'output.pdf'))
+    return false
+  } catch (error) {
+    if (error.code === 'ENOENT') return true
+    throw error
+  }
+}
+
 async function doCompileWithLock(request, stats, timings) {
   const compileDir = getCompileDir(request.project_id, request.user_id)
   request.isInitialCompile =
@@ -99,6 +109,11 @@ async function doCompile(request, stats, timings) {
     }
   } else {
     request.metricsOpts.compile = 'recompile'
+  }
+
+  const compileFlags = [...(request.flags || [])]
+  if (await shouldForceFullCompile(compileDir)) {
+    compileFlags.push('-g')
   }
 
   const syncStart = Date.now()
@@ -222,7 +237,7 @@ async function doCompile(request, stats, timings) {
       compiler: request.compiler,
       timeout: request.timeout,
       image: request.imageName,
-      flags: request.flags,
+      flags: compileFlags,
       environment: env,
       compileGroup: request.compileGroup,
       stopOnFirstError: request.stopOnFirstError,

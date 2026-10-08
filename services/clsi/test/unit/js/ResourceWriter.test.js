@@ -285,10 +285,10 @@ describe('ResourceWriter', () => {
         .should.equal(true)
     })
 
-    it('should delete the output files', ctx => {
+    it('should preserve the existing PDF', ctx => {
       return ctx.ResourceWriter._deleteFileIfNotDirectory
         .calledWith(path.join(ctx.basePath, 'output.pdf'))
-        .should.equal(true)
+        .should.equal(false)
     })
 
     it('should delete the stdout log file', ctx => {

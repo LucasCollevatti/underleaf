@@ -131,6 +131,7 @@ describe('CompileManager', () => {
       isFile: sinon.stub().returns(true),
     }
     ctx.fsPromises = {
+      access: sinon.stub().resolves(),
       lstat: sinon.stub(),
       stat: sinon.stub(),
       readFile: sinon.stub(),
@@ -343,6 +344,23 @@ describe('CompileManager', () => {
             timings: sinon.match.object,
           }
         )
+      })
+
+      describe('when the previous PDF is missing', () => {
+        beforeEach(async ctx => {
+          ctx.LatexRunner.promises.runLatex.resetHistory()
+          ctx.fsPromises.access.rejects({ code: 'ENOENT' })
+          await ctx.CompileManager.promises.doCompileWithLock(
+            ctx.request,
+            {},
+            {}
+          )
+        })
+
+        it('should force a full latexmk run', ctx => {
+          const { flags } = ctx.LatexRunner.promises.runLatex.args[0][1]
+          expect(flags).to.include('-g')
+        })
       })
 
       it('should find the output files', ctx => {

@@ -279,7 +279,6 @@ export default ResourceWriter = {
       path === 'output.tar.gz' ||
       path === 'output.synctex.gz' ||
       path === 'output.pdfxref' ||
-      path === 'output.pdf' ||
       path === 'output.dvi' ||
       path === 'output.log' ||
       path === 'output.xdv' ||
