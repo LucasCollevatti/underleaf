@@ -98,6 +98,41 @@
     display: contents;
   }
 
+  .underleaf-tag-actions-menu {
+    position: fixed;
+    z-index: 1100;
+    display: flex;
+    min-width: 160px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    color: var(--underleaf-app-ink);
+    background: var(--underleaf-app-surface);
+    border: 1px solid var(--underleaf-app-line-strong);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  }
+
+  .underleaf-tag-actions-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 36px;
+    padding: 0 10px;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--underleaf-sidebar-hover-bg);
+    }
+  }
+
   .underleaf-projects-main {
     box-sizing: border-box;
     width: 100%;
@@ -890,11 +925,15 @@
         }
 
         > .tag-menu {
-          display: none;
+          position: absolute;
+          display: flex;
           top: 5px;
           right: 6px;
           z-index: 1;
           margin-top: 0;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 120ms ease-in-out;
 
           .dropdown-menu {
             z-index: 10;
@@ -904,7 +943,8 @@
         &:hover > .tag-menu,
         &:focus-within > .tag-menu,
         > .tag-menu.show {
-          display: block;
+          opacity: 1;
+          pointer-events: auto;
         }
       }
 
