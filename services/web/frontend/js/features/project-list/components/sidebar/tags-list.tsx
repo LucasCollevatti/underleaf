@@ -68,7 +68,11 @@ export default function TagsList() {
           </span>
         </button>
 
-        <OLDropdown align="end" className="tag-menu">
+        <OLDropdown
+          align={isUnderleaf ? "start" : "end"}
+          drop={isUnderleaf ? "end" : undefined}
+          className="tag-menu"
+        >
           <OLDropdownToggle
             aria-label={t("open_action_menu", { name: tag.name })}
             id={`${tag._id}-dropdown-toggle`}
@@ -76,13 +80,25 @@ export default function TagsList() {
           >
             <DotsThreeVertical weight="bold" />
           </OLDropdownToggle>
-          <OLDropdownMenu className="dropdown-menu-sm-width">
+          <OLDropdownMenu
+            className="dropdown-menu-sm-width"
+            popperConfig={
+              isUnderleaf
+                ? {
+                    strategy: "fixed",
+                    modifiers: [
+                      { name: "offset", options: { offset: [8, 0] } },
+                    ],
+                  }
+                : undefined
+            }
+          >
             <OLDropdownItem
               as="li"
               className="tag-action"
               onClick={(e) => handleEditTag(e, tag._id)}
             >
-              {t("edit")}
+              {isUnderleaf ? t("rename") : t("edit")}
             </OLDropdownItem>
             <OLDropdownItem
               as="li"

@@ -287,6 +287,10 @@
       background: var(--underleaf-app-surface);
       border-color: var(--underleaf-app-line);
       border-radius: 14px;
+
+      .project-ds-empty-project-list-inner {
+        padding: var(--spacing-06);
+      }
     }
 
     @include media-breakpoint-down(md) {
@@ -648,6 +652,7 @@
 
     .underleaf-sidebar-item-count {
       margin-left: auto;
+      margin-right: 8px;
       flex: 0 0 auto;
       min-width: 1.5em;
       color: currentColor;
@@ -883,6 +888,24 @@
             display: none;
           }
         }
+
+        > .tag-menu {
+          display: none;
+          top: 5px;
+          right: 6px;
+          z-index: 1;
+          margin-top: 0;
+
+          .dropdown-menu {
+            z-index: 10;
+          }
+        }
+
+        &:hover > .tag-menu,
+        &:focus-within > .tag-menu,
+        > .tag-menu.show {
+          display: block;
+        }
       }
 
       .underleaf-sidebar-tags-header {
@@ -904,6 +927,7 @@
           justify-content: center;
           width: 24px;
           height: 24px;
+          margin-right: 8px;
           padding: 0;
           color: var(--underleaf-sidebar-secondary);
           background: transparent;
