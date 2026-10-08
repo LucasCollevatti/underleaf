@@ -104,9 +104,10 @@ current migration stage.
 ## Local base image
 
 The default build creates `underleaf/base:local` from
-`server-ce/Dockerfile-base`. This keeps the Node.js and TeX dependencies used
-by the imported revision reproducible and avoids relying on an external
-ShareLaTeX-era base image.
+`server-ce/Dockerfile-base`. This keeps the Node.js and native dependencies
+used by the imported revision reproducible and avoids relying on an external
+ShareLaTeX-era base image. TeX Live itself is kept out of this shared base and
+comes from the official compiler image described below.
 
 `make build` runs the base, application and compiler image builds. The Compose
 `base` service owns the base-image build so a fresh checkout does not depend on
@@ -125,9 +126,9 @@ Build the base image once on a new host:
 make build-base
 ```
 
-That one-time base build includes TeX Live and the native system dependencies
-required by the application. After the base exists locally, UI and web-service
-changes do not rebuild it:
+That one-time base build includes the native system dependencies required by
+the application. It does not install TeX Live. After the base exists locally,
+UI and web-service changes do not rebuild it:
 
 ```bash
 make web
@@ -141,19 +142,19 @@ reinstall TeX Live, and does not recreate MongoDB, Redis, or named volumes.
 ## Compiler image
 
 The application image and the LaTeX compiler image are built separately. The
-base image installs one TeX Live release with the basic scheme and the
-explicitly supported compiler packages. The compiler image inherits that
-installation and verifies the supported tools and packages without publishing
-a compiler port:
+compiler image imports the complete official TeX Live distribution selected by
+`UNDERLEAF_TEXLIVE_IMAGE` (default: `texlive/texlive:latest`). It does not run
+a local `tlmgr` package allowlist, so language files and transitive style
+packages come from the official image as a unit:
 
 ```bash
 ./scripts/build-compiler.sh
 ```
 
 The image validates pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, Biber,
-makeindex, TikZ, PGFPlots, Circuitikz, Minted, Fontspec, BibLaTeX and Chemfig
-during its build. The base and compiler use one TeX Live release and mirror;
-the compiler must not install packages after the base is built.
+makeindex, `tcolorbox.sty` and `brazilian.ldf` during its build. Pin
+`UNDERLEAF_TEXLIVE_IMAGE` in `.env` when reproducible image updates are
+required. The compiler must not install packages after the image is built.
 
 ## Compiler safeguards
 

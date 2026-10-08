@@ -1,9 +1,17 @@
 # syntax=docker/dockerfile:1-labs
 
+ARG UNDERLEAF_TEXLIVE_IMAGE=texlive/texlive:latest
 ARG UNDERLEAF_COMPILER_BASE_IMAGE=underleaf/base:local
+FROM ${UNDERLEAF_TEXLIVE_IMAGE} AS official-texlive
+
 FROM ${UNDERLEAF_COMPILER_BASE_IMAGE}
 
 WORKDIR /overleaf
+
+# Use the complete official TeX Live distribution. Package selection belongs
+# to the image source, not to a local tlmgr allowlist that can silently omit
+# transitive language or style packages.
+COPY --from=official-texlive /usr/local/texlive /usr/local/texlive
 
 COPY --parents libraries/*/package.json .yarn/patches/ services/*/package.json tools/migrations/ package.json yarn.lock .yarnrc.yml .pnp.register.mjs /overleaf/
 
@@ -22,7 +30,9 @@ ENV NODE_OPTIONS="--require /overleaf/.pnp.cjs --import /overleaf/.pnp.register.
 ENV TEXMFVAR=/var/lib/underleaf/compiler/texmf-var
 ENV HOME=/tmp
 
-RUN tlmgr path add \
+RUN export TEXLIVE_BIN="$(find /usr/local/texlive -type d -path '*/bin/x86_64-linux' -print -quit)" \
+  && export PATH="${TEXLIVE_BIN}:${PATH}" \
+  && tlmgr path add \
   && command -v pdflatex \
   && command -v xelatex \
   && command -v lualatex \
@@ -30,9 +40,8 @@ RUN tlmgr path add \
   && command -v bibtex \
   && command -v biber \
   && command -v makeindex \
-  && for package in tikz.sty pgfplots.sty circuitikz.sty minted.sty fontspec.sty biblatex.sty chemfig.sty; do \
-    kpsewhich "${package}" >/dev/null; \
-  done \
+  && kpsewhich tcolorbox.sty >/dev/null \
+  && kpsewhich brazilian.ldf >/dev/null \
   && mkdir -p \
     /var/lib/underleaf/compiler/compiles \
     /var/lib/underleaf/compiler/output \

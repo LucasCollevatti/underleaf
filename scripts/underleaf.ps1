@@ -88,8 +88,8 @@ Usage: .\scripts\underleaf.ps1 <command>
 Commands:
   init             Create .env and generate missing secrets
   config           Validate the merged Compose configuration
-  build            Build the TeX Live base image and the app image
-  build-compiler   Build the optional isolated compiler image
+  build            Build the app and official TeX Live compiler images
+  build-compiler   Build the official isolated TeX Live compiler image
   up               Start Underleaf
   down             Stop Underleaf without deleting volumes
   logs             Follow app logs
@@ -112,12 +112,13 @@ switch ($Command) {
   }
   'build' {
     Initialize-Environment
-    Invoke-Compose 'build', 'base', 'app', 'compiler'
+    Invoke-Compose 'build', 'base'
+    Invoke-Compose 'build', 'app', 'compiler'
   }
   'build-compiler' {
     Initialize-Environment
-    $dockerArguments = @('compose') + $composeArgs + @('build', 'base', 'compiler')
-    Invoke-External -FilePath 'docker' -Arguments $dockerArguments
+    Invoke-Compose 'build', 'base'
+    Invoke-Compose 'build', 'compiler'
   }
   'up' {
     Initialize-Environment

@@ -6,9 +6,11 @@ dedicated `compiler` service from the root `compose.yaml`.
 
 ## Supported runtime
 
-The compiler image is built by `server-ce/Dockerfile-compiler`. It contains
-the TeX Live tools required by the supported compilers and runs the CLSI on
-internal port `3013`. The Compose service:
+The compiler image is built by `server-ce/Dockerfile-compiler`. It embeds the
+complete official TeX Live distribution from `UNDERLEAF_TEXLIVE_IMAGE` and
+runs the CLSI on internal port `3013`. The default is the public official
+`texlive/texlive:latest` image; pin it in `.env` when reproducible image
+updates are required. The Compose service:
 
 - runs as `www-data`;
 - uses a read-only root filesystem and a writable compiler work volume;

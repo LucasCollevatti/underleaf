@@ -70,7 +70,7 @@ Commands:
   init             Create .env and generate the persistent session secret
   config           Validate the merged Compose configuration
   build            Build the base, app and compiler images
-  build-compiler   Build the base and isolated compiler images
+  build-compiler   Build the base and official isolated TeX Live compiler image
   up               Build missing images and start Underleaf
   down             Stop Underleaf without deleting volumes
   logs             Follow app logs
@@ -94,11 +94,13 @@ case "${1:-help}" in
     ;;
   build)
     init_environment
-    compose build base app compiler
+    compose build base
+    compose build app compiler
     ;;
   build-compiler)
     init_environment
-    compose build base compiler
+    compose build base
+    compose build compiler
     ;;
   up)
     ensure_environment

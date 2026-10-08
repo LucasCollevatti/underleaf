@@ -6,9 +6,6 @@ services:
     build:
       context: .
       dockerfile: server-ce/Dockerfile-base
-      args:
-        TEXLIVE_MIRROR: ${UNDERLEAF_TEXLIVE_MIRROR:-https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet}
-        TEXLIVE_SCHEME: ${UNDERLEAF_TEXLIVE_SCHEME:-scheme-basic}
     restart: "no"
     entrypoint: ["/bin/true"]
 
@@ -81,6 +78,7 @@ services:
       dockerfile: server-ce/Dockerfile-compiler
       args:
         UNDERLEAF_COMPILER_BASE_IMAGE: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
+        UNDERLEAF_TEXLIVE_IMAGE: ${UNDERLEAF_TEXLIVE_IMAGE:-texlive/texlive:latest}
     depends_on:
       base:
         condition: service_completed_successfully
