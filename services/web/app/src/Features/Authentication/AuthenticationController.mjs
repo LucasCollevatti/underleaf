@@ -18,7 +18,6 @@ import AsyncFormHelper from '../Helpers/AsyncFormHelper.mjs'
 import { getRawReqInput } from '../../infrastructure/Validation.mjs'
 import _ from 'lodash'
 import UserAuditLogHandler from '../User/UserAuditLogHandler.mjs'
-import AnalyticsRegistrationSourceHelper from '../Analytics/AnalyticsRegistrationSourceHelper.mjs'
 import { acceptsJson } from '../../infrastructure/RequestContentTypeDetection.mjs'
 import AdminAuthorizationHelper from '../Helpers/AdminAuthorizationHelper.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
@@ -228,8 +227,6 @@ const AuthenticationController = {
     await _afterLoginSessionSetupAsync(req, user)
 
     AuthenticationController._clearRedirectFromSession(req)
-    AnalyticsRegistrationSourceHelper.clearSource(req.session)
-    AnalyticsRegistrationSourceHelper.clearInbound(req.session)
     AsyncFormHelper.redirect(req, res, redir)
   },
 

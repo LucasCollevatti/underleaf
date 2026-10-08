@@ -363,12 +363,6 @@ export default LinkedFilesController = {
         res,
         'You are not the user who originally imported this file'
       )
- else if (error.info?.statusCode === 429) {
-        res.status(429).json({ message: 'rate_limited' })
-      } else {
-        res.status(502)
-        plainTextResponse(res, 'The remote service produced an error')
-      }
     } else if (error instanceof FileCannotRefreshError) {
       res.status(400)
       plainTextResponse(res, 'This file cannot be refreshed')

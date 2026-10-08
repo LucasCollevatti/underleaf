@@ -8,7 +8,6 @@ import { useHasLintingError } from '@/features/ide-react/hooks/use-has-linting-e
 import { Modals } from '@/features/ide-react/components/modals/modals'
 import { GlobalAlertsProvider } from '@/features/ide-react/context/global-alerts-context'
 import { GlobalToasts } from '../global-toasts'
-import EditorSurvey from '../editor-survey'
 import { useFeatureFlag } from '@/shared/context/split-test-context'
 import { useStatusFavicon } from '@/features/ide-react/hooks/use-status-favicon'
 import useThemedPage from '@/shared/hooks/use-themed-page'
@@ -27,7 +26,6 @@ export default function IdePage() {
   useStatusFavicon() // update the favicon based on the compile status
   useThemedPage() // set the page theme based on user settings
 
-  const showEditorSurvey = useFeatureFlag('editor-popup-ux-survey-03-2026')
   const showCommandPalette = useFeatureFlag('command-palette')
 
   return (
@@ -38,7 +36,6 @@ export default function IdePage() {
       <MainLayout />
       <GlobalToasts />
       {showCommandPalette && <CommandPalette />}
-      {showEditorSurvey && <EditorSurvey />}
     </GlobalAlertsProvider>
   )
 }

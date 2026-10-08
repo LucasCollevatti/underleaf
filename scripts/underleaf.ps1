@@ -51,7 +51,7 @@ function Initialize-Environment {
   }
 
   $contents = [System.IO.File]::ReadAllText($envPath)
-  foreach ($name in @('UNDERLEAF_INVITE_TOKEN_SECRET', 'UNDERLEAF_SESSION_SECRET')) {
+  foreach ($name in @('UNDERLEAF_SESSION_SECRET')) {
     $pattern = "(?m)^$([regex]::Escape($name))=(?<value>.*)$"
     $match = [regex]::Match($contents, $pattern)
     if (-not $match.Success) {
@@ -102,17 +102,17 @@ switch ($Command) {
   }
   'build' {
     Initialize-Environment
-    Invoke-External -FilePath 'docker' -Arguments @('build', '--file', 'server-ce/Dockerfile-base', '--tag', 'underleaf/base:local', '.')
-    Invoke-Compose 'build', 'app'
+    Invoke-Compose 'build', 'base', 'app', 'compiler'
   }
   'build-compiler' {
     Initialize-Environment
-    $dockerArguments = @('compose', '--profile', 'compiler') + $composeArgs + @('build', 'compiler')
+    $dockerArguments = @('compose') + $composeArgs + @('build', 'base', 'compiler')
     Invoke-External -FilePath 'docker' -Arguments $dockerArguments
   }
   'up' {
     Initialize-Environment
-    Invoke-Compose 'up', '--detach'
+    Invoke-Compose 'build', 'base'
+    Invoke-Compose 'up', '--build', '--detach'
   }
   'down' {
     Invoke-Compose 'down'

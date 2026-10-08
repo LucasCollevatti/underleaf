@@ -7,7 +7,6 @@ import GroupSsoSetupSuccess from './groups/group-sso-setup-success'
 import getMeta from '../../../../utils/meta'
 import importOverleafModules from '../../../../../macros/import-overleaf-module.macro'
 import GeoBanners from './geo-banners'
-import AccessibilitySurveyBanner from './accessibility-survey-banner'
 import {
   DeprecatedBrowser,
   isDeprecatedBrowser,
@@ -52,7 +51,6 @@ function UserNotifications() {
         <GeoBanners />
         <GroupsAndEnterpriseBanner />
         {USGovBanner && <USGovBanner />}
-        <AccessibilitySurveyBanner />
         {isDeprecatedBrowser() && <DeprecatedBrowser />}
       </ul>
     </section>

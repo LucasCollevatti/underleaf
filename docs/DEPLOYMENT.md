@@ -7,13 +7,12 @@ Requirements:
 - Docker Engine with Docker Compose v2;
 - at least the resources required by the imported Overleaf Community Edition
   image build;
-- `openssl` for generating persistent secrets.
+- one of the included platform helpers to generate the persistent session secret.
 
 Prepare the configuration:
 
 ```bash
-cp .env.example .env
-sed -i "s/^UNDERLEAF_SESSION_SECRET=.*/UNDERLEAF_SESSION_SECRET=$(openssl rand -base64 32)/" .env
+bash ./scripts/underleaf.sh init
 ```
 
 The session secret must remain stable across restarts. Do not commit `.env`.
@@ -21,9 +20,7 @@ The session secret must remain stable across restarts. Do not commit `.env`.
 Build and start the stack:
 
 ```bash
-make config
-make build
-make up
+bash ./scripts/underleaf.sh up
 docker compose ps
 ```
 
@@ -98,8 +95,8 @@ docker compose ps
 docker compose logs app
 ```
 
-The app, compiler, MongoDB and Redis services have healthchecks. The supported
-compiler profile runs as a dedicated, internal-only service with no Docker
+The app, compiler, MongoDB and Redis services have healthchecks. The dedicated
+compiler service runs internally with no Docker
 socket, no application secrets and explicit resource limits. The application
 image still contains the imported non-compiler runtime services required by the
 current migration stage.
@@ -111,9 +108,9 @@ The default build creates `underleaf/base:local` from
 by the imported revision reproducible and avoids relying on an external
 ShareLaTeX-era base image.
 
-`make build` runs both the base-image and application-image builds. To run the
-Compose command directly, build the base image first and set
-`UNDERLEAF_BASE_IMAGE=underleaf/base:local` in `.env`.
+`make build` runs the base, application and compiler image builds. The Compose
+`base` service owns the base-image build so a fresh checkout does not depend on
+an image created by a separate command.
 
 ## Web-only rebuild
 
@@ -144,8 +141,10 @@ reinstall TeX Live, and does not recreate MongoDB, Redis, or named volumes.
 ## Compiler image
 
 The application image and the LaTeX compiler image are built separately. The
-compiler image contains a curated, explicitly declared TeX Live package set
-and the supported tools without publishing a compiler port:
+base image installs one TeX Live release with the basic scheme and the
+explicitly supported compiler packages. The compiler image inherits that
+installation and verifies the supported tools and packages without publishing
+a compiler port:
 
 ```bash
 ./scripts/build-compiler.sh
@@ -153,13 +152,12 @@ and the supported tools without publishing a compiler port:
 
 The image validates pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, Biber,
 makeindex, TikZ, PGFPlots, Circuitikz, Minted, Fontspec, BibLaTeX and Chemfig
-during its build. Add packages to the compiler Dockerfile when the supported
-document set grows; update the TeX Live mirror separately from application
-releases with `UNDERLEAF_TEXLIVE_MIRROR` when required.
+during its build. The base and compiler use one TeX Live release and mirror;
+the compiler must not install packages after the base is built.
 
 ## Compiler safeguards
 
-The `compiler` profile runs as `www-data` with a read-only root filesystem,
+The `compiler` service runs as `www-data` with a read-only root filesystem,
 all Linux capabilities dropped, `no-new-privileges`, controlled temporary
 filesystems, configurable CPU/memory limits and an internal-only network. It
 does not mount the Docker socket and receives no application secrets.

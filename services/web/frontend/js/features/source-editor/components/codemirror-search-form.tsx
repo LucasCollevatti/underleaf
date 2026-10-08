@@ -35,7 +35,6 @@ import { useUserSettingsContext } from '@/shared/context/user-settings-context'
 import { getStoredSelection, setStoredSelection } from '../extensions/search'
 import { debounce } from 'lodash'
 import { EditorSelection, EditorState } from '@codemirror/state'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 import { FullProjectSearchButton } from './full-project-search-button'
 import { isInvalidRegExp } from '../utils/regexp'
 import { useActiveOverallTheme } from '@/shared/hooks/use-active-overall-theme'
@@ -216,11 +215,6 @@ const CodeMirrorSearchForm: FC<React.PropsWithChildren> = () => {
         case 'Enter':
           event.preventDefault()
           replaceNext(view)
-          sendSearchEvent('search-replace-click', {
-            searchType: 'document',
-            action: 'replace',
-            method: 'keyboard',
-          })
           break
 
         case 'Tab': {
@@ -458,11 +452,6 @@ const CodeMirrorSearchForm: FC<React.PropsWithChildren> = () => {
               variant="ghost"
               size="sm"
               onClick={() => {
-                sendSearchEvent('search-replace-click', {
-                  searchType: 'document',
-                  action: 'replace',
-                  method: 'button',
-                })
                 replaceNext(view)
               }}
             >
@@ -473,11 +462,6 @@ const CodeMirrorSearchForm: FC<React.PropsWithChildren> = () => {
               variant="ghost"
               size="sm"
               onClick={() => {
-                sendSearchEvent('search-replace-click', {
-                  searchType: 'document',
-                  action: 'replace-all',
-                  method: 'button',
-                })
                 replaceAll(view)
               }}
             >

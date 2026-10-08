@@ -27,8 +27,14 @@
   @include list-checkmark;
 
   li {
-    background: url('../../../public/img/website-redesign/check-in-green-circle.svg')
-      no-repeat left top;
+    position: relative;
+
+    &::before {
+      color: var(--green-50);
+      content: '✓';
+      left: 0;
+      position: absolute;
+    }
 
     @include body-lg;
   }
@@ -38,7 +44,13 @@
   @include list-checkmark;
 
   li {
-    background: url('../../../public/img/website-redesign/check-in-blue-circle.svg')
-      no-repeat left top;
+    position: relative;
+
+    &::before {
+      color: var(--sapphire-blue);
+      content: '✓';
+      left: 0;
+      position: absolute;
+    }
   }
 }

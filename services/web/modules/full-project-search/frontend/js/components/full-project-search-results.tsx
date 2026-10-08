@@ -5,7 +5,6 @@ import { CollapsibleFileHeader } from '@/shared/components/collapsible-file-head
 import { MatchedHit } from './matched-hit'
 import { useFileTreePathContext } from '@/features/file-tree/contexts/file-tree-path'
 import { useEditorManagerContext } from '@/features/ide-react/context/editor-manager-context'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 
 export const FullProjectSearchResults: FC<{
   matchedFiles: MatchedFile[]
@@ -105,9 +104,6 @@ export const FullProjectSearchResults: FC<{
       if (selectedFile) {
         const result = findEntityByPath(selectedFile.path)
         if (result) {
-          sendSearchEvent('search-result-click', {
-            searchType: 'full-project',
-          })
           const line = selectedHit.lineIndex
           const column = selectedHit.matchIndex
           const text = selectedFile.lines[line].substring(

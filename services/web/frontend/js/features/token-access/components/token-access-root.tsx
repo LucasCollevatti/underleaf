@@ -13,7 +13,6 @@ import {
 } from '@/features/token-access/components/require-accept-screen'
 import importOverleafModules from '../../../../macros/import-overleaf-module.macro'
 import MaterialIcon from '@/shared/components/material-icon'
-import { useFeatureFlag } from '@/shared/context/split-test-context'
 
 type Mode = 'access-attempt' | 'v1Import' | 'requireAccept'
 
@@ -40,7 +39,6 @@ function TokenAccessRoot() {
   const [loadingScreenBrandHeight, setLoadingScreenBrandHeight] =
     useState('0px')
   const location = useLocation()
-  const isSharingUpdatesEnabled = useFeatureFlag('sharing-updates')
 
   const sendPostRequest = useCallback(
     (confirmedByUser = false) => {
@@ -114,16 +112,14 @@ function TokenAccessRoot() {
 
   return (
     <div className="token-access-container">
-      {!isSharingUpdatesEnabled && (
-        <div className="token-access-action-header">
-          <a href="/project" className="token-access-home-link">
-            <MaterialIcon
-              type="arrow_left_alt"
-              style={{ fontSize: 'inherit' }}
-            />
-          </a>
-        </div>
-      )}
+      <div className="token-access-action-header">
+        <a href="/project" className="token-access-home-link">
+          <MaterialIcon
+            type="arrow_left_alt"
+            style={{ fontSize: 'inherit' }}
+          />
+        </a>
+      </div>
       <div className="token-access-content">
         {mode === 'access-attempt' && (
           <AccessAttemptScreen

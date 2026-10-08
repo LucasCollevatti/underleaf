@@ -20,7 +20,6 @@ import DefaultNavbar from "@/shared/components/navbar/default-navbar";
 import Footer from "@/shared/components/footer/footer";
 import SidebarDsNav from "@/features/project-list/components/sidebar/sidebar-ds-nav";
 import SystemMessages from "@/shared/components/system-messages";
-import CookieBanner from "@/shared/components/cookie-banner";
 import NoProjects from "@/features/project-list/components/no-projects";
 import { useActiveOverallTheme } from "@/shared/hooks/use-active-overall-theme";
 import { useFeatureFlag } from "@/shared/context/split-test-context";
@@ -249,7 +248,6 @@ export function ProjectListDsNav() {
           </div>
           {!isUnderleaf && <Footer {...footerProps} />}
         </div>
-        {!isUnderleaf && <CookieBanner />}
       </div>
     </UnderleafAppShell>
   );

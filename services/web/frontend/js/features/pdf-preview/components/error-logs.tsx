@@ -11,8 +11,6 @@ import { useDetachCompileContext as useCompileContext } from '@/shared/context/d
 import { Nav, NavLink, TabContainer, TabContent } from 'react-bootstrap'
 import { LogEntry as LogEntryData } from '@/features/pdf-preview/util/types'
 import LogEntry from './log-entry'
-import TimeoutUpgradePromptNew from '@/features/pdf-preview/components/timeout-upgrade-prompt-new'
-import getMeta from '@/utils/meta'
 import PdfClearCacheButton from '@/features/pdf-preview/components/pdf-clear-cache-button'
 import PdfDownloadFilesButton from '@/features/pdf-preview/components/pdf-download-files-button'
 import RollingBuildSelectedReminder from './rolling-build-selected-reminder'
@@ -32,7 +30,6 @@ function ErrorLogs({
 }) {
   const { error, logEntries, rawLog, validationIssues, stoppedOnFirstError } =
     useCompileContext()
-  const { compileTimeout } = getMeta('ol-compileSettings')
   const { t } = useTranslation()
 
   const tabs = useMemo(() => {
@@ -90,11 +87,7 @@ function ErrorLogs({
             />
           )}
 
-          {compileTimeout < 60 && error === 'timedout' ? (
-            <TimeoutUpgradePromptNew />
-          ) : (
-            <>{error && <PdfPreviewError error={error} />}</>
-          )}
+          {error && <PdfPreviewError error={error} />}
 
           {includeErrors &&
             validationIssues &&

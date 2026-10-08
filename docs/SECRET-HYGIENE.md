@@ -42,5 +42,4 @@ Deleting a secret from the working tree is not remediation if the value remains
 in Git history.
 
 The empty assignments in `.env.example` intentionally document the
-`UNDERLEAF_INVITE_TOKEN_SECRET` and `UNDERLEAF_SESSION_SECRET` values that
-an operator must generate locally.
+`UNDERLEAF_SESSION_SECRET` value that an operator must generate locally.

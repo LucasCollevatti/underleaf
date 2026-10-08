@@ -48,14 +48,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 #     --build-arg TEXLIVE_MIRROR=https://ctan.crest.fr/tex-archive/systems/texlive/tlnet \
 #     -f Dockerfile-base -t sharelatex/sharelatex-base .
 ARG TEXLIVE_MIRROR=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
+ARG TEXLIVE_SCHEME=scheme-basic
 
 RUN mkdir /install-tl-unx \
-&&  wget --quiet https://tug.org/texlive/files/texlive.asc \
+&&  wget --quiet --tries=5 --timeout=30 --waitretry=5 https://tug.org/texlive/files/texlive.asc \
 &&  gpg --import texlive.asc \
 &&  rm texlive.asc \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512 \
-&&  wget --quiet ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512.asc \
+&&  wget --quiet --tries=5 --timeout=30 --waitretry=5 ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz \
+&&  wget --quiet --tries=5 --timeout=30 --waitretry=5 ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512 \
+&&  wget --quiet --tries=5 --timeout=30 --waitretry=5 ${TEXLIVE_MIRROR}/install-tl-unx.tar.gz.sha512.asc \
 &&  gpg --verify install-tl-unx.tar.gz.sha512.asc \
 &&  sha512sum -c install-tl-unx.tar.gz.sha512 \
 &&  tar -xz -C /install-tl-unx --strip-components=1 -f install-tl-unx.tar.gz \
@@ -63,7 +64,7 @@ RUN mkdir /install-tl-unx \
 &&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
 &&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
 &&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "selected_scheme scheme-full" >> /install-tl-unx/texlive.profile \
+&&  echo "selected_scheme ${TEXLIVE_SCHEME}" >> /install-tl-unx/texlive.profile \
     \
 &&  /install-tl-unx/install-tl \
       -profile /install-tl-unx/texlive.profile \
@@ -71,10 +72,20 @@ RUN mkdir /install-tl-unx \
     \
 &&  $(find /usr/local/texlive -name tlmgr) path add \
 &&  tlmgr install --repository ${TEXLIVE_MIRROR} \
-      latexmk \
-      texcount \
-      synctex \
+      bibtex \
+      biber \
+      biblatex \
+      chemfig \
+      circuitikz \
       etoolbox \
+      fontspec \
+      latexmk \
+      luatex \
+      minted \
+      pgf \
+      pgfplots \
+      synctex \
+      texcount \
       xetex \
 &&  tlmgr path add \
 &&  rm -rf /install-tl-unx

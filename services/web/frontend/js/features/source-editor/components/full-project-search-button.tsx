@@ -1,4 +1,3 @@
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 import OLButton from '@/shared/components/ol/ol-button'
 import OLTooltip from '@/shared/components/ol/ol-tooltip'
 import { closeSearchPanel, SearchQuery } from '@codemirror/search'
@@ -25,11 +24,6 @@ export const FullProjectSearchButton = ({ query }: { query: SearchQuery }) => {
   }, [query, view, openTab])
 
   const onClick = useCallback(() => {
-    sendSearchEvent('search-open', {
-      searchType: 'full-project',
-      method: 'button',
-      location: 'search-form',
-    })
     openFullProjectSearch()
   }, [openFullProjectSearch])
 

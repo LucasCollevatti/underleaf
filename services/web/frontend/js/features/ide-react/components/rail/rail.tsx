@@ -18,7 +18,6 @@ import {
   FullProjectSearchPanel,
   hasFullProjectSearch,
 } from '@/features/ide-react/components/rail/full-project-search-panel'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 import { useProjectContext } from '@/shared/context/project-context'
 import { useCommandProvider } from '@/features/ide-react/hooks/use-command-provider'
 import RailHelpDropdown from './rail-help-dropdown'
@@ -209,14 +208,6 @@ export const RailLayout = () => {
         // Change the selected tab and make sure it's open
         openTab(keyOrDefault)
         sendEvent('rail-click', { tab: keyOrDefault })
-        if (keyOrDefault === 'full-project-search') {
-          sendSearchEvent('search-open', {
-            searchType: 'full-project',
-            method: 'button',
-            location: 'rail',
-          })
-        }
-
         if (key === 'chat') {
           markMessagesAsRead()
         }

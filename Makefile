@@ -18,7 +18,7 @@ require-base:
 	}
 
 build-base:
-	$(DOCKER) build --file server-ce/Dockerfile-base --tag $(BASE_IMAGE) .
+	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build base
 
 build-web: require-base
 	UNDERLEAF_BASE_IMAGE=$(BASE_IMAGE) \
@@ -28,11 +28,11 @@ web: build-web
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up -d --no-deps app
 
 build: build-base
-	UNDERLEAF_BASE_IMAGE=$(BASE_IMAGE) \
-		$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app
+	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build app compiler
 
 up:
-	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up -d
+	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) build base
+	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) up --build -d
 
 dev:
 	$(COMPOSE) $(COMPOSE_FILES) -f infra/compose/compose.development.yaml --env-file $(ENV_FILE) up -d

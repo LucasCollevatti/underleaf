@@ -1,4 +1,3 @@
-import './marketing'
 import './features/header-footer-react'
 import { createRoot } from 'react-dom/client'
 import { ReactNode } from 'react'

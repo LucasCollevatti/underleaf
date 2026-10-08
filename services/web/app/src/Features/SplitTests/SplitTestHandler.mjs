@@ -7,7 +7,6 @@ import _ from 'lodash'
 import { callbackify } from 'node:util'
 import SplitTestCache from './SplitTestCache.mjs'
 import { SplitTest } from '../../models/SplitTest.mjs'
-import UserAnalyticsDataCache from '../Analytics/UserAnalyticsDataCache.mjs'
 import Features from '../../infrastructure/Features.mjs'
 import Modules from '../../infrastructure/Modules.mjs'
 import SplitTestUtils from './SplitTestUtils.mjs'
@@ -149,10 +148,7 @@ async function getAssignmentForUser(
       return _getNonSaasAssignment(splitTestName)
     }
 
-    const analyticsId = await UserAnalyticsDataCache.getAnalyticsId(
-      userId,
-      `getAssignmentForUser:${splitTestName}`
-    )
+    const analyticsId = userId
     return _getAssignment(splitTestName, { analyticsId, userId, sync })
   } catch (error) {
     logger.error({ err: error }, 'Failed to get split test assignment for user')

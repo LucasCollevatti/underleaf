@@ -8,7 +8,7 @@ mongo_container="${UNDERLEAF_MONGO_CONTAINER:-underleaf-mongo}"
 redis_container="${UNDERLEAF_REDIS_CONTAINER:-underleaf-redis}"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-compose_args=(--profile compiler)
+compose_args=()
 if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
   read -r -a configured_compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
   compose_args+=("${configured_compose_args[@]}")
@@ -64,19 +64,15 @@ real_time_status="$(
     printf 'unhealthy'
   fi
 )"
-clsi_status="$(
-  if docker exec "$app_container" curl --fail --silent --max-time 5 \
-    http://127.0.0.1:3013/status >/dev/null 2>&1; then
-    printf 'ok'
-  else
-    printf 'unhealthy'
-  fi
-)"
-
 compiler_id="$(compose ps -q compiler 2>/dev/null | head -n 1 || true)"
 compiler_status="not_started"
 if [[ -n "$compiler_id" ]]; then
   compiler_status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$compiler_id" 2>/dev/null || printf 'unhealthy')"
+fi
+clsi_status="unhealthy"
+if [[ -n "$compiler_id" ]] && docker exec "$compiler_id" curl --fail --silent --max-time 5 \
+  http://127.0.0.1:3013/status >/dev/null 2>&1; then
+  clsi_status=ok
 fi
 
 disk_available_bytes="null"

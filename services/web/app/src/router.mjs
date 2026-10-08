@@ -47,7 +47,6 @@ import TokenAccessRouter from './Features/TokenAccess/TokenAccessRouter.mjs'
 import LinkedFilesRouter from './Features/LinkedFiles/LinkedFilesRouter.mjs'
 import TemplatesRouter from './Features/Templates/TemplatesRouter.mjs'
 import SystemMessageController from './Features/SystemMessages/SystemMessageController.mjs'
-import AnalyticsRegistrationSourceMiddleware from './Features/Analytics/AnalyticsRegistrationSourceMiddleware.mjs'
 import CaptchaMiddleware from './Features/Captcha/CaptchaMiddleware.mjs'
 import UnsupportedBrowserMiddleware from './infrastructure/UnsupportedBrowserMiddleware.mjs'
 import logger from '@overleaf/logger'
@@ -1076,23 +1075,13 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     webRouter.get(
       `/read/:token(${TokenAccessController.READ_ONLY_TOKEN_PATTERN})`,
       RateLimiterMiddleware.rateLimit(rateLimiters.readOnlyToken),
-      AnalyticsRegistrationSourceMiddleware.setSource(
-        'collaboration',
-        'link-sharing'
-      ),
-      TokenAccessController.tokenAccessPage,
-      AnalyticsRegistrationSourceMiddleware.clearSource()
+      TokenAccessController.tokenAccessPage
     )
 
     webRouter.get(
       `/:token(${TokenAccessController.READ_AND_WRITE_TOKEN_PATTERN})`,
       RateLimiterMiddleware.rateLimit(rateLimiters.readAndWriteToken),
-      AnalyticsRegistrationSourceMiddleware.setSource(
-        'collaboration',
-        'link-sharing'
-      ),
-      TokenAccessController.tokenAccessPage,
-      AnalyticsRegistrationSourceMiddleware.clearSource()
+      TokenAccessController.tokenAccessPage
     )
 
     webRouter.post(

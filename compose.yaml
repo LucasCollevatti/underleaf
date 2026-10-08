@@ -1,6 +1,17 @@
 name: underleaf
 
 services:
+  base:
+    image: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
+    build:
+      context: .
+      dockerfile: server-ce/Dockerfile-base
+      args:
+        TEXLIVE_MIRROR: ${UNDERLEAF_TEXLIVE_MIRROR:-https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet}
+        TEXLIVE_SCHEME: ${UNDERLEAF_TEXLIVE_SCHEME:-scheme-basic}
+    restart: "no"
+    entrypoint: ["/bin/true"]
+
   app:
     image: underleaf/app:local
     build:
@@ -11,6 +22,8 @@ services:
     container_name: underleaf-app
     restart: unless-stopped
     depends_on:
+      base:
+        condition: service_completed_successfully
       mongo:
         condition: service_healthy
       redis:
@@ -62,12 +75,15 @@ services:
 
   compiler:
     image: underleaf/compiler:local
+    restart: unless-stopped
     build:
       context: .
       dockerfile: server-ce/Dockerfile-compiler
       args:
         UNDERLEAF_COMPILER_BASE_IMAGE: ${UNDERLEAF_BASE_IMAGE:-underleaf/base:local}
-        TEXLIVE_MIRROR: ${UNDERLEAF_TEXLIVE_MIRROR:-https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet}
+    depends_on:
+      base:
+        condition: service_completed_successfully
     user: "www-data:www-data"
     read_only: true
     init: true

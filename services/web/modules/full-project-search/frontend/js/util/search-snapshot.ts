@@ -2,8 +2,6 @@ import { Text } from '@codemirror/state'
 import { RegExpCursor, SearchCursor, SearchQuery } from '@codemirror/search'
 import { ProjectSnapshot } from '@/infrastructure/project-snapshot'
 import { categorizer, regexpWordTest, stringWordTest } from './search'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
-import { populateEditorRedesignSegmentation } from '@/shared/hooks/use-editor-analytics'
 
 export type Hit = {
   lineIndex: number
@@ -81,15 +79,6 @@ export const searchSnapshot = async (
 
   const results = [...matchedFiles.values()].sort((a, b) =>
     a.path.localeCompare(b.path)
-  )
-
-  sendSearchEvent(
-    'search-execute',
-    populateEditorRedesignSegmentation({
-      searchType: 'full-project',
-      totalDocs: docPaths.length,
-      totalResults: results.flatMap(file => file.hits).length,
-    })
   )
 
   return results

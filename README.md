@@ -11,26 +11,17 @@ importado e as obrigações legais estão registrados em
 
 ## Início rápido
 
-Requisitos: Docker com Compose v2, pelo menos 8 GB de RAM disponíveis durante
-o build. O caminho Linux usa `openssl`; no Windows, o helper PowerShell gera os
-segredos.
+Requisitos: Docker com Compose v2 e pelo menos 8 GB de RAM disponíveis durante
+o primeiro build. Os helpers geram o segredo persistente localmente.
 
 ```bash
-cp .env.example .env
-sed -i "s/^UNDERLEAF_INVITE_TOKEN_SECRET=.*/UNDERLEAF_INVITE_TOKEN_SECRET=$(openssl rand -base64 32)/" .env
-sed -i "s/^UNDERLEAF_SESSION_SECRET=.*/UNDERLEAF_SESSION_SECRET=$(openssl rand -base64 32)/" .env
-make config
-make build
-make up
+bash ./scripts/underleaf.sh up
 ```
 
 No Windows, instale o Docker Desktop configurado para Linux containers e rode
-os mesmos containers pelo PowerShell:
+o helper equivalente pelo PowerShell:
 
 ```powershell
-.\scripts\underleaf.ps1 init
-.\scripts\underleaf.ps1 config
-.\scripts\underleaf.ps1 build
 .\scripts\underleaf.ps1 up
 ```
 

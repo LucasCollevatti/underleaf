@@ -6,7 +6,6 @@ import SidebarFilters from "./sidebar-filters";
 import AddAffiliation, { useAddAffiliation } from "../add-affiliation";
 import { usePersistedResize } from "@/shared/hooks/use-resize";
 import { useScrolled } from "@/features/project-list/components/sidebar/use-scroll";
-import { SurveyWidgetDsNav } from "@/features/project-list/components/survey-widget-ds-nav";
 import { UnderleafSidebar } from "@/shared/components/underleaf/underleaf-sidebar";
 import { useProjectListContext } from "@/features/project-list/context/project-list-context";
 import importOverleafModules from "../../../../../macros/import-overleaf-module.macro";
@@ -103,11 +102,6 @@ function SidebarDsNav({
               >
                 {trashItemContent}
               </button>
-            )}
-            {!isUnderleaf && (
-              <div className="project-list-sidebar-survey-wrapper">
-                <SurveyWidgetDsNav />
-              </div>
             )}
           </div>
         )

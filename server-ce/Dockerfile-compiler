@@ -3,8 +3,6 @@
 ARG UNDERLEAF_COMPILER_BASE_IMAGE=underleaf/base:local
 FROM ${UNDERLEAF_COMPILER_BASE_IMAGE}
 
-ARG TEXLIVE_MIRROR=https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet
-
 WORKDIR /overleaf
 
 COPY --parents libraries/*/package.json .yarn/patches/ services/*/package.json tools/migrations/ package.json yarn.lock .yarnrc.yml .pnp.register.mjs /overleaf/
@@ -24,22 +22,7 @@ ENV NODE_OPTIONS="--require /overleaf/.pnp.cjs --import /overleaf/.pnp.register.
 ENV TEXMFVAR=/var/lib/underleaf/compiler/texmf-var
 ENV HOME=/tmp
 
-RUN tlmgr option repository "${TEXLIVE_MIRROR}" \
-  && tlmgr install \
-    bibtex \
-    biber \
-    biblatex \
-    chemfig \
-    circuitikz \
-    fontspec \
-    latexmk \
-    luatex \
-    minted \
-    pgf \
-    pgfplots \
-    texcount \
-    xetex \
-  && tlmgr path add \
+RUN tlmgr path add \
   && command -v pdflatex \
   && command -v xelatex \
   && command -v lualatex \

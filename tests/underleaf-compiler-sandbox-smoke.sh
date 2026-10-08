@@ -6,7 +6,6 @@ compose_file=${UNDERLEAF_COMPOSE_FILE:-compose.yaml}
 compose_args=(-f "$compose_file")
 
 export UNDERLEAF_SESSION_SECRET=${UNDERLEAF_SESSION_SECRET:-sandbox-session}
-export UNDERLEAF_INVITE_TOKEN_SECRET=${UNDERLEAF_INVITE_TOKEN_SECRET:-sandbox-invite}
 
 docker compose "${compose_args[@]}" create --no-build compiler >/dev/null
 

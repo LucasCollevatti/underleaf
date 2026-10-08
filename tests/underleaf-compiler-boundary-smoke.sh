@@ -4,7 +4,6 @@ set -euo pipefail
 
 config=$(
   UNDERLEAF_SESSION_SECRET=${UNDERLEAF_SESSION_SECRET:-boundary-session} \
-  UNDERLEAF_INVITE_TOKEN_SECRET=${UNDERLEAF_INVITE_TOKEN_SECRET:-boundary-invite} \
     docker compose config --format json
 )
 

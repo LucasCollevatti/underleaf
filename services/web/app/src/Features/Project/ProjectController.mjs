@@ -941,8 +941,7 @@ const _ProjectController = {
         user,
         userValues,
         userId,
-        aiFeaturesAllowedForUser && aiFeaturesAllowedForProject,
-        false
+        aiFeaturesAllowedForUser && aiFeaturesAllowedForProject
       )
 
       AnalyticsManager.setUserPropertyForSessionInBackground(
@@ -1313,9 +1312,8 @@ const _ProjectController = {
     user,
     userValues,
     userId,
-    aiFeaturesAllowed,
-        false
-      ) {
+    aiFeaturesAllowed
+  ) {
     if (!aiFeaturesAllowed) {
       return
     }
@@ -1330,8 +1328,7 @@ const _ProjectController = {
         affiliation => affiliation.institution?.enterpriseCommons
       )
 
-    const shouldPushWritefull =
-      user.writefull?.initialized === false && !userIsMemberOfGroupSubscription
+    const shouldPushWritefull = user.writefull?.initialized === false
 
     // we dont have legal approval to push enterprise commons into WF auto-account-create, but we are able to auto-load it into the toolbar
     const shouldAutoCreateAccount = shouldPushWritefull && !inEnterpriseCommons

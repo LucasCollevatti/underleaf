@@ -1,4 +1,3 @@
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 import { useProjectContext } from '@/shared/context/project-context'
 import useEventListener from '@/shared/hooks/use-event-listener'
 import usePersistedState from '@/shared/hooks/use-persisted-state'
@@ -148,10 +147,6 @@ export const RailProvider: FC<React.PropsWithChildren> = ({ children }) => {
           event.key.toLowerCase() === 'f'
         ) {
           event.preventDefault()
-          sendSearchEvent('search-open', {
-            searchType: 'full-project',
-            method: 'keyboard',
-          })
           openTab('full-project-search')
         }
       },

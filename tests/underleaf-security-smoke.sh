@@ -3,7 +3,6 @@
 set -euo pipefail
 
 compose_args=(
-  --profile compiler
   -f compose.yaml
   -f infra/compose/compose.production.yaml
 )
@@ -13,7 +12,6 @@ trap 'rm -f "$config_file"' EXIT
 
 UNDERLEAF_SITE_DOMAIN=${UNDERLEAF_SITE_DOMAIN:-localhost} \
 UNDERLEAF_SESSION_SECRET=${UNDERLEAF_SESSION_SECRET:-security-session} \
-UNDERLEAF_INVITE_TOKEN_SECRET=${UNDERLEAF_INVITE_TOKEN_SECRET:-security-invite} \
   docker compose "${compose_args[@]}" config --format json >"$config_file"
 
 node - "$config_file" <<'NODE'

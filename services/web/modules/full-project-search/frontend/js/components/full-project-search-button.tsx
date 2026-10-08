@@ -6,7 +6,6 @@ import { useLayoutContext } from '@/shared/context/layout-context'
 import { useTranslation } from 'react-i18next'
 import { OLTooltipProps as TooltipProps } from '@/shared/components/ol/ol-tooltip'
 import { isMac } from '@/shared/utils/os'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 
 const FullProjectSearchButton: FC = () => {
   const { projectSearchIsOpen, setProjectSearchIsOpen } = useLayoutContext()
@@ -36,13 +35,6 @@ const FullProjectSearchButton: FC = () => {
           active: projectSearchIsOpen,
         })}
         onClick={() => {
-          if (!projectSearchIsOpen) {
-            sendSearchEvent('search-open', {
-              searchType: 'full-project',
-              method: 'button',
-              location: 'toolbar',
-            })
-          }
           setProjectSearchIsOpen(value => !value)
         }}
         tabIndex={-1}

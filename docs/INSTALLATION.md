@@ -4,8 +4,6 @@
 
 - Docker Desktop ou Docker Engine com Compose v2;
 - Git;
-- `openssl` no Linux/WSL/Git Bash (o helper PowerShell gera os segredos no
-  Windows);
 - pelo menos 8 GB de RAM disponíveis durante o build;
 - espaço livre suficiente para a imagem base, a imagem do app e o TeX Live.
 
@@ -14,11 +12,7 @@
 ```bash
 git clone <URL-DO-REPOSITORIO> underleaf
 cd underleaf
-cp .env.example .env
-sed -i "s/^UNDERLEAF_SESSION_SECRET=.*/UNDERLEAF_SESSION_SECRET=$(openssl rand -base64 32)/" .env
-make config
-make build
-make up
+bash ./scripts/underleaf.sh up
 ```
 
 ## Windows
@@ -29,9 +23,6 @@ com WSL2. No PowerShell, a instalação local é:
 ```powershell
 git clone <URL-DO-REPOSITORIO> underleaf
 Set-Location underleaf
-.\scripts\underleaf.ps1 init
-.\scripts\underleaf.ps1 config
-.\scripts\underleaf.ps1 build
 .\scripts\underleaf.ps1 up
 ```
 

@@ -18,7 +18,6 @@ import { debugConsole } from '@/utils/debugging'
 import { BinaryFile } from '@/features/file-view/types/binary-file'
 import useEventListener from '@/shared/hooks/use-event-listener'
 import { isMac } from '@/shared/utils/os'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 import { useRailContext } from '@/features/ide-react/context/rail-context'
 import usePersistedState from '@/shared/hooks/use-persisted-state'
 import { repositionAllTooltips } from '@/features/source-editor/extensions/tooltips-reposition'
@@ -214,10 +213,6 @@ export const LayoutProvider: FC<React.PropsWithChildren> = ({ children }) => {
         event.key.toUpperCase() === 'F'
       ) {
         event.preventDefault()
-        sendSearchEvent('search-open', {
-          searchType: 'full-project',
-          method: 'keyboard',
-        })
         setProjectSearchIsOpen(true)
       }
       // Cmd/Ctrl+Shift+M for focus mode

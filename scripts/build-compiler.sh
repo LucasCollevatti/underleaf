@@ -3,5 +3,5 @@
 set -euo pipefail
 
 compose_file=${UNDERLEAF_COMPOSE_FILE:-compose.yaml}
-exec docker compose --profile compiler -f "$compose_file" build compiler
+exec docker compose -f "$compose_file" build base compiler
 
