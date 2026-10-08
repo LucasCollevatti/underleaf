@@ -3,6 +3,10 @@
 Esta matriz consolida as capacidades já validadas nos milestones M0–M22 e
 aponta a evidência que deve ser repetida antes de publicar uma instalação.
 
+Esta matriz é um checklist de release, não uma declaração de que todos os
+testes já passaram. Cada item deve ser executado em uma instalação descartável
+ou em um ambiente controlado e registrado com commit, imagem e resultado.
+
 | Capacidade | Evidência principal |
 | --- | --- |
 | Usuários por username e senha, sem cadastro público | `scripts/create-admin.sh`; as rotas de cadastro e reset são bloqueadas quando `settings.underleaf` está ativo. |
@@ -29,7 +33,7 @@ make up
 ./scripts/create-admin.sh
 make health
 tests/underleaf-security-smoke.sh
-corepack yarn npm audit --all
+corepack yarn npm audit --all --recursive --severity moderate --json
 ```
 
 Depois repita os smoke tests de dashboard, editor, compartilhamento,

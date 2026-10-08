@@ -20,6 +20,7 @@ import net from 'node:net'
 import os from 'node:os'
 import ConversionController from './app/js/ConversionController.js'
 import FileUploadMiddleware from './app/js/FileUploadMiddleware.js'
+import { getTexLiveMetadata } from './app/js/TexLiveVersion.js'
 import { handleValidationError } from '@overleaf/validation-tools'
 logger.initialize('clsi')
 logger.logger.serializers.clsiRequest = LoggerSerializers.clsiRequest
@@ -149,6 +150,14 @@ if (process.env.NODE_ENV === 'development' && global.__coverage__) {
 }
 
 app.get('/status', (req, res, next) => res.send('CLSI is alive\n'))
+
+// This endpoint is reachable only from the private compiler network. It does
+// not expose a shell, Docker socket, or project data to the web client.
+app.get('/internal/diagnostics/texlive', async (req, res) => {
+  const metadata = await getTexLiveMetadata()
+  res.set('Cache-Control', 'no-store')
+  res.status(metadata.available ? 200 : 503).json(metadata)
+})
 
 Settings.processTooOld = false
 if (Settings.processLifespanLimitMs) {

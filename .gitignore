@@ -6,6 +6,10 @@
 .env.*
 !.env.example
 
+# Local backup output and staging directories
+/backups/
+/backup-staging/
+
 # Optional local Compose overrides
 compose.override.yml
 compose.override.yaml

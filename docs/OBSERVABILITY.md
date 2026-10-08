@@ -22,6 +22,11 @@ parado ou sem healthcheck saudável, o relatório fica `degraded` e o comando
 termina com código diferente de zero. Não existe um fluxo de compilação
 integrado alternativo no app: o serviço dedicado é uma dependência obrigatória.
 
+`scripts/underleaf-health.ps1` emite os mesmos campos JSON e a mesma convenção
+de código de saída que `make health`. Ambos executam probes internos de
+endpoint, banco/Redis e compiler; não imprimem segredos nem exigem o Docker
+socket dentro do compiler.
+
 ## Logs
 
 Os serviços usam logs Bunyan estruturados com timestamp, nível e nome do

@@ -6,15 +6,29 @@ const require = createRequire(import.meta.url)
 const pnp = require('pnpapi')
 
 const seen = new Map()
-for (const locator of pnp.getAllLocators()) {
-  if (!locator.name || locator.reference.startsWith('workspace:')) continue
+const metadataErrors = []
+const resolvedPackageKeys = new Set()
+const packageLocators = pnp
+  .getAllLocators()
+  .filter(locator => locator.name && !locator.reference.startsWith('workspace:'))
+
+for (const locator of packageLocators) {
   const info = pnp.getPackageInformation(locator)
-  if (!info?.packageLocation) continue
+  if (!info?.packageLocation) {
+    metadataErrors.push(`${locator.name}@${locator.reference}: no package location`)
+    continue
+  }
   try {
     const raw = await fs.readFile(path.join(info.packageLocation, 'package.json'), 'utf8')
     const pkg = JSON.parse(raw)
-    if (!pkg.name || !pkg.version) continue
+    if (!pkg.name || !pkg.version) {
+      metadataErrors.push(
+        `${locator.name}@${locator.reference}: package.json lacks name or version`
+      )
+      continue
+    }
     const key = `${pkg.name}@${pkg.version}`
+    resolvedPackageKeys.add(key)
     seen.set(key, {
       name: pkg.name,
       version: pkg.version,
@@ -24,9 +38,19 @@ for (const locator of pnp.getAllLocators()) {
           ? pkg.repository
           : pkg.repository?.url || '',
     })
-  } catch {
-    // Packages without readable metadata are represented explicitly below.
+  } catch (error) {
+    metadataErrors.push(
+      `${locator.name}@${locator.reference}: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
+}
+
+if (metadataErrors.length) {
+  console.error(
+    'Unable to read package metadata for the complete Yarn PnP inventory:\n' +
+      metadataErrors.map(error => `- ${error}`).join('\n')
+  )
+  process.exitCode = 2
 }
 
 const components = [...seen.values()].sort((a, b) =>
@@ -67,6 +91,25 @@ for (const component of components) {
   )
 }
 await fs.writeFile('artifacts/third-party-licenses.csv', rows.join('\n') + '\n')
+
+const locatorKeys = new Set(
+  packageLocators.map(locator => `${locator.name}@${locator.reference}`)
+)
+const componentKeys = new Set(
+  components.map(component => `${component.name}@${component.version}`)
+)
+const expectedComponentKeys = [...resolvedPackageKeys].sort()
+const reportedComponentKeys = [...componentKeys].sort()
+if (
+  JSON.stringify(expectedComponentKeys) !== JSON.stringify(reportedComponentKeys) ||
+  rows.length - 1 !== components.length
+) {
+  console.error('SBOM and license inventory row counts do not match.')
+  process.exitCode = 2
+}
+console.error(
+  `SBOM inventory: ${componentKeys.size} unique package versions from ${locatorKeys.size} Yarn PnP locators.`
+)
 
 const unknown = components.filter(
   component =>

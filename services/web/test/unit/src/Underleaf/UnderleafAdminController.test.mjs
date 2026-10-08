@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   projectCount: vi.fn(),
   getUser: vi.fn(),
   settings: vi.fn(),
+  runtime: vi.fn(),
 }))
 vi.mock(
   '../../../../app/src/Features/Underleaf/UnderleafUserManager.mjs',
@@ -47,6 +48,9 @@ vi.mock('../../../../app/src/Features/Project/UserSettingsHelper.mjs', () => ({
     buildUserSettings: mocks.settings,
     getInitialTheme: value => (value === 'light-' ? 'light' : 'system'),
   },
+}))
+vi.mock('../../../../app/src/Features/Underleaf/UnderleafRuntimeInfo.mjs', () => ({
+  getUnderleafRuntimeInfo: mocks.runtime,
 }))
 import Controller from '../../../../app/src/Features/Underleaf/UnderleafAdminController.mjs'
 import { UnderleafUserError } from '../../../../app/src/Features/Underleaf/UnderleafUserManager.mjs'
@@ -89,6 +93,11 @@ beforeEach(() => {
   mocks.owned.mockResolvedValue(3)
   mocks.getUser.mockResolvedValue({ ace: { overallTheme: 'light-' } })
   mocks.settings.mockResolvedValue({ overallTheme: 'light-' })
+  mocks.runtime.mockResolvedValue({
+    releaseVersion: '0.1.0-beta.1',
+    texLiveVersion: '2026',
+    texLiveSource: 'texlive/texlive:latest',
+  })
   mocks.userCount
     .mockResolvedValueOnce(5)
     .mockResolvedValueOnce(4)
@@ -133,6 +142,11 @@ describe('Underleaf administration', () => {
       adminUsers: 1,
       projectCount: 8,
     })
+    expect(result.data.adminPage.runtime).toEqual({
+      releaseVersion: '0.1.0-beta.1',
+      texLiveVersion: '2026',
+      texLiveSource: 'texlive/texlive:latest',
+    })
     expect(mocks.userCount).toHaveBeenCalledWith({
       role: 'admin',
       status: 'active',
@@ -141,6 +155,21 @@ describe('Underleaf administration', () => {
     expect(mocks.list).not.toHaveBeenCalled()
     expect(result.data.initialTheme).toBe('light')
     expect(result.headers['Cache-Control']).toBe('no-store')
+  })
+  it('keeps the overview available when the compiler version cannot be read', async () => {
+    mocks.runtime.mockResolvedValue({
+      releaseVersion: '0.1.0-beta.1',
+      texLiveVersion: null,
+      texLiveSource: 'texlive/texlive:latest',
+    })
+
+    const result = await invoke(Controller.index)
+
+    expect(result.data.adminPage.runtime).toEqual({
+      releaseVersion: '0.1.0-beta.1',
+      texLiveVersion: null,
+      texLiveSource: 'texlive/texlive:latest',
+    })
   })
   it('hydrates users without password hashes or internal identity fields', async () => {
     const result = await invoke(Controller.users)

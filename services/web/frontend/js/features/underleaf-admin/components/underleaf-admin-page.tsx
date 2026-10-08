@@ -38,7 +38,7 @@ export default function UnderleafAdminPage({
       >
         <main id="main-content" className="underleaf-admin-main">
           {data.page === 'overview' ? (
-            <Overview stats={data.stats} />
+            <Overview stats={data.stats} runtime={data.runtime} />
           ) : (
             <Users data={data} />
           )}
@@ -50,8 +50,10 @@ export default function UnderleafAdminPage({
 
 function Overview({
   stats,
+  runtime,
 }: {
   stats: Extract<UnderleafAdminPageData, { page: 'overview' }>['stats']
+  runtime: Extract<UnderleafAdminPageData, { page: 'overview' }>['runtime']
 }) {
   const { t } = useTranslation()
   const metrics = [
@@ -64,7 +66,7 @@ function Overview({
     {
       label: t('underleaf_active_users', { defaultValue: 'Active users' }),
       value: stats.activeUsers,
-      description: 'Signed in last 30 days',
+      description: 'Enabled accounts',
       icon: 'person_check',
     },
     {
@@ -135,7 +137,7 @@ function Overview({
           <dl>
             <div>
               <dt>Version</dt>
-              <dd>1.0.0</dd>
+              <dd>{runtime.releaseVersion}</dd>
             </div>
             <div>
               <dt>URL</dt>
@@ -143,11 +145,19 @@ function Overview({
             </div>
             <div>
               <dt>Registration</dt>
-              <dd>Invite only</dd>
+              <dd>Admin-provisioned only</dd>
             </div>
             <div>
               <dt>TeX</dt>
-              <dd>TeX Live 2026</dd>
+              <dd>
+                {runtime.texLiveVersion
+                  ? `TeX Live ${runtime.texLiveVersion}`
+                  : 'Unavailable'}
+              </dd>
+            </div>
+            <div>
+              <dt>TeX source</dt>
+              <dd>{runtime.texLiveSource}</dd>
             </div>
           </dl>
         </section>
@@ -237,7 +247,7 @@ function Users({
           <OLFormControl
             id="underleaf-user-search"
             type="search"
-            placeholder="Search by name, username or email"
+            placeholder="Search by username or display name"
             value={query}
             prepend={<MaterialIcon type="search" />}
             onChange={event => setQuery(event.target.value)}

@@ -2,21 +2,32 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/scripts/lib/compose-args.sh"
 env_file="${ENV_FILE:-$repo_root/.env}"
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
-backup_dir="${BACKUP_DIR:-$repo_root/backups/underleaf-$timestamp}"
+backup_root="${UNDERLEAF_BACKUP_ROOT:-${HOME:-$repo_root}/underleaf-backups}"
+backup_dir="${BACKUP_DIR:-$backup_root/underleaf-$timestamp}"
+backup_parent="$(dirname -- "$backup_dir")"
+staging_dir=""
 
-if [[ -e "$backup_dir" ]] && [[ -n "$(find "$backup_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
-  echo "Backup directory is not empty: $backup_dir" >&2
+if [[ -e "$backup_dir" ]]; then
+  echo "Backup destination already exists: $backup_dir" >&2
   exit 1
 fi
-mkdir -p "$backup_dir"
-
-if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
-  read -r -a compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
-else
-  compose_args=(-f "${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}")
+if [[ ! -d "$backup_parent" ]]; then
+  mkdir -p -m 700 -- "$backup_parent"
 fi
+
+umask 077
+staging_dir="$(mktemp -d "$backup_parent/.underleaf-backup.XXXXXX")"
+cleanup() {
+  if [[ -n "$staging_dir" && -d "$staging_dir" ]]; then
+    rm -rf -- "$staging_dir"
+  fi
+}
+trap cleanup EXIT
+
+configure_compose_args "$repo_root/compose.yaml"
 if [[ -f "$env_file" ]]; then
   compose_args+=(--env-file "$env_file")
 fi
@@ -26,12 +37,13 @@ compose() {
 }
 
 compose exec -T mongo mongodump --archive --gzip --db sharelatex \
-  > "$backup_dir/mongo.archive.gz"
+  > "$staging_dir/mongo.archive.gz"
 compose exec -T app sh -c \
   'tar -czf - --exclude=data/cache --exclude=data/compiles --exclude=data/output -C /var/lib/overleaf data' \
-  > "$backup_dir/app-data.tar.gz"
+  > "$staging_dir/app-data.tar.gz"
 
-(cd "$backup_dir" && sha256sum mongo.archive.gz app-data.tar.gz > checksums.sha256)
+(cd "$staging_dir" && sha256sum mongo.archive.gz app-data.tar.gz > checksums.sha256.tmp)
+mv -- "$staging_dir/checksums.sha256.tmp" "$staging_dir/checksums.sha256"
 
 revision="unknown"
 if revision_value="$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null)"; then
@@ -49,6 +61,10 @@ printf '%s\n' \
   '    "app-data.tar.gz",' \
   '    "checksums.sha256"' \
   '  ]' \
-  '}' > "$backup_dir/manifest.json"
+  '}' > "$staging_dir/manifest.json.tmp"
+mv -- "$staging_dir/manifest.json.tmp" "$staging_dir/manifest.json"
+
+mv -- "$staging_dir" "$backup_dir"
+staging_dir=""
 
 echo "Underleaf backup created: $backup_dir"

@@ -22,6 +22,11 @@ Com o stack ativo e o arquivo `.env` configurado:
 make backup
 ```
 
+Sem `BACKUP_DIR`, o resultado fica em
+`$HOME/underleaf-backups/underleaf-<UTC_TIMESTAMP>`, fora do checkout. O
+backup é montado em um diretório temporário protegido e só recebe o nome final
+quando os dois archives, hashes e manifest estão completos.
+
 Para escolher o diretório:
 
 ```bash
@@ -31,6 +36,8 @@ BACKUP_DIR=/srv/backups/underleaf-2026-10-02 make backup
 O comando falha se o diretório de destino já contiver arquivos. Armazene o
 resultado fora dos volumes ativos e restrinja o acesso ao dump, pois ele pode
 conter dados de projetos e usuários.
+Os hashes confirmam integridade contra corrupção acidental; não autenticam a
+origem do backup. Use apenas diretórios e arquivos de backup confiáveis.
 
 ## Restaurar um backup
 
@@ -54,6 +61,13 @@ artefatos derivados são descartados após a extração. Backups são compatíve
 com instalações que usam o mesmo schema do MongoDB e os mesmos caminhos
 persistentes. Antes de atualizar uma versão estrutural, crie um backup e execute
 um restore de ensaio em uma cópia isolada.
+
+No Windows, use os comandos nativos do PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 backup
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 restore -Backup C:\backups\underleaf-2026-10-02 -Yes
+```
 
 ## Teste de round-trip
 

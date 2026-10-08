@@ -19,9 +19,12 @@ The command generates:
 - `artifacts/third-party-licenses.csv`: package/version/license/repository
   inventory using package metadata as the SPDX-oriented source field.
 
-Generate both artifacts locally when preparing a release or reviewing dependency changes. Missing license metadata (`NOASSERTION`) and `UNLICENSED` packages
-cause the generator to fail so they cannot silently pass a public-release
-review.
+Generate both artifacts locally when preparing a release or reviewing dependency
+changes. The generator enumerates non-workspace Yarn PnP locators, fails on
+unreadable `package.json` metadata, and checks that the CycloneDX component and
+license-row counts match. Missing license metadata (`NOASSERTION`) and
+`UNLICENSED` packages also fail the command so they cannot silently pass a
+release review.
 
 ## License review
 
@@ -49,3 +52,11 @@ modifications and the build/install material required by the AGPL. The source
 link should identify the exact revision actually deployed.
 
 This document is operational guidance, not legal advice.
+
+## Review scope
+
+The review covers npm packages, Yarn patches, vendored libraries, fonts,
+dictionaries, generated assets and retained notices. Keep `LICENSE`,
+`docs/ORIGIN.md`, package-level license files and `THIRD_PARTY_NOTICES.md` with
+the deployed source. The AGPL obligation applies to the modified application;
+it does not permit deleting upstream copyright or license notices.

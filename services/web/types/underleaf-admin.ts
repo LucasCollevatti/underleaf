@@ -9,6 +9,12 @@ export type UnderleafAdminUser = {
   lastLoginAt: string | null
 }
 
+export type UnderleafRuntimeInfo = {
+  releaseVersion: string
+  texLiveVersion: string | null
+  texLiveSource: string
+}
+
 export type UnderleafAdminPageData =
   | {
       page: 'overview'
@@ -18,6 +24,7 @@ export type UnderleafAdminPageData =
         adminUsers: number
         projectCount: number
       }
+      runtime: UnderleafRuntimeInfo
     }
   | {
       page: 'users'

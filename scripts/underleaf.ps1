@@ -1,14 +1,19 @@
 [CmdletBinding()]
 param(
   [Parameter(Position = 0)]
-  [ValidateSet('help', 'init', 'config', 'build', 'build-compiler', 'up', 'down', 'logs', 'health', 'create-admin', 'test')]
-  [string]$Command = 'help'
+  [ValidateSet('help', 'init', 'config', 'build', 'build-compiler', 'up', 'down', 'logs', 'health', 'create-admin', 'test', 'backup', 'restore')]
+  [string]$Command = 'help',
+  [Parameter(Position = 1)]
+  [string]$Destination,
+  [string]$Backup,
+  [switch]$Yes
 )
 
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
+. "$PSScriptRoot/underleaf-compose.ps1"
 
 $startupTimeoutSeconds = 600
 if ($env:UNDERLEAF_STARTUP_TIMEOUT) {
@@ -17,7 +22,7 @@ if ($env:UNDERLEAF_STARTUP_TIMEOUT) {
   }
 }
 
-$composeArgs = @('--file', 'compose.yaml', '--env-file', '.env')
+$composeArgs = Get-ComposeArguments -RepositoryRoot $repoRoot
 
 function Invoke-External {
   param(
@@ -52,6 +57,8 @@ function New-Secret {
 }
 
 function Initialize-Environment {
+  param([switch]$Quiet)
+
   $envPath = Join-Path $repoRoot '.env'
   if (-not (Test-Path -LiteralPath $envPath)) {
     Copy-Item -LiteralPath '.env.example' -Destination $envPath
@@ -78,7 +85,10 @@ function Initialize-Environment {
 
   $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
   [System.IO.File]::WriteAllText($envPath, $contents, $utf8NoBom)
-  Write-Output "Environment ready: $envPath"
+  $script:composeArgs = Get-ComposeArguments -RepositoryRoot $repoRoot
+  if (-not $Quiet) {
+    Write-Output "Environment ready: $envPath"
+  }
 }
 
 function Show-Help {
@@ -96,6 +106,8 @@ Commands:
   health           Show Compose service health
   create-admin     Create the first administrator interactively
   test             Run the application test command
+  backup           Create a backup outside the checkout by default
+  restore          Restore a backup with -Backup <path> -Yes
 '@
 }
 
@@ -135,8 +147,11 @@ switch ($Command) {
     Invoke-Compose 'logs', '--follow', 'app'
   }
   'health' {
-    Initialize-Environment
-    Invoke-Compose 'ps', '--all'
+    Initialize-Environment -Quiet
+    & (Join-Path $PSScriptRoot 'underleaf-health.ps1')
+    if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
+      exit $LASTEXITCODE
+    }
   }
   'create-admin' {
     Initialize-Environment
@@ -144,6 +159,28 @@ switch ($Command) {
   }
   'test' {
     Initialize-Environment
-    Invoke-Compose 'exec', '-T', 'app', 'yarn', 'test'
+    Invoke-External -FilePath 'corepack' -Arguments @('yarn', 'workspace', '@overleaf/web', 'run', 'test:unit')
+    Invoke-External -FilePath 'corepack' -Arguments @('yarn', 'workspace', '@overleaf/clsi', 'run', 'test:unit')
+  }
+  'backup' {
+    Initialize-Environment
+    $backupArguments = @()
+    if ($Destination) {
+      $backupArguments += @('-Destination', $Destination)
+    }
+    & (Join-Path $PSScriptRoot 'underleaf-backup.ps1') @backupArguments
+    if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
+      throw "Backup failed with exit code $LASTEXITCODE."
+    }
+  }
+  'restore' {
+    Initialize-Environment
+    if (-not $Backup) {
+      throw 'Restore requires -Backup <path>.'
+    }
+    & (Join-Path $PSScriptRoot 'underleaf-restore.ps1') -Backup $Backup -Yes:$Yes
+    if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
+      throw "Restore failed with exit code $LASTEXITCODE."
+    }
   }
 }

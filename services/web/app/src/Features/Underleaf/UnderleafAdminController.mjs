@@ -5,6 +5,7 @@ import UserSettingsHelper from '../Project/UserSettingsHelper.mjs'
 import UnderleafUserManager, {
   UnderleafUserError,
 } from './UnderleafUserManager.mjs'
+import { getUnderleafRuntimeInfo } from './UnderleafRuntimeInfo.mjs'
 import { db } from '../../infrastructure/mongodb.mjs'
 import { parseReq, z, zz } from '../../infrastructure/Validation.mjs'
 
@@ -136,20 +137,27 @@ function requireMatchingPasswords(body) {
 
 const UnderleafAdminController = {
   index: expressify(async (req, res) => {
-    const [userCount, activeUsers, adminUsers, projectCount] =
+    const [[userCount, activeUsers, adminUsers, projectCount], runtime] =
       await Promise.all([
-        db.users.countDocuments({}),
-        db.users.countDocuments({ status: 'active', suspended: { $ne: true } }),
-        db.users.countDocuments({
-          role: 'admin',
-          status: 'active',
-          suspended: { $ne: true },
-        }),
-        db.projects.countDocuments({ active: true }),
+        Promise.all([
+          db.users.countDocuments({}),
+          db.users.countDocuments({
+            status: 'active',
+            suspended: { $ne: true },
+          }),
+          db.users.countDocuments({
+            role: 'admin',
+            status: 'active',
+            suspended: { $ne: true },
+          }),
+          db.projects.countDocuments({ active: true }),
+        ]),
+        getUnderleafRuntimeInfo(),
       ])
     await renderPage(req, res, 'underleaf/admin', {
       page: 'overview',
       stats: { userCount, activeUsers, adminUsers, projectCount },
+      runtime,
     })
   }),
 

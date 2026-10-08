@@ -87,6 +87,11 @@ describe('<UnderleafAdminPage />', function () {
             adminUsers: 2,
             projectCount: 12,
           },
+          runtime: {
+            releaseVersion: '0.1.0-beta.1',
+            texLiveVersion: '2026',
+            texLiveSource: 'texlive/texlive:latest',
+          },
         }}
       />
     )
@@ -108,6 +113,18 @@ describe('<UnderleafAdminPage />', function () {
     expect(document.querySelector('.underleaf-admin-stats')?.textContent).to.include(
       'Active projects12'
     )
+    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
+      '0.1.0-beta.1'
+    )
+    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
+      'Admin-provisioned only'
+    )
+    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
+      'TeX Live 2026'
+    )
+    expect(document.querySelector('.underleaf-admin-stats')?.textContent).to.include(
+      'Enabled accounts'
+    )
   })
 
   it('keeps the table read-only, searchable and protects the current administrator', async function () {
@@ -125,6 +142,32 @@ describe('<UnderleafAdminPage />', function () {
     await user.type(screen.getByLabelText('Search users'), 'Alice Example')
     expect(within(table).queryByText('administrator')).to.be.null
     expect(within(table).getByText('alice')).to.exist
+  })
+
+  it('renders runtime metadata as text', function () {
+    render(
+      <UnderleafAdminPage
+        data={{
+          page: 'overview',
+          stats: {
+            userCount: 1,
+            activeUsers: 1,
+            adminUsers: 1,
+            projectCount: 0,
+          },
+          runtime: {
+            releaseVersion: '<release>',
+            texLiveVersion: null,
+            texLiveSource: '<source>',
+          },
+        }}
+      />
+    )
+
+    expect(screen.getByText('<release>')).to.exist
+    expect(screen.getByText('<source>')).to.exist
+    expect(document.querySelector('.underleaf-admin-instance-card script')).to.be
+      .null
   })
 
   it('creates a user with CSRF and updates the table after success', async function () {

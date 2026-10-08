@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/scripts/lib/compose-args.sh"
 env_file="${ENV_FILE:-$repo_root/.env}"
 backup_dir="${BACKUP:-}"
 confirmed=false
@@ -34,24 +35,72 @@ if [[ "$confirmed" != true ]]; then
   exit 2
 fi
 
-for required_file in manifest.json mongo.archive.gz app-data.tar.gz checksums.sha256; do
+expected_files=(manifest.json mongo.archive.gz app-data.tar.gz checksums.sha256)
+if [[ ! -d "$backup_dir" || -L "$backup_dir" ]]; then
+  echo "Backup directory is invalid: $backup_dir" >&2
+  exit 1
+fi
+for required_file in "${expected_files[@]}"; do
   if [[ ! -f "$backup_dir/$required_file" ]]; then
     echo "Backup is missing $required_file: $backup_dir" >&2
     exit 1
   fi
+  if [[ -L "$backup_dir/$required_file" ]]; then
+    echo "Backup contains a symbolic link: $required_file" >&2
+    exit 1
+  fi
 done
 
-if ! grep -q '"format_version": 1' "$backup_dir/manifest.json"; then
+actual_entries="$(find "$backup_dir" -mindepth 1 -maxdepth 1 -printf '%y %f\n' | sort)"
+expected_entries="$(printf 'f %s\n' "${expected_files[@]}" | sort)"
+if [[ "$actual_entries" != "$expected_entries" ]]; then
+  echo "Backup contains unexpected or missing top-level entries: $backup_dir" >&2
+  exit 1
+fi
+
+if ! grep -Eq '^  "format_version": 1,$' "$backup_dir/manifest.json" || \
+   ! grep -Eq '^  "database": "sharelatex",$' "$backup_dir/manifest.json"; then
   echo "Unsupported backup format." >&2
   exit 1
 fi
+manifest_contents="$(awk '
+  /^  "contents": \[$/ { inside = 1; next }
+  inside && /^  \]$/ { inside = 0; next }
+  inside {
+    if ($0 !~ /^    "[^"]+",?$/) exit 1
+    value = $0
+    sub(/^    "/, "", value)
+    sub(/",?$/, "", value)
+    print value
+  }
+  END { if (inside) exit 1 }
+' "$backup_dir/manifest.json" | sort)"
+expected_manifest_contents="$(printf '%s\n' mongo.archive.gz app-data.tar.gz checksums.sha256 | sort)"
+if [[ "$manifest_contents" != "$expected_manifest_contents" ]]; then
+  echo "Backup manifest contents are invalid." >&2
+  exit 1
+fi
+
+if ! gzip -t "$backup_dir/mongo.archive.gz" || ! gzip -t "$backup_dir/app-data.tar.gz"; then
+  echo "Backup archive validation failed." >&2
+  exit 1
+fi
+
+validate_tar_paths() {
+  local entry
+  while IFS= read -r entry; do
+    case "$entry" in
+      /*|..|../*|*/../*)
+        echo "Unsafe path in application archive: $entry" >&2
+        return 1
+        ;;
+    esac
+  done < <(tar -tzf "$backup_dir/app-data.tar.gz")
+}
+validate_tar_paths
 (cd "$backup_dir" && sha256sum --check checksums.sha256)
 
-if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
-  read -r -a compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
-else
-  compose_args=(-f "${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}")
-fi
+configure_compose_args "$repo_root/compose.yaml"
 if [[ -f "$env_file" ]]; then
   compose_args+=(--env-file "$env_file")
 fi
@@ -60,11 +109,13 @@ compose() {
   docker compose "${compose_args[@]}" "$@"
 }
 
+compose exec -T mongo mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -qx '1'
+compose exec -T app sh -c 'test -d /var/lib/overleaf/data'
 compose stop app >/dev/null
 restore_failed=true
 cleanup() {
   if [[ "$restore_failed" == true ]]; then
-    compose up -d --no-build app >/dev/null || true
+    compose up -d --no-build app >/dev/null 2>&1 || true
   fi
 }
 trap cleanup EXIT

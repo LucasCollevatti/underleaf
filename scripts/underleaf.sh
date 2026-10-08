@@ -5,7 +5,8 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo_root"
 
-compose_args=(--file compose.yaml)
+source "$repo_root/scripts/lib/compose-args.sh"
+configure_compose_args "$repo_root/compose.yaml"
 
 startup_timeout_seconds=${UNDERLEAF_STARTUP_TIMEOUT:-600}
 
@@ -77,6 +78,9 @@ Commands:
   health           Show Compose service health
   create-admin     Create the first administrator interactively
   test             Run the application test command
+  backup [PATH]    Create a backup outside the checkout by default
+  restore PATH --yes
+                   Restore a backup after explicit confirmation
 EOF
 }
 
@@ -127,7 +131,25 @@ case "${1:-help}" in
     ;;
   test)
     ensure_environment
-    compose exec --no-TTY app yarn test
+    corepack yarn workspace @overleaf/web run test:unit
+    corepack yarn workspace @overleaf/clsi run test:unit
+    ;;
+  backup)
+    ensure_environment
+    if (($# > 2)); then
+      echo "Usage: $0 backup [BACKUP_DIRECTORY]" >&2
+      exit 2
+    fi
+    if (($# == 2)); then
+      BACKUP_DIR="$2" ./scripts/underleaf-backup.sh
+    else
+      ./scripts/underleaf-backup.sh
+    fi
+    ;;
+  restore)
+    ensure_environment
+    shift
+    ./scripts/underleaf-restore.sh "$@"
     ;;
   *)
     show_help >&2

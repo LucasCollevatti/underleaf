@@ -60,6 +60,11 @@ internos; essa é uma limitação conhecida documentada para uma migração futu
 O app não deve ser exposto diretamente à Internet, mesmo quando o proxy estiver
 desabilitado.
 
+A instalação local foi desenhada para uma LAN confiável ou VPN. O HTTP direto
+na porta 8080 não oferece criptografia e o projeto não promete hardening para
+Internet pública; use firewall e, quando necessário, o overlay Caddy com HTTPS
+sob responsabilidade do operador.
+
 ## Backups e logs
 
 - Backups devem ser gravados fora dos volumes ativos, com permissões restritas

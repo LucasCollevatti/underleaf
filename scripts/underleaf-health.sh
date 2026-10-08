@@ -2,19 +2,14 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$repo_root/scripts/lib/compose-args.sh"
 env_file="${ENV_FILE:-$repo_root/.env}"
 app_container="${UNDERLEAF_APP_CONTAINER:-underleaf-app}"
 mongo_container="${UNDERLEAF_MONGO_CONTAINER:-underleaf-mongo}"
 redis_container="${UNDERLEAF_REDIS_CONTAINER:-underleaf-redis}"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-compose_args=()
-if [[ -n "${UNDERLEAF_COMPOSE_FILES:-}" ]]; then
-  read -r -a configured_compose_args <<< "$UNDERLEAF_COMPOSE_FILES"
-  compose_args+=("${configured_compose_args[@]}")
-else
-  compose_args+=(-f "${UNDERLEAF_COMPOSE_FILE:-$repo_root/compose.yaml}")
-fi
+configure_compose_args "$repo_root/compose.yaml"
 if [[ -f "$env_file" ]]; then
   compose_args+=(--env-file "$env_file")
 fi

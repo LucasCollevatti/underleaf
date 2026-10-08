@@ -38,7 +38,8 @@ dev:
 	$(COMPOSE) $(COMPOSE_FILES) -f infra/compose/compose.development.yaml --env-file $(ENV_FILE) up -d
 
 test:
-	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) exec -T app yarn test
+	corepack yarn workspace @overleaf/web run test:unit
+	corepack yarn workspace @overleaf/clsi run test:unit
 
 down:
 	$(COMPOSE) $(COMPOSE_FILES) --env-file $(ENV_FILE) down

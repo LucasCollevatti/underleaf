@@ -6,6 +6,16 @@ This file records the security baseline established after the SaaS/enterprise
 surface reduction. Security checks are run explicitly on a developer or
 release machine; the repository does not rely on GitHub Actions for auditing.
 
+## Current verification status
+
+On 2026-10-08, `corepack yarn install --immutable` was attempted before the
+dependency audit. It stopped with Yarn `YN0028` because the committed lockfile
+would be modified, alongside existing peer-dependency warnings. Therefore the
+recursive audit and SBOM generation were **not run** in this checkout: no
+current clean-audit or clean-inventory claim is made. Fix the lockfile through
+the normal dependency-review process, rerun the immutable install, then retain
+the raw audit JSON privately and regenerate both inventory files.
+
 ## Dependency findings
 
 On 2026-10-07, `corepack yarn npm audit --all --recursive
@@ -13,13 +23,14 @@ On 2026-10-07, `corepack yarn npm audit --all --recursive
 and 22 deprecation findings. These are finding instances rather than a count
 of unique packages. The result is not a clean release baseline.
 
-The current report includes direct or runtime-relevant findings in `axios`,
+The historical report includes direct or runtime-relevant findings in `axios`,
 `@xmldom/xmldom`, `multer`, `nodemailer`, `proxy-addr`, `shell-quote`,
 `source-map-js`, `webpack-dev-server` and other transitive packages. The
 operator must remediate or explicitly accept each HIGH/CRITICAL finding before
 Internet exposure.
 
-Commit 4 removes the unused `knip` and `prettier-plugin-groovy` dependencies;
+The previous baseline change removed the unused `knip` and
+`prettier-plugin-groovy` dependencies;
 neither has a remaining descriptor in `yarn.lock`. Re-run the audit after any
 lockfile change and before release.
 
@@ -57,7 +68,8 @@ Google Cloud Build pipeline are not supported deployment mechanisms.
 
 ## Accepted residual risk
 
-Local release review must treat fixable HIGH/CRITICAL vulnerabilities in the
-runtime database images and MODERATE-or-higher npm advisories as blocking unless
-an explicit temporary exception must identify the advisory/CVE, affected component, exposure,
-mitigation, owner, and expiry date in this file before being accepted.
+Local release review must classify each CRITICAL, HIGH and MODERATE advisory by
+package/version, runtime exposure, available mitigation, regression risk,
+owner and expiry. Fixable runtime CRITICAL/HIGH findings block release. A
+temporary exception must identify the advisory/CVE, affected component,
+exposure, mitigation, owner and expiry date in this file before acceptance.

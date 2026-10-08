@@ -2,12 +2,17 @@
 
 ## Local installation
 
-Requirements:
+Supported baseline:
 
-- Docker Engine with Docker Compose v2;
+- x86_64/amd64 Linux host with Docker Engine and Docker Compose v2;
+- at least 8 GB RAM during the first build and at least 30 GB free disk space;
 - at least the resources required by the imported Overleaf Community Edition
   image build;
 - one of the included platform helpers to generate the persistent session secret.
+
+ARM64 and macOS are not supported deployment targets in this release. Node.js,
+Corepack and Make are maintainer/test dependencies; the normal runtime only
+requires Docker and Compose.
 
 Prepare the configuration:
 
@@ -24,8 +29,11 @@ bash ./scripts/underleaf.sh up
 docker compose ps
 ```
 
-By default, the application is available at
-`http://localhost:8080`. The port and public URL can be changed in `.env`.
+By default, the application is available at `http://localhost:8080`. For a
+trusted LAN, set `UNDERLEAF_SITE_URL=http://<server-LAN-IP>:8080` in `.env` and
+allow the configured port only from that network. This local mode is plain HTTP,
+so it must stay on a trusted LAN or VPN and must not be forwarded directly to the
+public Internet.
 
 For production, validate and apply the production overlay:
 
@@ -35,13 +43,16 @@ docker compose -f compose.yaml -f infra/compose/compose.production.yaml \
   --env-file .env up -d
 ```
 
-The production overlay removes the app host port and publishes only the Caddy
+The optional production overlay removes the app host port and publishes only the Caddy
 ports configured by `UNDERLEAF_PROXY_HTTP_PORT` and
 `UNDERLEAF_PROXY_HTTPS_PORT`. Set `UNDERLEAF_SITE_DOMAIN` and
-`UNDERLEAF_SITE_URL=https://...` before starting it. Caddy obtains and renews
-public certificates automatically and forwards HTTP, HTTPS and WebSocket
-traffic to the app. See [`INSTALLATION.md`](INSTALLATION.md) for the complete
-DNS and first-admin procedure.
+`UNDERLEAF_SITE_URL=https://...` before starting it. Caddy can obtain and renew
+ACME certificates when the operator has configured DNS and firewall access, and
+forwards HTTP, HTTPS and WebSocket traffic to the app. This overlay is not a
+claim that direct public-Internet deployment is hardened; use a trusted LAN or
+VPN unless the complete perimeter is maintained by the operator. See
+[`INSTALLATION.md`](INSTALLATION.md) for the complete DNS and first-admin
+procedure.
 
 ## Services and persistence
 
@@ -143,7 +154,11 @@ reinstall TeX Live, and does not recreate MongoDB, Redis, or named volumes.
 
 The application image and the LaTeX compiler image are built separately. The
 compiler image imports the complete official TeX Live distribution selected by
-`UNDERLEAF_TEXLIVE_IMAGE` (default: `texlive/texlive:latest`). It does not run
+`UNDERLEAF_TEXLIVE_IMAGE` (default source tag: `texlive/texlive:latest`). The
+admin page reports the installed TeX Live version queried from the running CLSI
+container separately from this configured source tag. A `latest` source tag is
+not a promise that the installed release is the newest TeX Live release, and
+TeX Live is not updated automatically at runtime. The image does not run
 a local `tlmgr` package allowlist, so language files and transitive style
 packages come from the official image as a unit:
 
@@ -197,8 +212,8 @@ setup. Password input is hidden in an interactive terminal; automation uses
 stdin rather than process arguments. Use `/admin/users` for ordinary account
 management.
 
-Complete Welcome before making a fresh installation publicly reachable: the
-first person who completes it becomes the administrator.
+Complete Welcome before allowing other trusted users to reach a fresh
+installation: the first person who completes it becomes the administrator.
 
 ## Identity and appearance
 
@@ -213,6 +228,11 @@ existing migration mechanism. It removes email identity fields/indexes and
 establishes the canonical username index. Preserve a full backup before an
 upgrade and validate the migration against a restored copy first. The first-run
 E2E suite does not validate an upgrade of existing data.
+
+There is no supported automatic multi-version migration path in this beta.
+Upgrade one controlled revision at a time only after reading its migration
+notes, preserving a full backup and validating restore/compilation in an
+isolated copy.
 
 The installation state, user identities and authenticated theme preferences
 are persisted in MongoDB. Include them in backup/restore and container
