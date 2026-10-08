@@ -4,7 +4,7 @@ set -euo pipefail
 
 image=${UNDERLEAF_COMPILER_IMAGE:-underleaf/compiler:local}
 
-docker run --rm --entrypoint /bin/bash "$image" -s <<'CONTAINER_SCRIPT'
+MSYS_NO_PATHCONV=1 docker run --rm --entrypoint /bin/bash "$image" -s <<'CONTAINER_SCRIPT'
 set -euo pipefail
 
 workdir=$(mktemp -d)

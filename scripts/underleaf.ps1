@@ -10,6 +10,13 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
 
+$startupTimeoutSeconds = 600
+if ($env:UNDERLEAF_STARTUP_TIMEOUT) {
+  if (-not [int]::TryParse($env:UNDERLEAF_STARTUP_TIMEOUT, [ref]$startupTimeoutSeconds) -or $startupTimeoutSeconds -lt 1) {
+    throw 'UNDERLEAF_STARTUP_TIMEOUT must be a positive integer (seconds).'
+  }
+}
+
 $composeArgs = @('--file', 'compose.yaml', '--env-file', '.env')
 
 function Invoke-External {
@@ -55,7 +62,9 @@ function Initialize-Environment {
     $pattern = "(?m)^$([regex]::Escape($name))=(?<value>.*)$"
     $match = [regex]::Match($contents, $pattern)
     if (-not $match.Success) {
-      throw "Missing $name in .env."
+      $separator = if ($contents.EndsWith("`n") -or $contents.EndsWith("`r")) { '' } else { [Environment]::NewLine }
+      $contents = $contents + $separator + "$name=$(New-Secret)" + [Environment]::NewLine
+      continue
     }
     if ([string]::IsNullOrWhiteSpace($match.Groups['value'].Value)) {
       $contents = [regex]::Replace(
@@ -98,6 +107,7 @@ switch ($Command) {
     Initialize-Environment
   }
   'config' {
+    Initialize-Environment
     Invoke-Compose 'config', '--quiet'
   }
   'build' {
@@ -112,21 +122,27 @@ switch ($Command) {
   'up' {
     Initialize-Environment
     Invoke-Compose 'build', 'base'
-    Invoke-Compose 'up', '--build', '--detach'
+    Invoke-Compose 'up', '--build', '--detach', '--wait', '--wait-timeout', $startupTimeoutSeconds
+    Invoke-Compose 'ps', '--all'
   }
   'down' {
+    Initialize-Environment
     Invoke-Compose 'down'
   }
   'logs' {
+    Initialize-Environment
     Invoke-Compose 'logs', '--follow', 'app'
   }
   'health' {
+    Initialize-Environment
     Invoke-Compose 'ps', '--all'
   }
   'create-admin' {
+    Initialize-Environment
     Invoke-Compose 'exec', 'app', 'underleaf', 'create-admin'
   }
   'test' {
+    Initialize-Environment
     Invoke-Compose 'exec', '-T', 'app', 'yarn', 'test'
   }
 }

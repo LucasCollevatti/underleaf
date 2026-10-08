@@ -11,15 +11,16 @@ O relatório verifica:
 
 - app web, MongoDB e Redis pelos endpoints/healthchecks internos;
 - project-history, real-time e CLSI dentro do container da aplicação;
-- estado do serviço `compiler` quando o perfil `compiler` estiver iniciado;
+- estado do serviço `compiler`, que faz parte do stack padrão e é necessário
+  para compilações;
 - bytes disponíveis no volume de dados da aplicação;
 - quantidade de projetos aguardando flush no project-history, quando o endpoint
   responder.
 
-Quando o perfil de compiler não está ativo, `compiler` aparece como
-`not_started`; isso não degrada o stack local, que ainda possui o fluxo de
-compilação integrado. Um compiler iniciado e sem healthcheck saudável torna o
-relatório `degraded`.
+O `compiler` deve aparecer como `healthy`. Se estiver ausente, iniciando,
+parado ou sem healthcheck saudável, o relatório fica `degraded` e o comando
+termina com código diferente de zero. Não existe um fluxo de compilação
+integrado alternativo no app: o serviço dedicado é uma dependência obrigatória.
 
 ## Logs
 

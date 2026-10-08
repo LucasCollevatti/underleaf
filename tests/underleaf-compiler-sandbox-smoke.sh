@@ -58,7 +58,7 @@ const networks = JSON.parse(
 assert.equal(networks[0].Internal, true)
 NODE
 
-docker compose "${compose_args[@]}" run --rm --no-deps --entrypoint /bin/sh compiler -ceu '
+MSYS_NO_PATHCONV=1 docker compose "${compose_args[@]}" run --rm --no-deps --entrypoint /bin/sh compiler -ceu '
   if touch /etc/underleaf-sandbox-write-test 2>/dev/null; then
     echo "compiler root filesystem is writable" >&2
     exit 1

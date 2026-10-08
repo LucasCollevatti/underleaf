@@ -27,11 +27,8 @@ compose() {
 
 compose exec -T mongo mongodump --archive --gzip --db sharelatex \
   > "$backup_dir/mongo.archive.gz"
-compose exec -T app tar -czf - \
-  --exclude=data/cache \
-  --exclude=data/compiles \
-  --exclude=data/output \
-  -C /var/lib/overleaf data \
+compose exec -T app sh -c \
+  'tar -czf - --exclude=data/cache --exclude=data/compiles --exclude=data/output -C /var/lib/overleaf data' \
   > "$backup_dir/app-data.tar.gz"
 
 (cd "$backup_dir" && sha256sum mongo.archive.gz app-data.tar.gz > checksums.sha256)

@@ -77,7 +77,7 @@ fi
 
 disk_available_bytes="null"
 disk_blocks="$(
-  docker exec "$app_container" df -Pk /var/lib/overleaf/data 2>/dev/null |
+  MSYS_NO_PATHCONV=1 docker exec "$app_container" df -Pk /var/lib/overleaf/data 2>/dev/null |
     awk 'NR == 2 { print $4 }'
   true
 )"
@@ -105,7 +105,7 @@ for status in "$app_status" "$mongo_status" "$redis_status" \
     overall_status=degraded
   fi
 done
-if [[ "$compiler_status" == unhealthy || "$compiler_status" == exited ]]; then
+if [[ "$compiler_status" != healthy ]]; then
   overall_status=degraded
 fi
 
@@ -121,3 +121,7 @@ printf '{"status":"%s","timestamp":"%s","services":{"app":"%s","mongo":"%s","red
   "$compiler_status" \
   "$disk_available_bytes" \
   "$queued_projects"
+
+if [[ "$overall_status" != ok ]]; then
+  exit 1
+fi

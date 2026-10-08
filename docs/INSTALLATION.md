@@ -23,10 +23,11 @@ com WSL2. No PowerShell, a instalação local é:
 ```powershell
 git clone <URL-DO-REPOSITORIO> underleaf
 Set-Location underleaf
-.\scripts\underleaf.ps1 up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 up
 ```
 
-Para a operação diária, use `.\scripts\underleaf.ps1 health`, `logs` e `down`.
+Para a operação diária, use `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 health`
+e substitua `health` por `logs` ou `down`.
 O script também expõe `create-admin` e `test`. Não é necessário instalar TeX
 Live, Node ou `make` no Windows; o Docker Desktop executa o runtime Linux do
 Underleaf dentro dos containers. Os scripts de backup e restore ainda são

@@ -19,8 +19,16 @@ assert(!compiler.ports, 'compiler must not publish host ports')
 assert.equal(app.environment.CLSI_HOST, 'compiler')
 assert.equal(app.environment.FILESTORE_HOST, 'app')
 assert(app.depends_on.compiler, 'app must wait for compiler health')
-assert(app.networks.underleaf_compiler_net || app.networks.compiler_net)
-assert(compiler.networks.underleaf_compiler_net || compiler.networks.compiler_net)
+const appNetworks = Object.keys(app.networks || {})
+const compilerNetworks = Object.keys(compiler.networks || {})
+assert(
+  appNetworks.includes('underleaf_compiler_net') || appNetworks.includes('compiler_net'),
+  'app must join the compiler network',
+)
+assert(
+  compilerNetworks.includes('underleaf_compiler_net') || compilerNetworks.includes('compiler_net'),
+  'compiler must join the compiler network',
+)
 NODE
 
 if grep -q "name: 'clsi'" server-ce/services.js; then

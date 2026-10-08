@@ -5,7 +5,14 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo_root"
 
-compose_args=(--file compose.yaml --env-file .env)
+compose_args=(--file compose.yaml)
+
+startup_timeout_seconds=${UNDERLEAF_STARTUP_TIMEOUT:-600}
+
+if ! [[ "$startup_timeout_seconds" =~ ^[1-9][0-9]*$ ]]; then
+  echo "UNDERLEAF_STARTUP_TIMEOUT must be a positive integer (seconds)." >&2
+  exit 2
+fi
 
 new_secret() {
   if command -v openssl >/dev/null 2>&1; then
@@ -48,7 +55,11 @@ init_environment() {
 }
 
 compose() {
-  docker compose "${compose_args[@]}" "$@"
+  docker compose "${compose_args[@]}" --env-file .env "$@"
+}
+
+ensure_environment() {
+  init_environment
 }
 
 show_help() {
@@ -78,6 +89,7 @@ case "${1:-help}" in
     echo "Environment ready: $repo_root/.env"
     ;;
   config)
+    ensure_environment
     compose config --quiet
     ;;
   build)
@@ -89,23 +101,30 @@ case "${1:-help}" in
     compose build base compiler
     ;;
   up)
-    init_environment
+    ensure_environment
     compose build base
-    compose up --build --detach
+    compose up --build --detach --wait --wait-timeout "$startup_timeout_seconds"
+    compose ps --all
     ;;
   down)
+    ensure_environment
     compose down
     ;;
   logs)
+    ensure_environment
     compose logs --follow app
     ;;
   health)
+    ensure_environment
     compose ps --all
+    ./scripts/underleaf-health.sh
     ;;
   create-admin)
+    ensure_environment
     compose exec app underleaf create-admin
     ;;
   test)
+    ensure_environment
     compose exec --no-TTY app yarn test
     ;;
   *)

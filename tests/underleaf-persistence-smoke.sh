@@ -9,7 +9,7 @@ marker_path="/var/lib/overleaf/data/history/${marker_name}"
 marker_value="persistent-${BASHPID}"
 
 cleanup() {
-  docker exec "$app_container" rm -f "$marker_path" >/dev/null 2>&1 || true
+  MSYS_NO_PATHCONV=1 docker exec "$app_container" rm -f "$marker_path" >/dev/null 2>&1 || true
 }
 
 trap cleanup EXIT
@@ -24,7 +24,7 @@ fi
 
 docker compose "${compose_args[@]}" up -d --no-build --force-recreate app >/dev/null
 
-actual_value="$(docker exec "$app_container" cat "$marker_path")"
+actual_value="$(MSYS_NO_PATHCONV=1 docker exec "$app_container" cat "$marker_path")"
 if [[ "$actual_value" != "$marker_value" ]]; then
   echo "Persistent history marker was not preserved." >&2
   exit 1

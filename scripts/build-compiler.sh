@@ -2,6 +2,6 @@
 
 set -euo pipefail
 
-compose_file=${UNDERLEAF_COMPOSE_FILE:-compose.yaml}
-exec docker compose -f "$compose_file" build base compiler
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$repo_root/scripts/underleaf.sh" build-compiler
 

@@ -22,7 +22,7 @@ No Windows, instale o Docker Desktop configurado para Linux containers e rode
 o helper equivalente pelo PowerShell:
 
 ```powershell
-.\scripts\underleaf.ps1 up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 up
 ```
 
 O helper também oferece `health`, `logs`, `down`, `create-admin` e `test`.
