@@ -900,6 +900,9 @@ const _ProjectController = {
         !Features.hasFeature('saas') ||
         (user.features && user.features.symbolPalette)
 
+      // Underleaf does not expose SaaS billing or upgrade prompts.
+      const showUpgradePrompt = false
+
       let aiFeaturesAllowedForUser = false
       let aiFeaturesAllowedForProject = false
 
