@@ -13,6 +13,10 @@ WORKDIR /overleaf
 # transitive language or style packages.
 COPY --from=official-texlive /usr/local/texlive /usr/local/texlive
 
+# Keep latexmk from skipping recompilation when the output PDF is already
+# present; SyncTeX must be regenerated for PDF/code navigation.
+COPY server-ce/config/latexmkrc /usr/local/share/latexmk/LatexMk
+
 COPY --parents libraries/*/package.json .yarn/patches/ services/*/package.json tools/migrations/ package.json yarn.lock .yarnrc.yml .pnp.register.mjs /overleaf/
 
 ENV COREPACK_HOME=/opt/corepack
