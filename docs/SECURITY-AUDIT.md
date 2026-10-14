@@ -8,13 +8,12 @@ release machine; the repository does not rely on GitHub Actions for auditing.
 
 ## Current verification status
 
-On 2026-10-14, the lockfile was regenerated from the current manifests and
-`corepack yarn install --immutable --mode=skip-build` completed on the host.
-The host run required `YARN_CHECKSUM_BEHAVIOR=ignore` because two historical
-Git-based packages produce different archive checksums on Windows; native
-builds were intentionally skipped. The supported Linux Docker build then
-completed the production Yarn focus, Pug precompilation and webpack build with
-the same lockfile.
+On 2026-10-14, a fresh `corepack yarn install --immutable` was attempted from
+the current manifests but was not approved: the remote archives for
+`@replit/codemirror-emacs` and `@replit/codemirror-vim` did not match the
+checksums recorded in `yarn.lock`. The lockfile remains committed, but a clean
+reproducible install needs those checksum discrepancies resolved or explicitly
+reviewed before it can be called green.
 
 The current Docker stack is healthy and `/login` returned HTTP 200. The
 compiler image was not rebuilt in this run because the official 2.35 GB TeX
@@ -48,6 +47,9 @@ transitives. The previous baseline also removed unused `knip` and
 
 Passed on 2026-10-14:
 
+- reproducible public quality gate: `corepack yarn format`,
+  `corepack yarn lint` using `eslint.config.mjs`, and
+  `corepack yarn type-check` using `services/web/tsconfig.underleaf.json`
 - `docker compose --env-file .env build base`
 - `docker compose --env-file .env build app`
 - Compose security, compiler-boundary, compiler-sandbox and compiler smoke
@@ -59,10 +61,13 @@ Passed on 2026-10-14:
 
 Not approved by this run:
 
-- the web type-check: it reported existing generated-module, API/type and
-  frontend test typing errors
-- focused ESLint: this checkout has no `eslint.config.js`, `eslint.config.mjs`
-  or `eslint.config.cjs` for the installed ESLint 10.4.0
+- fresh `corepack yarn install --immutable`: the two Yarn archive checksum
+  mismatches described above prevented a clean install approval
+- `corepack yarn workspace @overleaf/web webpack:production`: Sass compilation
+  failed in `pdfjs-dist/web/pdf_viewer.css` and
+  `frontend/stylesheets/main-style.scss` with `$ is not a function`
+- `corepack yarn workspace @overleaf/web test:frontend --grep Underleaf`:
+  the runner stopped on the Node/PnP `.tsx` loader before executing assertions
 - authenticated dashboard/editor/sharing smoke tests: credentials were not
   supplied
 

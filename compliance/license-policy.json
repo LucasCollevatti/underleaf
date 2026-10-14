@@ -18,6 +18,7 @@
     "GPL-*",
     "LGPL-*",
     "MPL-*",
+    "Artistic-*",
     "SEE LICENSE IN *",
     "custom",
     "dual-or-multi-license expressions"

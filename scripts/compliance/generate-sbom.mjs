@@ -57,6 +57,25 @@ const readLicenseReview = async () => {
 
 const licenseReview = await readLicenseReview()
 
+const licensePolicy = JSON.parse(
+  await fs.readFile('compliance/license-policy.json', 'utf8')
+)
+
+const policyPatternMatches = (license, pattern) => {
+  if (pattern === 'dual-or-multi-license expressions') {
+    return /\b(?:OR|AND)\b|[()]/.test(license)
+  }
+  const escapedPattern = pattern
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replaceAll('\\*', '.*')
+  return new RegExp(`^${escapedPattern}$`).test(license)
+}
+
+const requiresManualReview = license =>
+  (licensePolicy.manualReviewRequired || []).some(pattern =>
+    policyPatternMatches(license, pattern)
+  )
+
 const licenseReviewEntries = licenseReview.packages || []
 const licenseReviewByKey = new Map()
 for (const entry of licenseReviewEntries) {
@@ -293,6 +312,24 @@ if (reviewErrors.length) {
   console.error(
     'License review does not match the generated inventory:\n' +
       reviewErrors.map(error => `- ${error}`).join('\n')
+  )
+  process.exitCode = 2
+}
+
+const policyReviewErrors = []
+for (const component of components) {
+  if (!requiresManualReview(component.license)) continue
+  const key = `${component.name}@${component.version}`
+  if (!licenseReviewByKey.has(key)) {
+    policyReviewErrors.push(
+      `${key}: ${component.license} requires an approved manual license review`
+    )
+  }
+}
+if (policyReviewErrors.length) {
+  console.error(
+    'License policy requires missing manual reviews:\n' +
+      policyReviewErrors.map(error => `- ${error}`).join('\n')
   )
   process.exitCode = 2
 }

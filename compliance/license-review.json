@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "reviewedAt": "2026-10-14",
   "reviewer": "Underleaf maintainers",
-  "scope": "Direct packages highlighted by the current dependency inventory and material distributed by the web build.",
+  "scope": "Packages classified for manual review by the current dependency policy and material distributed by the web build.",
   "packages": [
     {
       "name": "@overleaf/dictionaries",
@@ -37,6 +37,36 @@
       "decision": "This workspace library is part of the AGPL-covered server source and retains its package license and source path."
     },
     {
+      "name": "@sinonjs/text-encoding",
+      "version": "0.7.3",
+      "package": "@sinonjs/text-encoding@0.7.3",
+      "license": "(Unlicense OR Apache-2.0)",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/sinonjs/text-encoding"
+      ],
+      "decision": "The dual expression is reviewed explicitly and the package remains confined to the development dependency tree; retain the selected upstream license notices."
+    },
+    {
+      "name": "axe-core",
+      "version": "4.11.3",
+      "package": "axe-core@4.11.3",
+      "license": "MPL-2.0",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/dequelabs/axe-core"
+      ],
+      "decision": "The MPL-2.0 package is used through accessibility development tooling and is explicitly reviewed under the manual-license policy. Preserve its notice if the dependency is distributed."
+    },
+    {
       "name": "chai-as-promised",
       "version": "7.1.2",
       "license": "WTFPL",
@@ -66,6 +96,21 @@
       "decision": "Use the Apache-2.0 option for the browser bundle and retain the upstream copyright and license notice in the source and third-party notices."
     },
     {
+      "name": "json-schema",
+      "version": "0.4.0",
+      "package": "json-schema@0.4.0",
+      "license": "(AFL-2.1 OR BSD-3-Clause)",
+      "distribution": "transitive dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "http://github.com/kriszyp/json-schema"
+      ],
+      "decision": "The dual expression is reviewed explicitly; the BSD-3-Clause option is compatible with the project distribution and the upstream notice remains tracked."
+    },
+    {
       "name": "pyodide",
       "version": "0.29.3",
       "package": "pyodide@0.29.3",
@@ -83,6 +128,21 @@
       "decision": "The unmodified Pyodide runtime is copied to public browser assets. Preserve the MPL-2.0 notice and provide the corresponding source for the distributed revision."
     },
     {
+      "name": "sortobject",
+      "version": "4.17.0",
+      "package": "sortobject@4.17.0",
+      "license": "Artistic-2.0",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/bevry/sortobject"
+      ],
+      "decision": "The Artistic-2.0 package is used by the development-only i18next scanner path and is explicitly reviewed under the manual-license policy."
+    },
+    {
       "name": "sinon-chai",
       "version": "3.7.0",
       "license": "(BSD-2-Clause OR WTFPL)",
@@ -95,6 +155,66 @@
         "https://github.com/domenic/sinon-chai"
       ],
       "decision": "Used only by test assertions and excluded from the production dependency focus; the dual license remains recorded in the source inventory."
+    },
+    {
+      "name": "type-fest",
+      "version": "0.6.0",
+      "package": "type-fest@0.6.0",
+      "license": "(MIT OR CC0-1.0)",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/sindresorhus/type-fest"
+      ],
+      "decision": "The dual permissive expression is reviewed explicitly; either option is compatible with the project distribution and the upstream notice remains tracked."
+    },
+    {
+      "name": "type-fest",
+      "version": "0.8.1",
+      "package": "type-fest@0.8.1",
+      "license": "(MIT OR CC0-1.0)",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/sindresorhus/type-fest"
+      ],
+      "decision": "The dual permissive expression is reviewed explicitly; either option is compatible with the project distribution and the upstream notice remains tracked."
+    },
+    {
+      "name": "type-fest",
+      "version": "0.21.3",
+      "package": "type-fest@0.21.3",
+      "license": "(MIT OR CC0-1.0)",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/sindresorhus/type-fest"
+      ],
+      "decision": "The dual permissive expression is reviewed explicitly; either option is compatible with the project distribution and the upstream notice remains tracked."
+    },
+    {
+      "name": "utf8-byte-length",
+      "version": "1.0.5",
+      "package": "utf8-byte-length@1.0.5",
+      "license": "(WTFPL OR MIT)",
+      "distribution": "transitive development dependency",
+      "status": "approved",
+      "licenseFile": "package archive license files",
+      "evidence": [
+        "yarn.lock",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/parshap/utf8-byte-length"
+      ],
+      "decision": "The dual expression is reviewed explicitly; the MIT option is compatible with the project distribution and the upstream notice remains tracked."
     }
   ],
   "distributedComponents": [

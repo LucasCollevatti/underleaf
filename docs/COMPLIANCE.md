@@ -38,8 +38,11 @@ review.
 
 The same command validates `compliance/license-review.json`: every reviewed
 package/version must exist in the installed inventory with the same declared
-license and an `approved` status, and every package-backed distributed
-component must resolve to the same inventory record.
+license and an `approved` status, every package-backed distributed component
+must resolve to the same inventory record, and every installed package whose
+license matches `manualReviewRequired` in `compliance/license-policy.json`
+must have an approved review entry. This prevents policy-classified licenses
+from silently remaining outside the review file.
 
 ## License review
 
@@ -70,22 +73,30 @@ This document is operational guidance, not legal advice.
 
 ## Completed package review
 
-The six direct package records highlighted by the current inventory were
-reviewed on 2026-10-14 and are recorded in
+The fourteen package records classified for manual review by the current
+inventory were reviewed on 2026-10-14 and are recorded in
 `compliance/license-review.json`. The review distinguishes server runtime,
 browser bundle, browser assets and test-only dependencies. `MIT-0` is treated
 as an automatically approved permissive license by
-`compliance/license-policy.json`; the remaining highlighted direct records are
+`compliance/license-policy.json`; the remaining records are
 explicitly reviewed rather than silently ignored.
 
-| Package                  | Version  | License               | Distribution decision                                                                             |
-| ------------------------ | -------- | --------------------- | ------------------------------------------------------------------------------------------------- |
-| `@overleaf/dictionaries` | `0.0.3`  | AGPL-3.0-only         | Approved for copied browser dictionary assets; preserve the AGPL notice and Corresponding Source. |
-| `@overleaf/logger`       | `3.1.1`  | AGPL-3.0-only         | Approved as part of the AGPL-covered server source; retain `libraries/logger/LICENSE.txt`.        |
-| `chai-as-promised`       | `7.1.2`  | WTFPL                 | Approved as test-only; excluded from the production dependency focus.                             |
-| `dompurify`              | `3.4.12` | MPL-2.0 OR Apache-2.0 | Approved using the Apache-2.0 option in the browser bundle; retain the upstream notice.           |
-| `pyodide`                | `0.29.3` | MPL-2.0               | Approved for copied browser runtime assets; retain the MPL notice and source reference.           |
-| `sinon-chai`             | `3.7.0`  | BSD-2-Clause OR WTFPL | Approved as test-only; excluded from the production dependency focus.                             |
+| Package                  | Version  | License                 | Distribution decision                                                                             |
+| ------------------------ | -------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `@overleaf/dictionaries` | `0.0.3`  | AGPL-3.0-only           | Approved for copied browser dictionary assets; preserve the AGPL notice and Corresponding Source. |
+| `@overleaf/logger`       | `3.1.1`  | AGPL-3.0-only           | Approved as part of the AGPL-covered server source; retain `libraries/logger/LICENSE.txt`.        |
+| `@sinonjs/text-encoding` | `0.7.3`  | Unlicense OR Apache-2.0 | Approved as a reviewed transitive development dependency; retain upstream notices.                |
+| `axe-core`               | `4.11.3` | MPL-2.0                 | Approved as a reviewed accessibility-tooling dependency; retain the MPL notice.                   |
+| `chai-as-promised`       | `7.1.2`  | WTFPL                   | Approved as test-only; excluded from the production dependency focus.                             |
+| `dompurify`              | `3.4.12` | MPL-2.0 OR Apache-2.0   | Approved using the Apache-2.0 option in the browser bundle; retain the upstream notice.           |
+| `json-schema`            | `0.4.0`  | AFL-2.1 OR BSD-3-Clause | Approved as a reviewed transitive dependency; retain the selected notice.                         |
+| `pyodide`                | `0.29.3` | MPL-2.0                 | Approved for copied browser runtime assets; retain the MPL notice and source reference.           |
+| `sortobject`             | `4.17.0` | Artistic-2.0            | Approved as a reviewed development dependency; retain the package license.                        |
+| `sinon-chai`             | `3.7.0`  | BSD-2-Clause OR WTFPL   | Approved as test-only; excluded from the production dependency focus.                             |
+| `type-fest`              | `0.6.0`  | MIT OR CC0-1.0          | Approved as a reviewed transitive development dependency.                                         |
+| `type-fest`              | `0.8.1`  | MIT OR CC0-1.0          | Approved as a reviewed transitive development dependency.                                         |
+| `type-fest`              | `0.21.3` | MIT OR CC0-1.0          | Approved as a reviewed transitive development dependency.                                         |
+| `utf8-byte-length`       | `1.0.5`  | WTFPL OR MIT            | Approved as a reviewed transitive development dependency.                                         |
 
 The production web build also distributes MathJax 4.1.2 (Apache-2.0), PDF.js
 5.1.91 (Apache-2.0), highlight.js 11.11.1 (BSD-3-Clause), OFL-1.1 web fonts,
