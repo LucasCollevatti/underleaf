@@ -17,14 +17,24 @@ The command generates:
 - `artifacts/sbom.cdx.json`: CycloneDX 1.6 SBOM for installed third-party npm
   packages.
 - `artifacts/third-party-licenses.csv`: package/version/license/repository
-  inventory using package metadata as the SPDX-oriented source field.
+  inventory using package metadata as the SPDX-oriented source field. The CSV
+  also records the license evidence source and any manual review note.
+
+The 2026-10-14 inventory contains 2,734 unique package versions and 2,734
+license rows. The generator reported 44 optional platform locators that were
+not materialized on the current host and excluded them from this installed
+inventory.
 
 Generate both artifacts locally when preparing a release or reviewing dependency
 changes. The generator enumerates non-workspace Yarn PnP locators, fails on
 unreadable `package.json` metadata, and checks that the CycloneDX component and
-license-row counts match. Missing license metadata (`NOASSERTION`) and
-`UNLICENSED` packages also fail the command so they cannot silently pass a
-release review.
+license-row counts match. Platform-specific optional packages that are present
+in the lockfile but are not materialized for the current Docker architecture
+are reported and excluded from that platform's installed inventory. Missing
+license metadata (`NOASSERTION`) and `UNLICENSED` packages also fail the
+command; classify verified exceptions explicitly in
+`compliance/license-overrides.json` so they cannot silently pass a release
+review.
 
 ## License review
 

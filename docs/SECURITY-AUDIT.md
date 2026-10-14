@@ -1,6 +1,6 @@
 # Security audit baseline
 
-Date: 2026-10-07
+Date: 2026-10-14
 
 This file records the security baseline established after the SaaS/enterprise
 surface reduction. Security checks are run explicitly on a developer or
@@ -8,31 +8,63 @@ release machine; the repository does not rely on GitHub Actions for auditing.
 
 ## Current verification status
 
-On 2026-10-08, `corepack yarn install --immutable` was attempted before the
-dependency audit. It stopped with Yarn `YN0028` because the committed lockfile
-would be modified, alongside existing peer-dependency warnings. Therefore the
-recursive audit and SBOM generation were **not run** in this checkout: no
-current clean-audit or clean-inventory claim is made. Fix the lockfile through
-the normal dependency-review process, rerun the immutable install, then retain
-the raw audit JSON privately and regenerate both inventory files.
+On 2026-10-14, the lockfile was regenerated from the current manifests and
+`corepack yarn install --immutable --mode=skip-build` completed on the host.
+The host run required `YARN_CHECKSUM_BEHAVIOR=ignore` because two historical
+Git-based packages produce different archive checksums on Windows; native
+builds were intentionally skipped. The supported Linux Docker build then
+completed the production Yarn focus, Pug precompilation and webpack build with
+the same lockfile.
+
+The current Docker stack is healthy and `/login` returned HTTP 200. The
+compiler image was not rebuilt in this run because the official 2.35 GB TeX
+Live layer was being transferred at an unusable rate; the existing compiler
+image remained healthy and passed the compiler, boundary and sandbox smoke
+tests. This is evidence for the current running stack, not a claim that a new
+compiler image was built. The generated SBOM and license inventory are in
+`artifacts/` for this checkout.
 
 ## Dependency findings
 
-On 2026-10-07, `corepack yarn npm audit --all --recursive
---severity moderate --json` reported 2 critical, 43 high, 73 moderate, 0 low
-and 22 deprecation findings. These are finding instances rather than a count
-of unique packages. The result is not a clean release baseline.
+On 2026-10-14, the current full-tree audit with
+`corepack yarn npm audit --all --recursive --severity moderate --json` reported
+0 critical, 1 high, 52 moderate and 0 low findings. The high finding is
+`braces@3.0.3` through `micromatch@4.0.8`, used by the web development/tooling
+tree. The upstream advisory currently has no patched `braces` release, so the
+full repository audit is not clean. The production-focused audit inside the
+rebuilt `underleaf/app:local` image completed with exit code 0 at severity high,
+with no high or critical runtime finding.
 
-The historical report includes direct or runtime-relevant findings in `axios`,
-`@xmldom/xmldom`, `multer`, `nodemailer`, `proxy-addr`, `shell-quote`,
-`source-map-js`, `webpack-dev-server` and other transitive packages. The
-operator must remediate or explicitly accept each HIGH/CRITICAL finding before
-Internet exposure.
+The high finding is tracked explicitly rather than hidden through an audit
+ignore. Re-run the full-tree audit when `braces` publishes a fixed release and
+remove the exception from this review. The direct and transitive remediation
+included `@xmldom/xmldom` 0.9.12, `axios` 1.20.0, `handlebars` 4.7.10,
+`nodemailer` 10.1.1, `compression` 1.8.2, `webpack-dev-middleware` 7.4.5,
+`multer` 2.4.0 with the repository's security patch, and refreshed vulnerable
+transitives. The previous baseline also removed unused `knip` and
+`prettier-plugin-groovy` descriptors.
 
-The previous baseline change removed the unused `knip` and
-`prettier-plugin-groovy` dependencies;
-neither has a remaining descriptor in `yarn.lock`. Re-run the audit after any
-lockfile change and before release.
+## Build and test evidence
+
+Passed on 2026-10-14:
+
+- `docker compose --env-file .env build base`
+- `docker compose --env-file .env build app`
+- Compose security, compiler-boundary, compiler-sandbox and compiler smoke
+  tests
+- persistence smoke test after recreating the app container
+- application health checks and `/login` HTTP probe
+- focused Underleaf unit tests: 7 files and 86 tests passed, with no unhandled
+  errors
+
+Not approved by this run:
+
+- the web type-check: it reported existing generated-module, API/type and
+  frontend test typing errors
+- focused ESLint: this checkout has no `eslint.config.js`, `eslint.config.mjs`
+  or `eslint.config.cjs` for the installed ESLint 10.4.0
+- authenticated dashboard/editor/sharing smoke tests: credentials were not
+  supplied
 
 ## Runtime findings
 

@@ -6,6 +6,17 @@ const settingsPath = '@overleaf/settings'
 const rateLimiterPath = '../../../../app/src/infrastructure/RateLimiter.mjs'
 const emailHelperPath = '../../../../app/src/Features/Helpers/EmailHelper.mjs'
 
+async function expectRejected(promise, assertion) {
+  let error
+  try {
+    await promise
+  } catch (candidate) {
+    error = candidate
+  }
+  expect(error).toBeInstanceOf(Error)
+  assertion(error)
+}
+
 describe('Underleaf username login rate limiting', function () {
   let settings, consume, remove, limiter
 
@@ -51,8 +62,8 @@ describe('Underleaf username login rate limiting', function () {
 
   it('rejects malformed or unbounded identifiers before using Redis', async function () {
     for (const value of [{ username: 'admin' }, '', 'x'.repeat(33)]) {
-      await expect(limiter.processLoginRequest(value)).rejects.toThrow(
-        'Invalid request'
+      await expectRejected(limiter.processLoginRequest(value), error =>
+        expect(error.message).toBe('Invalid request')
       )
     }
     expect(consume).not.toHaveBeenCalled()
@@ -66,7 +77,9 @@ describe('Underleaf username login rate limiting', function () {
   it('propagates Redis failures instead of bypassing the limit', async function () {
     const error = new Error('Redis unavailable')
     consume.mockRejectedValue(error)
-    await expect(limiter.processLoginRequest('first-admin')).rejects.toBe(error)
+    await expectRejected(limiter.processLoginRequest('first-admin'), rejection =>
+      expect(rejection).toBe(error)
+    )
   })
 
   it('clears the username quota after a successful login', async function () {
@@ -75,9 +88,10 @@ describe('Underleaf username login rate limiting', function () {
   })
 
   it('never treats email as an account identifier', async function () {
-    await expect(
-      limiter.processLoginRequest('user@example.com')
-    ).rejects.toThrow('Invalid request')
+    await expectRejected(
+      limiter.processLoginRequest('user@example.com'),
+      error => expect(error.message).toBe('Invalid request')
+    )
     expect(consume).not.toHaveBeenCalled()
   })
 })

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import mongodb from 'mongodb-legacy'
 
 const mocks = vi.hoisted(() => ({
   find: vi.fn(),
@@ -49,8 +48,20 @@ vi.mock(
 import Controller from '../../../../app/src/Features/Underleaf/UnderleafSharingController.mjs'
 
 const projectId = '000000000000000000000001'
-const userId = new mongodb.ObjectId('000000000000000000000002')
+const userId = '000000000000000000000002'
 let req, cursor, privilege
+
+async function expectRejected(promise, assertion) {
+  let error
+  try {
+    await promise
+  } catch (candidate) {
+    error = candidate
+  }
+  expect(error).toBeInstanceOf(Error)
+  assertion(error)
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   privilege = false
@@ -109,7 +120,7 @@ function invoke(handler) {
         resolve({ status: code })
       },
     }
-    handler(req, res, reject)
+    Promise.resolve(handler(req, res, reject)).catch(reject)
   })
 }
 describe('Underleaf direct sharing by username', () => {
@@ -139,7 +150,7 @@ describe('Underleaf direct sharing by username', () => {
     'rejects invalid search %s',
     async username => {
       req.query = { username }
-      await expect(invoke(Controller.searchUsers)).rejects.toBeInstanceOf(Error)
+      await expectRejected(invoke(Controller.searchUsers), () => {})
       expect(mocks.find).not.toHaveBeenCalled()
     }
   )
@@ -154,13 +165,13 @@ describe('Underleaf direct sharing by username', () => {
         expect.any(Object)
       )
       expect(mocks.add).toHaveBeenCalledWith(
-        expect.any(mongodb.ObjectId),
+        projectId,
         'owner-id',
         userId,
         level
       )
       expect(mocks.audit).toHaveBeenCalledWith(
-        expect.any(mongodb.ObjectId),
+        projectId,
         'add-collaborator',
         'owner-id',
         req.ip,
@@ -172,7 +183,7 @@ describe('Underleaf direct sharing by username', () => {
       })
       expect(result.body.member).not.toHaveProperty('email')
       expect(mocks.emit).toHaveBeenCalledWith(
-        expect.any(mongodb.ObjectId),
+        projectId,
         'project:membership:changed',
         { members: true }
       )
@@ -183,7 +194,7 @@ describe('Underleaf direct sharing by username', () => {
     await invoke(Controller.addUserByUsername)
     expect(mocks.add).not.toHaveBeenCalled()
     expect(mocks.change).toHaveBeenCalledWith(
-      expect.any(mongodb.ObjectId),
+      projectId,
       userId,
       'readAndWrite',
       {},
@@ -200,17 +211,13 @@ describe('Underleaf direct sharing by username', () => {
     'rejects unsupported permission %s',
     async permission => {
       req.body.permission = permission
-      await expect(invoke(Controller.addUserByUsername)).rejects.toBeInstanceOf(
-        Error
-      )
+      await expectRejected(invoke(Controller.addUserByUsername), () => {})
       expect(mocks.add).not.toHaveBeenCalled()
     }
   )
   it('rejects email identity in direct grants', async () => {
     req.body = { email: 'lucas@example.com', permission: 'editor' }
-    await expect(invoke(Controller.addUserByUsername)).rejects.toBeInstanceOf(
-      Error
-    )
+    await expectRejected(invoke(Controller.addUserByUsername), () => {})
     expect(mocks.findOne).not.toHaveBeenCalled()
   })
   it('protects the owner from grant and removal', async () => {
@@ -236,7 +243,9 @@ describe('Underleaf direct sharing by username', () => {
   it('propagates a failed membership write without reporting success', async () => {
     const failure = new Error('Database unavailable')
     mocks.add.mockRejectedValue(failure)
-    await expect(invoke(Controller.addUserByUsername)).rejects.toBe(failure)
+    await expectRejected(invoke(Controller.addUserByUsername), rejection =>
+      expect(rejection).toBe(failure)
+    )
     expect(mocks.emit).not.toHaveBeenCalled()
   })
 })

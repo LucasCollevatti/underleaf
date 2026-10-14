@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "packages": {
+    "@overleaf/metrics@4.2.0": {
+      "license": "MIT",
+      "source": "package LICENSE file",
+      "review": "Confirmed from the package LICENSE file in the Linux build."
+    },
+    "@overleaf/settings@3.0.0": {
+      "license": "MIT",
+      "source": "package LICENSE file",
+      "review": "Confirmed from the package LICENSE file in the Linux build."
+    },
+    "base64id@0.1.0": {
+      "license": "MIT",
+      "source": "upstream LICENSE file",
+      "review": "Confirmed from the upstream repository LICENSE file."
+    },
+    "cluster@0.7.7": {
+      "license": "MIT",
+      "source": "package LICENSE file",
+      "review": "Confirmed from the package LICENSE file."
+    },
+    "pause@0.0.1": {
+      "license": "MIT",
+      "source": "README license section",
+      "review": "Confirmed from the package README license section."
+    },
+    "redis@0.7.3": {
+      "license": "MIT",
+      "source": "README license section",
+      "review": "Confirmed from the package README license section."
+    },
+    "require-like@0.1.2": {
+      "license": "MIT",
+      "source": "package License file",
+      "review": "Confirmed from the package License file."
+    },
+    "socket.io-client@0.9.17-overleaf-6": {
+      "license": "MIT",
+      "source": "README license section",
+      "review": "Confirmed from the package README license section."
+    },
+    "socket.io@0.9.19-overleaf-12": {
+      "license": "MIT",
+      "source": "package LICENSE file",
+      "review": "Confirmed from the package LICENSE file."
+    },
+    "stack-trace@0.0.9": {
+      "license": "MIT",
+      "source": "package License file",
+      "review": "Confirmed from the package License file."
+    },
+    "thirty-two@1.0.2": {
+      "license": "MIT",
+      "source": "package LICENSE.txt file",
+      "review": "Confirmed from the package LICENSE.txt file."
+    },
+    "valid-url@1.0.9": {
+      "license": "MIT",
+      "source": "package LICENSE file",
+      "review": "Confirmed from the package LICENSE file."
+    },
+    "timekeeper@0.0.4": {
+      "license": "MIT",
+      "source": "README license section",
+      "review": "Confirmed from the package README license section."
+    }
+  }
+}

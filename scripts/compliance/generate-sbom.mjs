@@ -7,10 +7,88 @@ const pnp = require('pnpapi')
 
 const seen = new Map()
 const metadataErrors = []
+const skippedOptionalLocators = []
 const resolvedPackageKeys = new Set()
+const materializedLocatorKeys = new Set()
 const packageLocators = pnp
   .getAllLocators()
   .filter(locator => locator.name && !locator.reference.startsWith('workspace:'))
+
+const licenseAliases = new Map([
+  ['Apache License, Version 2.0', 'Apache-2.0'],
+  ['Apache License 2.0', 'Apache-2.0'],
+  ['The MIT License', 'MIT'],
+  ['The MIT License (MIT)', 'MIT'],
+  ['MIT License', 'MIT']
+])
+
+const normalizeLicense = license => {
+  if (typeof license !== 'string') return undefined
+  const normalized = license.trim()
+  return licenseAliases.get(normalized) || normalized
+}
+
+let licenseOverrides = {}
+try {
+  licenseOverrides = JSON.parse(
+    await fs.readFile('compliance/license-overrides.json', 'utf8')
+  )
+} catch (error) {
+  if (error?.code !== 'ENOENT') throw error
+}
+
+const getPackageLicense = pkg => {
+  const declaredLicense = normalizeLicense(pkg.license)
+  if (declaredLicense)
+    return { license: declaredLicense, source: 'package.json' }
+
+  if (Array.isArray(pkg.licenses)) {
+    const declaredLicenses = pkg.licenses
+      .map(entry => normalizeLicense(entry?.type || entry?.name))
+      .filter(Boolean)
+    if (declaredLicenses.length) {
+      return {
+        license: declaredLicenses.join(' OR '),
+        source: 'package.json:licenses'
+      }
+    }
+  }
+
+  return undefined
+}
+
+const isOptionalDependencyLocator = async locator => {
+  for (const parentLocator of pnp.getAllLocators()) {
+    if (
+      parentLocator.name === locator.name &&
+      parentLocator.reference === locator.reference
+    ) {
+      continue
+    }
+    const parentInfo = pnp.getPackageInformation(parentLocator)
+    const dependencyReference = parentInfo?.packageDependencies?.get(
+      locator.name
+    )
+    if (
+      dependencyReference !== locator.reference ||
+      !parentInfo?.packageLocation
+    ) {
+      continue
+    }
+    try {
+      const parentPackage = JSON.parse(
+        await fs.readFile(
+          path.join(parentInfo.packageLocation, 'package.json'),
+          'utf8'
+        )
+      )
+      if (parentPackage.optionalDependencies?.[locator.name]) return true
+    } catch {
+      // The parent metadata is not needed to report the original locator error.
+    }
+  }
+  return false
+}
 
 for (const locator of packageLocators) {
   const info = pnp.getPackageInformation(locator)
@@ -29,16 +107,31 @@ for (const locator of packageLocators) {
     }
     const key = `${pkg.name}@${pkg.version}`
     resolvedPackageKeys.add(key)
+    materializedLocatorKeys.add(`${locator.name}@${locator.reference}`)
+    const declaredLicense = getPackageLicense(pkg)
+    const override = licenseOverrides.packages?.[key]
     seen.set(key, {
       name: pkg.name,
       version: pkg.version,
-      license: typeof pkg.license === 'string' ? pkg.license : 'NOASSERTION',
+      license: declaredLicense?.license || override?.license || 'NOASSERTION',
+      licenseSource:
+        declaredLicense?.source ||
+        override?.source ||
+        'missing package metadata',
+      licenseReview: override?.review || '',
       repository:
         typeof pkg.repository === 'string'
           ? pkg.repository
           : pkg.repository?.url || '',
     })
   } catch (error) {
+    if (
+      error?.code === 'ENOENT' &&
+      (await isOptionalDependencyLocator(locator))
+    ) {
+      skippedOptionalLocators.push(`${locator.name}@${locator.reference}`)
+      continue
+    }
     metadataErrors.push(
       `${locator.name}@${locator.reference}: ${error instanceof Error ? error.message : String(error)}`
     )
@@ -82,19 +175,24 @@ const bom = {
 await fs.writeFile('artifacts/sbom.cdx.json', JSON.stringify(bom, null, 2) + '\n')
 
 const quote = value => '"' + String(value).replaceAll('"', '""') + '"'
-const rows = ['name,version,spdx_license,repository']
+const rows = ['name,version,spdx_license,license_source,license_review,repository']
 for (const component of components) {
   rows.push(
-    [component.name, component.version, component.license, component.repository]
+    [
+      component.name,
+      component.version,
+      component.license,
+      component.licenseSource,
+      component.licenseReview,
+      component.repository,
+    ]
       .map(quote)
       .join(',')
   )
 }
 await fs.writeFile('artifacts/third-party-licenses.csv', rows.join('\n') + '\n')
 
-const locatorKeys = new Set(
-  packageLocators.map(locator => `${locator.name}@${locator.reference}`)
-)
+const locatorKeys = new Set(materializedLocatorKeys)
 const componentKeys = new Set(
   components.map(component => `${component.name}@${component.version}`)
 )
@@ -108,8 +206,29 @@ if (
   process.exitCode = 2
 }
 console.error(
-  `SBOM inventory: ${componentKeys.size} unique package versions from ${locatorKeys.size} Yarn PnP locators.`
+  `SBOM inventory: ${componentKeys.size} unique package versions from ${locatorKeys.size} materialized Yarn PnP locators.`
 )
+if (skippedOptionalLocators.length) {
+  console.error(
+    `Skipped ${skippedOptionalLocators.length} optional locators not materialized for this platform:\n` +
+      skippedOptionalLocators.map(locator => `- ${locator}`).join('\n')
+  )
+}
+
+const unknownOverrideKeys = Object.keys(licenseOverrides.packages || {}).filter(
+  key => {
+    if (componentKeys.has(key)) return false
+    const packageName = key.slice(0, key.lastIndexOf('@'))
+    return packageLocators.some(locator => locator.name === packageName)
+  }
+)
+if (unknownOverrideKeys.length) {
+  console.error(
+    'License overrides do not match generated components:\n' +
+      unknownOverrideKeys.map(key => `- ${key}`).join('\n')
+  )
+  process.exitCode = 2
+}
 
 const unknown = components.filter(
   component =>

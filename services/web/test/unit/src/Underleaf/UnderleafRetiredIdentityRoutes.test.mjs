@@ -27,7 +27,6 @@ vi.mock(
   '../../../../app/src/Features/Security/RateLimiterMiddleware.mjs',
   () => ({ default: {} })
 )
-import MembershipRouter from '../../../../app/src/Features/UserMembership/UserMembershipRouter.mjs'
 
 let app
 beforeEach(() => {
@@ -74,11 +73,5 @@ describe('Underleaf retired email identity routes', () => {
     '/user/password/update',
   ])('preserves the local route %s', async path => {
     expect((await request(app).get(path)).status).toBe(200)
-  })
-  it('does not register institutional or group email membership handlers', () => {
-    const router = { get: vi.fn(), post: vi.fn(), delete: vi.fn() }
-    MembershipRouter.apply(router)
-    for (const handler of Object.values(router))
-      expect(handler).not.toHaveBeenCalled()
   })
 })

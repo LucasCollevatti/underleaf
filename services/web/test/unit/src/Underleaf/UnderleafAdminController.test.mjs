@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import mongodb from 'mongodb-legacy'
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -56,8 +55,20 @@ import Controller from '../../../../app/src/Features/Underleaf/UnderleafAdminCon
 import { UnderleafUserError } from '../../../../app/src/Features/Underleaf/UnderleafUserManager.mjs'
 
 const adminId = '000000000000000000000001'
-const userId = new mongodb.ObjectId('000000000000000000000002')
+const userId = '000000000000000000000002'
 let req, user
+
+async function expectRejected(promise, assertion) {
+  let error
+  try {
+    await promise
+  } catch (candidate) {
+    error = candidate
+  }
+  expect(error).toBeInstanceOf(Error)
+  assertion(error)
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   req = {
@@ -128,7 +139,7 @@ function invoke(handler) {
         resolve({ location, headers })
       },
     }
-    handler(req, res, reject)
+    Promise.resolve(handler(req, res, reject)).catch(reject)
   })
 }
 
@@ -257,7 +268,7 @@ describe('Underleaf administration', () => {
   })
   it('requires exact confirmation before allowing explicit owned-project deletion', async () => {
     req.body = { confirm: 'delete', projectAction: 'delete' }
-    await expect(invoke(Controller.deleteUser)).rejects.toThrow()
+    await expectRejected(invoke(Controller.deleteUser), () => {})
     expect(mocks.delete).not.toHaveBeenCalled()
     req.body.confirm = 'DELETE'
     const result = await invoke(Controller.deleteUser)

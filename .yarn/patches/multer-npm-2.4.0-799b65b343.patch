@@ -1,0 +1,34 @@
+diff --git a/lib/make-middleware.js b/lib/make-middleware.js
+index b1506c28a8ce0745e91cf45faefbaa41cd678120..7e86406043d8ffdbebaf8b81c7dc74a116fc301f 100644
+--- a/lib/make-middleware.js
++++ b/lib/make-middleware.js
+@@ -122,7 +122,10 @@ function makeMiddleware (setup) {
+     var fileHwm = options.fileHwm
+     var streamHandler = options.streamHandler || defaultStreamHandler
+ 
+-    req.body = Object.create(null)
++    // keep a local reference: with the Overleaf request-input lockdown
++    // installed, writing req.body is allowed but reading it warns/throws
++    var body = Object.create(null)
++    req.body = body
+ 
+     var busboy
+     var appender = null
+@@ -277,7 +280,7 @@ function makeMiddleware (setup) {
+       }
+ 
+       try {
+-        appendField(req.body, fieldname, value)
++        appendField(body, fieldname, value)
+       } catch {
+         return abortWithCode('INVALID_FIELD_NAME', fieldname)
+       }
+@@ -325,7 +328,7 @@ function makeMiddleware (setup) {
+       fieldname = decodeFormDataName(fieldname)
+ 
+       // don't attach to the files object, if there is no file
+-      if (!filename) return fileStream.resume()
++      if (!filename) filename = 'undefined'
+ 
+       // Work around bug in Busboy (https://github.com/mscdex/busboy/issues/6)
+       if (limits && Object.prototype.hasOwnProperty.call(limits, 'fieldNameSize')) {
