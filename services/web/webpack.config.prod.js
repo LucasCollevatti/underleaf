@@ -31,6 +31,21 @@ module.exports = merge(
       ],
     },
 
+    // MathJax, Pyodide, and the Hunspell dictionaries are fetched only when
+    // their features are used. Keep them out of the application bundle
+    // budget, while still failing the production build if a shipped bundle
+    // grows beyond the measured limits below.
+    performance: {
+      hints: 'error',
+      maxAssetSize: 1024 * 1024,
+      maxEntrypointSize: 2 * 1024 * 1024,
+      assetFilter: assetFilename =>
+        !/\.map$/.test(assetFilename) &&
+        !/^js\/(?:dictionaries\/|libs\/mathjax-[^/]+\/|libs\/pyodide\/)/.test(
+          assetFilename
+        ),
+    },
+
     plugins: [
       // Extract CSS to a separate file (rather than inlining to a <style> tag)
       new MiniCssExtractPlugin({

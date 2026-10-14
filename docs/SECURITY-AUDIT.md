@@ -8,12 +8,14 @@ release machine; the repository does not rely on GitHub Actions for auditing.
 
 ## Current verification status
 
-On 2026-10-14, a fresh `corepack yarn install --immutable` was attempted from
-the current manifests but was not approved: the remote archives for
-`@replit/codemirror-emacs` and `@replit/codemirror-vim` did not match the
-checksums recorded in `yarn.lock`. The lockfile remains committed, but a clean
-reproducible install needs those checksum discrepancies resolved or explicitly
-reviewed before it can be called green.
+On 2026-10-14, the checksum discrepancies for `@replit/codemirror-emacs` and
+`@replit/codemirror-vim` were resolved by pinning both dependencies to their
+commit-specific GitHub codeload archives and regenerating their lockfile
+checksums. `corepack yarn install --immutable --mode=skip-build` then completed
+successfully. A full `corepack yarn install --immutable` reached the link step,
+but this Windows host could not build native packages (`cpu-features` and
+`mmmagic`); that is a host toolchain failure, not a lockfile or checksum
+failure.
 
 The current Docker stack is healthy and `/login` returned HTTP 200. The
 compiler image was not rebuilt in this run because the official 2.35 GB TeX
@@ -47,9 +49,17 @@ transitives. The previous baseline also removed unused `knip` and
 
 Passed on 2026-10-14:
 
+- immutable Yarn resolution, fetch and link validation with
+  `corepack yarn install --immutable --mode=skip-build`
 - reproducible public quality gate: `corepack yarn format`,
   `corepack yarn lint` using `eslint.config.mjs`, and
   `corepack yarn type-check` using `services/web/tsconfig.underleaf.json`
+- `corepack yarn workspace @overleaf/web webpack:production`; the production
+  build completed successfully with explicit performance budgets. On-demand
+  MathJax, Pyodide and Hunspell assets, plus hidden source maps, are excluded
+  from the application-bundle budget.
+- focused frontend Mocha test for `PdfCompileTime`: 3 tests passed through the
+  Node/PnP `.tsx` loader
 - `docker compose --env-file .env build base`
 - `docker compose --env-file .env build app`
 - Compose security, compiler-boundary, compiler-sandbox and compiler smoke
@@ -61,13 +71,12 @@ Passed on 2026-10-14:
 
 Not approved by this run:
 
-- fresh `corepack yarn install --immutable`: the two Yarn archive checksum
-  mismatches described above prevented a clean install approval
-- `corepack yarn workspace @overleaf/web webpack:production`: Sass compilation
-  failed in `pdfjs-dist/web/pdf_viewer.css` and
-  `frontend/stylesheets/main-style.scss` with `$ is not a function`
+- full `corepack yarn install --immutable`: native package builds failed on the
+  local Windows toolchain after checksum and fetch validation succeeded
 - `corepack yarn workspace @overleaf/web test:frontend --grep Underleaf`:
-  the runner stopped on the Node/PnP `.tsx` loader before executing assertions
+  the runner executed 49 tests (34 passed, 15 failed) and the remaining
+  failures are stale Underleaf UI expectations around account menus, setup
+  flows and branding; the `.tsx` loader itself is no longer the failure
 - authenticated dashboard/editor/sharing smoke tests: credentials were not
   supplied
 

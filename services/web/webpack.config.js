@@ -143,7 +143,7 @@ module.exports = {
         // Only compile application files and specific dependencies
         // (other npm and vendored dependencies must be in ES5 already)
         exclude: [
-          /node_modules\/(?!(react-dnd|chart\.js|@uppy|@writefull|pdfjs-dist|react-resizable-panels)\/)/,
+          /[\\/]node_modules[\\/](?!(react-dnd|chart\.js|@uppy|@writefull|pdfjs-dist|react-resizable-panels)[\\/])/,
           vendorDir,
           path.resolve(__dirname, 'modules/writefull/frontend/js/integration'),
           /ort-wasm-simd-threaded\.mjs$/,

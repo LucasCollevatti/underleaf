@@ -1,3 +1,5 @@
+const path = require('path')
+
 // Run babel on tests to allow support for import/export statements in Node
 require('@babel/register')({
   extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'],
@@ -5,10 +7,23 @@ require('@babel/register')({
     [
       'module-resolver',
       {
-        alias: {
-          '^@/(.+)': './frontend/js/\\1',
-          '^@shared/(.+)': './shared/\\1',
-          '^@modules/(.+)': './modules/\\1',
+        // Return absolute paths because the string replacement form of this
+        // plugin turns the aliases into invalid `@\\...` requests on Windows.
+        resolvePath(sourcePath) {
+          if (sourcePath.startsWith('@/')) {
+            return path.resolve(
+              __dirname,
+              '../../frontend/js',
+              sourcePath.slice(2)
+            )
+          }
+          if (sourcePath.startsWith('@shared/')) {
+            return path.resolve(__dirname, '../../shared', sourcePath.slice(8))
+          }
+          if (sourcePath.startsWith('@modules/')) {
+            return path.resolve(__dirname, '../../modules', sourcePath.slice(9))
+          }
+          return null
         },
       },
     ],
@@ -30,7 +45,6 @@ if (typeof global.devicePixelRatio === 'undefined') {
   window.devicePixelRatio = 1
 }
 
-const path = require('path')
 process.env.OVERLEAF_CONFIG = path.resolve(
   __dirname,
   '../../config/settings.defaults.js'
