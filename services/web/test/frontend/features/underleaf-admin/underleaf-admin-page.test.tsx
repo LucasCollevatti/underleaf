@@ -111,14 +111,17 @@ describe('<UnderleafAdminPage />', function () {
       true
     )
     expect(
-      screen.getByRole('link', { name: /Create accounts/ })
-    ).to.have.property('href', 'http://localhost/admin/users')
+      screen.getByRole('link', { name: /Create accounts/ }).getAttribute('href')
+    ).to.equal('/admin/users')
     expect(
-      screen.getByRole('link', { name: /Check the web process/ })
-    ).to.have.property('href', 'http://localhost/status')
-    expect(
-      document.querySelector('.underleaf-admin-stats')?.textContent
-    ).to.include('Active projects12')
+      screen
+        .getByRole('link', { name: /Check the web process/ })
+        .getAttribute('href')
+    ).to.equal('/status')
+    const statCards = document.querySelectorAll('.underleaf-admin-stat-card')
+    expect(statCards).to.have.length(4)
+    expect(statCards[3].textContent).to.include('12')
+    expect(statCards[3].textContent).to.include('Excluding trash')
     expect(
       document.querySelector('.underleaf-admin-instance-card')?.textContent
     ).to.include('0.1.0-beta.1')

@@ -30,7 +30,7 @@ describe('<UnderleafAuthPage />', function () {
 
   async function administrator() {
     const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: 'Get started' }))
+    await user.click(screen.getByRole('button', { name: 'Set up Underleaf' }))
     await user.type(screen.getByLabelText('Username'), 'first-admin')
     await user.type(
       screen.getByLabelText('Password', { exact: true }),
@@ -51,7 +51,7 @@ describe('<UnderleafAuthPage />', function () {
       screen
         .getAllByRole('listitem')
         .map(item => item.textContent?.replace(/[●○✓]/g, '').trim())
-    ).to.deep.equal(['Welcome', 'Administrator', 'Ready'])
+    ).to.deep.equal(['Welcome', 'Create admin', 'Ready to go'])
     expect(screen.getByRole('radio', { name: 'System' })).to.exist
     expect(screen.queryByRole('link', { name: 'Administration' })).to.be.null
   })
@@ -62,11 +62,11 @@ describe('<UnderleafAuthPage />', function () {
     render(<UnderleafAuthPage page="welcome" navigate={navigate} />)
     const user = await administrator()
     await user.click(
-      screen.getByRole('button', { name: 'Create administrator' })
+      screen.getByRole('button', { name: 'Create administrator account' })
     )
     expect(
       await screen.findByRole('heading', {
-        name: 'Your installation is ready',
+        name: 'You’re all set',
       })
     ).to.exist
     expect(screen.queryByLabelText('Password', { exact: true })).to.be.null
@@ -85,7 +85,7 @@ describe('<UnderleafAuthPage />', function () {
     const user = await administrator()
     await user.type(screen.getByLabelText('Confirm password'), 'different')
     await user.click(
-      screen.getByRole('button', { name: 'Create administrator' })
+      screen.getByRole('button', { name: 'Create administrator account' })
     )
     expect(screen.getByRole('alert').textContent).to.equal(
       'The passwords do not match.'
@@ -98,13 +98,14 @@ describe('<UnderleafAuthPage />', function () {
     render(<UnderleafAuthPage page="welcome" />)
     const user = await administrator()
     await user.click(
-      screen.getByRole('button', { name: 'Create administrator' })
+      screen.getByRole('button', { name: 'Create administrator account' })
     )
     expect(
-      await screen.findByRole('link', { name: 'Log in' })
-    ).to.have.property('href', 'http://localhost/login')
-    expect(screen.queryByRole('button', { name: 'Create administrator' })).to.be
-      .null
+      (await screen.findByRole('link', { name: 'Log in' })).getAttribute('href')
+    ).to.equal('/login')
+    expect(
+      screen.queryByRole('button', { name: 'Create administrator account' })
+    ).to.be.null
   })
 
   it('offers Login after initialization succeeds but automatic login fails', async function () {
@@ -115,7 +116,7 @@ describe('<UnderleafAuthPage />', function () {
     render(<UnderleafAuthPage page="welcome" />)
     const user = await administrator()
     await user.click(
-      screen.getByRole('button', { name: 'Create administrator' })
+      screen.getByRole('button', { name: 'Create administrator account' })
     )
     expect(await screen.findByRole('link', { name: 'Log in' })).to.exist
     expect(screen.getByRole('alert').textContent).to.include(
@@ -133,7 +134,8 @@ describe('<UnderleafAuthPage />', function () {
     await user.click(screen.getByRole('button', { name: 'Log in' }))
     expect(navigate.calledOnceWithExactly('/project/example')).to.equal(true)
     expect(screen.queryByLabelText('Email')).to.be.null
-    expect(screen.getByRole('heading', { name: 'Welcome back' })).to.exist
+    expect(screen.getByRole('heading', { name: 'Welcome back to Underleaf' }))
+      .to.exist
   })
 
   it('explains an expired session and keeps recovery in the username login form', function () {

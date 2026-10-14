@@ -115,6 +115,9 @@ describe('<ProjectListRoot />', function () {
   describe('Underleaf empty dashboard', function () {
     beforeEach(async function () {
       Object.assign(getMeta('ol-ExposedSettings'), { underleaf: true })
+      Object.assign(getMeta('ol-navbar'), {
+        sessionUser: { username: 'ada', displayName: 'Ada' },
+      })
       renderWithProjectListContext(<ProjectListRoot />, { projects: [] })
       await fetchMock.callHistory.flush(true)
       await screen.findByText('No projects yet')
@@ -123,7 +126,7 @@ describe('<ProjectListRoot />', function () {
     it('keeps the normal sidebar, theme and project creation without a marketing welcome page', function () {
       expect(document.querySelector('.underleaf-app-shell')).to.exist
       expect(screen.getByRole('link', { name: 'Underleaf' })).to.exist
-      expect(screen.getByRole('link', { name: 'Account settings' })).to.exist
+      expect(screen.getByRole('button', { name: 'Account menu' })).to.exist
       expect(screen.getByRole('radio', { name: 'System', exact: true })).to
         .exist
       expect(document.getElementById('new-project-button-no-projects')).to.exist

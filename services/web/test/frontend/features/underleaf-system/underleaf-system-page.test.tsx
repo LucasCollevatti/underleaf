@@ -77,7 +77,7 @@ describe('<UnderleafSystemPage /> product invariants', function () {
     ).to.be.null
   })
 
-  it('reports configured web access without claiming compiler or database health', function () {
+  it('reports configured web access without claiming compiler or database health', async function () {
     render(
       <UnderleafSystemPage
         data={{
@@ -95,14 +95,27 @@ describe('<UnderleafSystemPage /> product invariants', function () {
         }}
       />
     )
-    const main = screen.getByRole('main')
-    expect(within(main).getByText('Shutting down')).to.exist
-    expect(within(main).getByText('Available')).to.exist
-    expect(within(main).getByText('Closed')).to.exist
-    expect(within(main).getByText('42')).to.exist
-    expect(main.querySelector('time')?.getAttribute('datetime')).to.equal(
-      '2026-10-05T12:00:00.000Z'
+    const main = await screen.findByRole('main')
+    expect(within(main).getByRole('heading', { name: 'System status' })).to
+      .exist
+    expect(within(main).getByRole('status').textContent).to.include(
+      'Some checked services need attention'
     )
+    const services = within(main).getByRole('region', { name: 'Services' })
+    const webService = within(services)
+      .getByText('Web process')
+      .closest('.underleaf-system-service') as HTMLElement
+    const siteService = within(services)
+      .getByText('Site access')
+      .closest('.underleaf-system-service') as HTMLElement
+    const editorService = within(services)
+      .getByText('Editor')
+      .closest('.underleaf-system-service') as HTMLElement
+    expect(within(webService).getByText('Unavailable')).to.exist
+    expect(within(siteService).getByText('Ready')).to.exist
+    expect(within(editorService).getByText('Unavailable')).to.exist
+    expect(within(main).getByText('0m')).to.exist
+    expect(within(main).getByText(/Checked .* ago|Checked just now/)).to.exist
     expect(within(main).queryByText('MongoDB healthy')).to.be.null
     expect(within(main).queryByText('Compiler healthy')).to.be.null
   })
@@ -124,7 +137,7 @@ describe('<UnderleafSystemPage /> product invariants', function () {
       />
     )
     const form = screen
-      .getByRole('button', { name: 'Log out' })
+      .getByRole('button', { name: 'Log Out' })
       .closest('form')!
     const submissions = sinon.spy()
     form.addEventListener('submit', event => {
@@ -157,6 +170,6 @@ describe('<UnderleafSystemPage /> product invariants', function () {
     ).to.equal(true)
     expect(
       screen.getByRole('img', { name: 'Underleaf' }).getAttribute('src')
-    ).to.equal('/underleaf-lockup.svg')
+    ).to.match(/^\/underleaf-wordmark\.svg\?v=/)
   })
 })

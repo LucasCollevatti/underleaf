@@ -95,7 +95,7 @@ describe('<UnderleafAppShell />', function () {
     renderPage('authenticated')
 
     const administration = screen.getByRole('navigation', {
-      name: 'Underleaf administration',
+      name: 'Administration',
     })
     const lowerSection = administration.closest('.underleaf-sidebar-lower')
 
@@ -106,6 +106,9 @@ describe('<UnderleafAppShell />', function () {
   })
 
   it('moves account settings into the account menu for ordinary users', async function () {
+    window.metaAttributesCache.set('ol-navbar', {
+      sessionUser: { username: 'ada', displayName: 'Ada' },
+    })
     renderPage('authenticated')
     expect(screen.getByRole('link', { name: 'Projects' })).to.exist
     expect(screen.queryByRole('link', { name: 'Administration' })).to.be.null
@@ -157,10 +160,10 @@ describe('<UnderleafAppShell />', function () {
 
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     expect(screen.getByRole('link', { name: 'Account settings' })).to.exist
-    expect(screen.getByRole('button', { name: 'Log out' })).to.exist
+    expect(screen.getByRole('button', { name: 'Log Out' })).to.exist
 
     fireEvent.mouseDown(document.body)
-    expect(screen.queryByRole('button', { name: 'Log out' })).to.be.null
+    expect(screen.queryByRole('button', { name: 'Log Out' })).to.be.null
   })
 
   it('persists guest theme across login/setup mounts without saving account settings', async function () {
@@ -171,7 +174,7 @@ describe('<UnderleafAppShell />', function () {
     expect(document.body.dataset.theme).to.equal('default')
     expect(
       screen.getByRole('img', { name: 'Underleaf' }).getAttribute('src')
-    ).to.equal('/underleaf-lockup-dark.svg')
+    ).to.match(/^\/underleaf-wordmark-dark\.svg\?v=/)
     page.unmount()
     renderPage('setup')
     expect(

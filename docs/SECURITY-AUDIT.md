@@ -60,6 +60,9 @@ Passed on 2026-10-14:
   from the application-bundle budget.
 - focused frontend Mocha test for `PdfCompileTime`: 3 tests passed through the
   Node/PnP `.tsx` loader
+- `corepack yarn workspace @overleaf/web test:frontend --grep Underleaf`:
+  all 49 Underleaf frontend tests passed against the current shell, setup,
+  administration, status and local-collaboration UI
 - `docker compose --env-file .env build base`
 - `docker compose --env-file .env build app`
 - Compose security, compiler-boundary, compiler-sandbox and compiler smoke
@@ -73,10 +76,6 @@ Not approved by this run:
 
 - full `corepack yarn install --immutable`: native package builds failed on the
   local Windows toolchain after checksum and fetch validation succeeded
-- `corepack yarn workspace @overleaf/web test:frontend --grep Underleaf`:
-  the runner executed 49 tests (34 passed, 15 failed) and the remaining
-  failures are stale Underleaf UI expectations around account menus, setup
-  flows and branding; the `.tsx` loader itself is no longer the failure
 - authenticated dashboard/editor/sharing smoke tests: credentials were not
   supplied
 
