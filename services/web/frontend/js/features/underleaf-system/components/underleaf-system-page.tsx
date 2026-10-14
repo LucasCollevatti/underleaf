@@ -43,117 +43,121 @@ export default function UnderleafSystemPage({
       >
         <main id="main-content" className="underleaf-system-main">
           {data.kind === 'status' && data.status ? (
-            <StatusContent data={data} />
+            <StatusContent data={{ ...data, status: data.status }} />
           ) : (
             <section
               className="underleaf-system-panel"
               aria-labelledby="underleaf-system-heading"
             >
-            {data.code && <p className="underleaf-system-code">{data.code}</p>}
-            <h1 id="underleaf-system-heading">{data.title}</h1>
-            {data.descriptionHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: data.descriptionHtml }} />
-            ) : (
-              <p>{data.description}</p>
-            )}
-            {data.detail && (
-              <p className="alert alert-danger" role="alert">
-                {data.detail}
-              </p>
-            )}
-            {data.status && (
-              <>
-                <dl className="underleaf-system-status">
-                  <dt>{t('underleaf_status_web')}</dt>
-                  <dd>
-                    {t(
-                      data.status.shuttingDown
-                        ? 'underleaf_status_stopping'
-                        : 'underleaf_status_ready'
-                    )}
-                  </dd>
-                  <dt>{t('underleaf_status_site')}</dt>
-                  <dd>
-                    {t(
-                      data.status.siteOpen
-                        ? 'underleaf_status_ready'
-                        : 'underleaf_status_closed'
-                    )}
-                  </dd>
-                  <dt>{t('underleaf_status_editor')}</dt>
-                  <dd>
-                    {t(
-                      data.status.editorOpen
-                        ? 'underleaf_status_ready'
-                        : 'underleaf_status_closed'
-                    )}
-                  </dd>
-                  <dt>{t('underleaf_status_uptime')}</dt>
-                  <dd>
-                    {data.status.uptimeSeconds.toLocaleString(i18n.language)}
-                  </dd>
-                </dl>
-                <p className="small">
-                  {t('underleaf_status_checked_at')}{' '}
-                  <time dateTime={data.status.checkedAt}>
-                    {new Date(data.status.checkedAt).toLocaleString(
-                      i18n.language
-                    )}
-                  </time>
-                </p>
-              </>
-            )}
-            {data.kind === 'logout' ? (
-              <form
-                method="POST"
-                action="/logout"
-                onSubmit={() => {
-                  OfflineDocBackup.clearAll()
-                  ConnectionOutageTracker.clearAll()
-                }}
-              >
-                <input
-                  type="hidden"
-                  name="_csrf"
-                  value={getMeta('ol-csrfToken')}
+              {data.code && (
+                <p className="underleaf-system-code">{data.code}</p>
+              )}
+              <h1 id="underleaf-system-heading">{data.title}</h1>
+              {data.descriptionHtml ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: data.descriptionHtml }}
                 />
-                <div className="underleaf-system-actions">
-                  <OLButton type="submit">{t('log_out')}</OLButton>
-                  <OLButton href="/project" variant="secondary">
-                    {t('cancel')}
-                  </OLButton>
-                </div>
-              </form>
-            ) : (
-              <div className="underleaf-system-actions">
-                <OLButton
-                  href={
-                    data.kind === 'session-expired'
-                      ? '/login?session=expired'
-                      : data.backPath
-                  }
+              ) : (
+                <p>{data.description}</p>
+              )}
+              {data.detail && (
+                <p className="alert alert-danger" role="alert">
+                  {data.detail}
+                </p>
+              )}
+              {data.status && (
+                <>
+                  <dl className="underleaf-system-status">
+                    <dt>{t('underleaf_status_web')}</dt>
+                    <dd>
+                      {t(
+                        data.status.shuttingDown
+                          ? 'underleaf_status_stopping'
+                          : 'underleaf_status_ready'
+                      )}
+                    </dd>
+                    <dt>{t('underleaf_status_site')}</dt>
+                    <dd>
+                      {t(
+                        data.status.siteOpen
+                          ? 'underleaf_status_ready'
+                          : 'underleaf_status_closed'
+                      )}
+                    </dd>
+                    <dt>{t('underleaf_status_editor')}</dt>
+                    <dd>
+                      {t(
+                        data.status.editorOpen
+                          ? 'underleaf_status_ready'
+                          : 'underleaf_status_closed'
+                      )}
+                    </dd>
+                    <dt>{t('underleaf_status_uptime')}</dt>
+                    <dd>
+                      {data.status.uptimeSeconds.toLocaleString(i18n.language)}
+                    </dd>
+                  </dl>
+                  <p className="small">
+                    {t('underleaf_status_checked_at')}{' '}
+                    <time dateTime={data.status.checkedAt}>
+                      {new Date(data.status.checkedAt).toLocaleString(
+                        i18n.language
+                      )}
+                    </time>
+                  </p>
+                </>
+              )}
+              {data.kind === 'logout' ? (
+                <form
+                  method="POST"
+                  action="/logout"
+                  onSubmit={() => {
+                    OfflineDocBackup.clearAll()
+                    ConnectionOutageTracker.clearAll()
+                  }}
                 >
-                  {data.kind === 'session-expired'
-                    ? t('log_in')
-                    : data.backLabel}
-                </OLButton>
-                {(data.kind === 'error' && (data.code || 0) >= 500) ||
-                data.kind === 'maintenance' ||
-                data.kind === 'session-expired' ? (
+                  <input
+                    type="hidden"
+                    name="_csrf"
+                    value={getMeta('ol-csrfToken')}
+                  />
+                  <div className="underleaf-system-actions">
+                    <OLButton type="submit">{t('log_out')}</OLButton>
+                    <OLButton href="/project" variant="secondary">
+                      {t('cancel')}
+                    </OLButton>
+                  </div>
+                </form>
+              ) : (
+                <div className="underleaf-system-actions">
                   <OLButton
-                    variant="secondary"
-                    onClick={() => window.location.reload()}
+                    href={
+                      data.kind === 'session-expired'
+                        ? '/login?session=expired'
+                        : data.backPath
+                    }
                   >
-                    {t('refresh')}
+                    {data.kind === 'session-expired'
+                      ? t('log_in')
+                      : data.backLabel}
                   </OLButton>
-                ) : null}
-                {data.kind === 'status' && (
-                  <OLButton variant="secondary" href="/status">
-                    {t('refresh')}
-                  </OLButton>
-                )}
-              </div>
-            )}
+                  {(data.kind === 'error' && (data.code || 0) >= 500) ||
+                  data.kind === 'maintenance' ||
+                  data.kind === 'session-expired' ? (
+                    <OLButton
+                      variant="secondary"
+                      onClick={() => window.location.reload()}
+                    >
+                      {t('refresh')}
+                    </OLButton>
+                  ) : null}
+                  {data.kind === 'status' && (
+                    <OLButton variant="secondary" href="/status">
+                      {t('refresh')}
+                    </OLButton>
+                  )}
+                </div>
+              )}
             </section>
           )}
         </main>

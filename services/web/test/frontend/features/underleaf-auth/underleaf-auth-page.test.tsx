@@ -10,11 +10,13 @@ describe('<UnderleafAuthPage />', function () {
 
   beforeEach(function () {
     previousMeta = window.metaAttributesCache
-    window.metaAttributesCache = new Map([
-      ['ol-ExposedSettings', { appName: 'Underleaf', underleaf: true }],
-      ['ol-navbar', { items: [] }],
-      ['ol-csrfToken', 'test-csrf'],
-    ])
+    window.metaAttributesCache = new Map() as typeof window.metaAttributesCache
+    window.metaAttributesCache.set('ol-ExposedSettings', {
+      appName: 'Underleaf',
+      underleaf: true,
+    })
+    window.metaAttributesCache.set('ol-navbar', { items: [] })
+    window.metaAttributesCache.set('ol-csrfToken', 'test-csrf')
     localStorage.clear()
   })
 
@@ -50,7 +52,7 @@ describe('<UnderleafAuthPage />', function () {
         .getAllByRole('listitem')
         .map(item => item.textContent?.replace(/[●○✓]/g, '').trim())
     ).to.deep.equal(['Welcome', 'Administrator', 'Ready'])
-    expect(screen.getByRole('radio', { name: 'System', exact: true })).to.exist
+    expect(screen.getByRole('radio', { name: 'System' })).to.exist
     expect(screen.queryByRole('link', { name: 'Administration' })).to.be.null
   })
 

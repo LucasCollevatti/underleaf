@@ -12,14 +12,16 @@ const resolvedPackageKeys = new Set()
 const materializedLocatorKeys = new Set()
 const packageLocators = pnp
   .getAllLocators()
-  .filter(locator => locator.name && !locator.reference.startsWith('workspace:'))
+  .filter(
+    locator => locator.name && !locator.reference.startsWith('workspace:')
+  )
 
 const licenseAliases = new Map([
   ['Apache License, Version 2.0', 'Apache-2.0'],
   ['Apache License 2.0', 'Apache-2.0'],
   ['The MIT License', 'MIT'],
   ['The MIT License (MIT)', 'MIT'],
-  ['MIT License', 'MIT']
+  ['MIT License', 'MIT'],
 ])
 
 const normalizeLicense = license => {
@@ -37,6 +39,34 @@ try {
   if (error?.code !== 'ENOENT') throw error
 }
 
+const readLicenseReview = async () => {
+  try {
+    return JSON.parse(
+      await fs.readFile('compliance/license-review.json', 'utf8')
+    )
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      throw new Error(
+        'compliance/license-review.json is required for the release inventory',
+        { cause: error }
+      )
+    }
+    throw error
+  }
+}
+
+const licenseReview = await readLicenseReview()
+
+const licenseReviewEntries = licenseReview.packages || []
+const licenseReviewByKey = new Map()
+for (const entry of licenseReviewEntries) {
+  const key = `${entry.name}@${entry.version}`
+  if (licenseReviewByKey.has(key)) {
+    throw new Error(`Duplicate license review entry: ${key}`)
+  }
+  licenseReviewByKey.set(key, entry)
+}
+
 const getPackageLicense = pkg => {
   const declaredLicense = normalizeLicense(pkg.license)
   if (declaredLicense)
@@ -49,7 +79,7 @@ const getPackageLicense = pkg => {
     if (declaredLicenses.length) {
       return {
         license: declaredLicenses.join(' OR '),
-        source: 'package.json:licenses'
+        source: 'package.json:licenses',
       }
     }
   }
@@ -93,11 +123,16 @@ const isOptionalDependencyLocator = async locator => {
 for (const locator of packageLocators) {
   const info = pnp.getPackageInformation(locator)
   if (!info?.packageLocation) {
-    metadataErrors.push(`${locator.name}@${locator.reference}: no package location`)
+    metadataErrors.push(
+      `${locator.name}@${locator.reference}: no package location`
+    )
     continue
   }
   try {
-    const raw = await fs.readFile(path.join(info.packageLocation, 'package.json'), 'utf8')
+    const raw = await fs.readFile(
+      path.join(info.packageLocation, 'package.json'),
+      'utf8'
+    )
     const pkg = JSON.parse(raw)
     if (!pkg.name || !pkg.version) {
       metadataErrors.push(
@@ -110,6 +145,7 @@ for (const locator of packageLocators) {
     materializedLocatorKeys.add(`${locator.name}@${locator.reference}`)
     const declaredLicense = getPackageLicense(pkg)
     const override = licenseOverrides.packages?.[key]
+    const review = licenseReviewByKey.get(key)
     seen.set(key, {
       name: pkg.name,
       version: pkg.version,
@@ -118,7 +154,7 @@ for (const locator of packageLocators) {
         declaredLicense?.source ||
         override?.source ||
         'missing package metadata',
-      licenseReview: override?.review || '',
+      licenseReview: override?.review || review?.decision || '',
       repository:
         typeof pkg.repository === 'string'
           ? pkg.repository
@@ -172,10 +208,15 @@ const bom = {
   })),
 }
 
-await fs.writeFile('artifacts/sbom.cdx.json', JSON.stringify(bom, null, 2) + '\n')
+await fs.writeFile(
+  'artifacts/sbom.cdx.json',
+  JSON.stringify(bom, null, 2) + '\n'
+)
 
 const quote = value => '"' + String(value).replaceAll('"', '""') + '"'
-const rows = ['name,version,spdx_license,license_source,license_review,repository']
+const rows = [
+  'name,version,spdx_license,license_source,license_review,repository',
+]
 for (const component of components) {
   rows.push(
     [
@@ -199,7 +240,8 @@ const componentKeys = new Set(
 const expectedComponentKeys = [...resolvedPackageKeys].sort()
 const reportedComponentKeys = [...componentKeys].sort()
 if (
-  JSON.stringify(expectedComponentKeys) !== JSON.stringify(reportedComponentKeys) ||
+  JSON.stringify(expectedComponentKeys) !==
+    JSON.stringify(reportedComponentKeys) ||
   rows.length - 1 !== components.length
 ) {
   console.error('SBOM and license inventory row counts do not match.')
@@ -230,6 +272,63 @@ if (unknownOverrideKeys.length) {
   process.exitCode = 2
 }
 
+const reviewErrors = []
+for (const entry of licenseReviewEntries) {
+  const key = `${entry.name}@${entry.version}`
+  const component = seen.get(key)
+  if (!component) {
+    reviewErrors.push(`${key}: not present in the generated inventory`)
+    continue
+  }
+  if (component.license !== entry.license) {
+    reviewErrors.push(
+      `${key}: review says ${entry.license}, inventory says ${component.license}`
+    )
+  }
+  if (entry.status !== 'approved') {
+    reviewErrors.push(`${key}: review status is ${entry.status || 'missing'}`)
+  }
+}
+if (reviewErrors.length) {
+  console.error(
+    'License review does not match the generated inventory:\n' +
+      reviewErrors.map(error => `- ${error}`).join('\n')
+  )
+  process.exitCode = 2
+}
+
+const distributedReviewErrors = []
+for (const entry of licenseReview.distributedComponents || []) {
+  if (!entry.name || !entry.version || !entry.license || !entry.source) {
+    distributedReviewErrors.push(
+      `${entry.name || '<unnamed>'}: incomplete distributed component record`
+    )
+    continue
+  }
+  if (entry.package) {
+    const component = seen.get(entry.package)
+    if (!component) {
+      distributedReviewErrors.push(
+        `${entry.name}: package ${entry.package} is not present in the generated inventory`
+      )
+      continue
+    }
+    const expectedLicense = entry.inventoryLicense || entry.license
+    if (component.license !== expectedLicense) {
+      distributedReviewErrors.push(
+        `${entry.name}: distributed record does not match ${entry.package}`
+      )
+    }
+  }
+}
+if (distributedReviewErrors.length) {
+  console.error(
+    'Distributed component review is incomplete:\n' +
+      distributedReviewErrors.map(error => `- ${error}`).join('\n')
+  )
+  process.exitCode = 2
+}
+
 const unknown = components.filter(
   component =>
     !component.license ||
@@ -239,7 +338,9 @@ const unknown = components.filter(
 if (unknown.length) {
   console.error(
     'Dependencies with unknown/unlicensed metadata:\n' +
-      unknown.map(item => `- ${item.name}@${item.version}: ${item.license}`).join('\n')
+      unknown
+        .map(item => `- ${item.name}@${item.version}: ${item.license}`)
+        .join('\n')
   )
   process.exitCode = 2
 }

@@ -113,7 +113,9 @@ describe('<UnderleafAppShell />', function () {
 
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     expect(
-      screen.getByRole('link', { name: 'Account settings' }).getAttribute('href')
+      screen
+        .getByRole('link', { name: 'Account settings' })
+        .getAttribute('href')
     ).to.equal('/user/settings')
   })
 
@@ -131,24 +133,20 @@ describe('<UnderleafAppShell />', function () {
     const page = render(<UnderleafPageSkeleton variant="projects" />)
 
     expect(screen.getByRole('status', { name: 'Loading' })).to.exist
-    expect(
-      page.container.querySelector('.underleaf-skeleton-project-table')
-    ).to.exist
+    expect(page.container.querySelector('.underleaf-skeleton-project-table')).to
+      .exist
 
     page.rerender(<UnderleafPageSkeleton variant="settings" />)
-    expect(
-      page.container.querySelector('.underleaf-skeleton-card-grid')
-    ).to.exist
+    expect(page.container.querySelector('.underleaf-skeleton-card-grid')).to
+      .exist
 
     page.rerender(<UnderleafPageSkeleton variant="admin" />)
-    expect(
-      page.container.querySelector('.underleaf-skeleton-stat-grid')
-    ).to.exist
+    expect(page.container.querySelector('.underleaf-skeleton-stat-grid')).to
+      .exist
 
     page.rerender(<UnderleafPageSkeleton variant="users" />)
-    expect(
-      page.container.querySelector('.underleaf-skeleton-admin-search')
-    ).to.exist
+    expect(page.container.querySelector('.underleaf-skeleton-admin-search')).to
+      .exist
   })
 
   it('opens the account menu and closes it when clicking outside', async function () {
@@ -236,7 +234,7 @@ describe('<UnderleafAppShell />', function () {
         listeners.add(callback)
       },
       removeEventListener() {},
-    } as MediaQueryList)
+    } as unknown as MediaQueryList)
     renderPage()
     expect(document.body.dataset.theme).to.equal('light')
     act(() => {

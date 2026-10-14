@@ -10,9 +10,6 @@ import {
   ProjectCompiler,
   type SpellCheckLanguage,
 } from '../../../types/project-settings'
-import { CurrencyCode } from '../../../types/subscription/currency'
-import { PricingFormState } from '../../../types/subscription/payment-context-value'
-import { LocalIndividualPlans, Plan } from '../../../types/subscription/plan'
 import { Affiliation } from '../../../types/affiliation'
 import type { PortalTemplate } from '../../../types/portal-template'
 import { UserEmailData } from '../../../types/user-email'
@@ -23,44 +20,49 @@ import {
   PendingGroupSubscriptionEnrollment,
   USGovBannerVariant,
 } from '../../../types/project/dashboard/notification'
-import { Survey } from '../../../types/project/dashboard/survey'
 import { GetProjectsResponseBody } from '../../../types/project/dashboard/api'
 import { Tag } from '../../../app/src/Features/Tags/types'
 import { Institution } from '../../../types/institution'
-import {
-  GroupPolicy,
-  GroupSubscription,
-  ManagedGroupSubscription,
-  MemberGroupSubscription,
-  StripePaymentProviderService,
-} from '../../../types/subscription/dashboard/subscription'
 import { SplitTestInfo } from '../../../types/split-test'
-import { ManagedInstitution } from '../../../types/subscription/dashboard/managed-institution'
 import { OnboardingFormData } from '../../../types/onboarding'
-import { GroupSSOTestResult } from '../../../modules/group-settings/frontend/js/utils/types'
 import { AccessToken, InstitutionLink } from '../../../types/settings-page'
 import { SuggestedLanguage } from '../../../types/system-message'
 import type { TeamInvite } from '../../../types/team-invite'
-import {
-  GroupPlans,
-  GroupPlansData,
-} from '../../../types/subscription/dashboard/group-plans'
 import { PasswordStrengthOptions } from '../../../types/password-strength-options'
-import { Subscription as ProjectDashboardSubscription } from '../../../types/project/dashboard/subscription'
 import { ThirdPartyIds } from '../../../types/third-party-ids'
-import { Publisher } from '../../../types/subscription/dashboard/publisher'
-import { SubscriptionChangePreview } from '../../../types/subscription/subscription-change-preview'
-import { SubscriptionCreationPreview } from '../../../types/subscription/subscription-creation-preview'
 import { DefaultNavbarMetadata } from '@/shared/components/types/default-navbar-metadata'
 import { FooterMetadata } from '@/shared/components/types/footer-metadata'
-import type { ScriptLogType } from '../../../modules/admin-panel/frontend/js/features/script-logs/script-log'
-import { Subscription as AdminSubscription } from '../../../types/admin/subscription'
 import { AdminCapability } from '../../../types/admin-capabilities'
-import { AlgoliaConfig } from '../../../modules/algolia-search/frontend/js/types'
-import { WritefullPublicEnv } from '@wf/domain/writefull-public-env'
 import { UserNotificationPreferences } from '../../../types/notifications'
-import { SharingPermissions } from '../../../modules/sharing-permissions/app/src/types'
 import { FullHistoryFailure } from '@ol-types/history/projectHistory'
+
+// These upstream SaaS modules are intentionally absent from Underleaf. Keep
+// their metadata keys structurally typed so the shared metadata reader remains
+// usable without restoring those optional product modules.
+type MetaRecord = Record<string, unknown>
+type CurrencyCode = string
+type PricingFormState = { country: string; coupon: string }
+type Plan = MetaRecord
+type LocalIndividualPlans = Plan
+type Survey = MetaRecord
+type GroupPolicy = MetaRecord
+type GroupSubscription = MetaRecord & { teamName?: string }
+type ManagedGroupSubscription = MetaRecord
+type MemberGroupSubscription = MetaRecord
+type StripePaymentProviderService = string
+type ManagedInstitution = MetaRecord
+type GroupSSOTestResult = MetaRecord
+type GroupPlans = MetaRecord
+type GroupPlansData = MetaRecord
+type ProjectDashboardSubscription = MetaRecord
+type Publisher = MetaRecord
+type SubscriptionChangePreview = MetaRecord
+type SubscriptionCreationPreview = MetaRecord
+type ScriptLogType = MetaRecord
+type AdminSubscription = MetaRecord
+type AlgoliaConfig = MetaRecord
+type WritefullPublicEnv = MetaRecord
+type SharingPermissions = MetaRecord
 
 export interface Meta {
   'ol-currentSession': UserSessionMetadata

@@ -36,16 +36,21 @@ describe('<UnderleafAdminPage />', function () {
   let previousMeta: typeof window.metaAttributesCache
   beforeEach(function () {
     previousMeta = window.metaAttributesCache
-    window.metaAttributesCache = new Map([
-      [
-        'ol-ExposedSettings',
-        { appName: 'Underleaf', ieeeBrandId: 1234, underleaf: true },
-      ],
-      ['ol-navbar', { items: [], canDisplayAdminMenu: true }],
-      ['ol-user_id', administrator.id],
-      ['ol-userSettings', { overallTheme: 'light-' }],
-      ['ol-csrfToken', 'test-csrf'],
-    ])
+    window.metaAttributesCache = new Map() as typeof window.metaAttributesCache
+    window.metaAttributesCache.set('ol-ExposedSettings', {
+      appName: 'Underleaf',
+      ieeeBrandId: 1234,
+      underleaf: true,
+    })
+    window.metaAttributesCache.set('ol-navbar', {
+      items: [],
+      canDisplayAdminMenu: true,
+    })
+    window.metaAttributesCache.set('ol-user_id', administrator.id)
+    window.metaAttributesCache.set('ol-userSettings', {
+      overallTheme: 'light-',
+    })
+    window.metaAttributesCache.set('ol-csrfToken', 'test-csrf')
   })
   afterEach(function () {
     cleanup()
@@ -101,30 +106,31 @@ describe('<UnderleafAdminPage />', function () {
         .getByRole('link', { name: 'Administration' })
         .getAttribute('aria-current')
     ).to.equal('page')
-    expect(
-      screen.getByRole('radio', { name: 'Light', exact: true })
-    ).to.have.property('checked', true)
+    expect(screen.getByRole('radio', { name: 'Light' })).to.have.property(
+      'checked',
+      true
+    )
     expect(
       screen.getByRole('link', { name: /Create accounts/ })
     ).to.have.property('href', 'http://localhost/admin/users')
     expect(
       screen.getByRole('link', { name: /Check the web process/ })
     ).to.have.property('href', 'http://localhost/status')
-    expect(document.querySelector('.underleaf-admin-stats')?.textContent).to.include(
-      'Active projects12'
-    )
-    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
-      '0.1.0-beta.1'
-    )
-    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
-      'Admin-provisioned only'
-    )
-    expect(document.querySelector('.underleaf-admin-instance-card')?.textContent).to.include(
-      'TeX Live 2026'
-    )
-    expect(document.querySelector('.underleaf-admin-stats')?.textContent).to.include(
-      'Enabled accounts'
-    )
+    expect(
+      document.querySelector('.underleaf-admin-stats')?.textContent
+    ).to.include('Active projects12')
+    expect(
+      document.querySelector('.underleaf-admin-instance-card')?.textContent
+    ).to.include('0.1.0-beta.1')
+    expect(
+      document.querySelector('.underleaf-admin-instance-card')?.textContent
+    ).to.include('Admin-provisioned only')
+    expect(
+      document.querySelector('.underleaf-admin-instance-card')?.textContent
+    ).to.include('TeX Live 2026')
+    expect(
+      document.querySelector('.underleaf-admin-stats')?.textContent
+    ).to.include('Enabled accounts')
   })
 
   it('keeps the table read-only, searchable and protects the current administrator', async function () {
@@ -166,8 +172,8 @@ describe('<UnderleafAdminPage />', function () {
 
     expect(screen.getByText('<release>')).to.exist
     expect(screen.getByText('<source>')).to.exist
-    expect(document.querySelector('.underleaf-admin-instance-card script')).to.be
-      .null
+    expect(document.querySelector('.underleaf-admin-instance-card script')).to
+      .be.null
   })
 
   it('creates a user with CSRF and updates the table after success', async function () {

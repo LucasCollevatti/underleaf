@@ -203,7 +203,7 @@ export async function parseResponseBody(response: Response) {
   return {}
 }
 
-export function getErrorMessageKey(error: Error | null) {
+export function getErrorMessageKey(error: unknown) {
   if (!error) {
     return undefined
   }
@@ -212,10 +212,10 @@ export function getErrorMessageKey(error: Error | null) {
     return error.getErrorMessageKey()
   }
 
-  return error.message
+  return error instanceof Error ? error.message : undefined
 }
 
-export function getUserFacingMessage(error: Error | null) {
+export function getUserFacingMessage(error: unknown) {
   if (!error) {
     return undefined
   }
@@ -224,7 +224,7 @@ export function getUserFacingMessage(error: Error | null) {
     return error.getUserFacingMessage()
   }
 
-  return error.message
+  return error instanceof Error ? error.message : String(error)
 }
 
 export function isRateLimited(error?: Error | FetchError | any) {

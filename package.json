@@ -171,14 +171,15 @@
     "express": "patch:express@npm%3A4.22.1#~/.yarn/patches/express-npm-4.22.1-0ea5210390.patch"
   },
   "scripts": {
-    "format": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --check",
-    "format:fix": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --write --check",
+    "format": "node scripts/quality/format-underleaf.mjs",
+    "format:fix": "node scripts/quality/format-underleaf.mjs --fix",
     "format:styles": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --check '**/*.{css,scss}'",
     "format:styles:fix": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --write --check '**/*.{css,scss}'",
     "format:pug": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --check '**/*.pug'",
     "format:pug:fix": "prettier --cache --cache-location ./.cache/prettier/.prettier-cache --write --check '**/*.pug'",
-    "lint": "eslint --cache --cache-location ./.cache/eslint/ --max-warnings 0",
-    "lint:fix": "eslint --cache --cache-location ./.cache/eslint/ --fix"
+    "lint": "node scripts/quality/lint-underleaf.mjs",
+    "lint:fix": "node scripts/quality/lint-underleaf.mjs --fix",
+    "type-check": "yarn workspace @overleaf/web type-check"
   },
   "workspaces": [
     "libraries/*",

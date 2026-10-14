@@ -35,6 +35,12 @@ corepack yarn workspace @overleaf/web type-check
 docker compose -f compose.yaml --env-file .env config --quiet
 ```
 
+The public quality gate intentionally covers the maintained Underleaf source
+and its frontend tests. The upstream-compatible web tree still contains
+optional SaaS modules that are not distributed here; its broad diagnostic is
+available as `corepack yarn workspace @overleaf/web type-check:legacy` and is
+not the release gate for this repository.
+
 For runtime changes, also exercise the affected Compose service and the
 appropriate smoke test under `tests/`.
 

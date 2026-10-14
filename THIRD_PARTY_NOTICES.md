@@ -42,3 +42,22 @@ AGPLv3 section 13. That source must include Underleaf modifications and the
 scripts/configuration needed to build and install that revision.
 
 See `docs/COMPLIANCE.md` for the generation and review procedure.
+
+## Reviewed distributed components
+
+The current release review covers the six highlighted direct package records
+and the static assets copied by the web build. The authoritative decisions,
+versions, evidence paths and output locations are in
+`compliance/license-review.json`.
+
+- `@overleaf/dictionaries` 0.0.3 — AGPL-3.0-only, copied to the browser
+  dictionary assets;
+- `pyodide` 0.29.3 — MPL-2.0, copied to the browser runtime assets;
+- `dompurify` 3.4.12 — Apache-2.0 option selected from its dual license and
+  included in the browser bundle;
+- MathJax 4.1.2 — Apache-2.0; PDF.js 5.1.91 — Apache-2.0; and highlight.js
+  11.11.1 — BSD-3-Clause, copied or bundled by the web build;
+- web fonts retain their OFL-1.1 or Apache-2.0 files, and every CodeMirror/Ace
+  theme retains its per-theme `*-license.txt` attribution;
+- `chai-as-promised` and `sinon-chai` are test-only dependencies and are not
+  part of the production dependency focus.

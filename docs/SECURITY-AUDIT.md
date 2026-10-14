@@ -105,3 +105,28 @@ package/version, runtime exposure, available mitigation, regression risk,
 owner and expiry. Fixable runtime CRITICAL/HIGH findings block release. A
 temporary exception must identify the advisory/CVE, affected component,
 exposure, mitigation, owner and expiry date in this file before acceptance.
+
+### Temporary exception: `braces@3.0.3`
+
+- **Advisory:** [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), also tracked as CVE-2026-93687.
+- **Affected component:** `braces@3.0.3`, reached through `micromatch@4.0.8`.
+- **Exposure:** The vulnerable locator is present in the full Yarn tree through
+  Storybook, Sass, Stylelint, Tailwind and webpack development tooling. It is
+  not part of the production dependency focus used by the application image;
+  the production-focused high-severity audit completed with exit code 0.
+- **Mitigation:** Keep the immutable lockfile, keep development tooling out of
+  the production focus, do not feed attacker-controlled brace patterns to the
+  build tooling, and rerun the full recursive audit at every release review.
+- **Justification:** The advisory affects all released `braces` versions
+  through 3.0.3 and currently lists no patched release. A forced fork or
+  unreviewed replacement would introduce maintenance and regression risk in
+  build tooling while the production runtime audit is clean at high severity.
+- **Responsible owner:** Lucas Collevatti, repository owner, with the
+  Underleaf maintainers.
+- **Accepted until / re-evaluation:** 2026-11-14. Re-evaluate earlier if a
+  patched `braces` release, a new exploit path, or a production dependency
+  path appears. Acceptance expires automatically on that date unless renewed
+  with fresh audit evidence.
+- **Exit condition:** Upgrade to a patched release or remove the affected
+  development dependency path, then remove this exception and regenerate the
+  audit evidence.

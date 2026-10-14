@@ -22,11 +22,13 @@ describe('<UnderleafSystemPage /> product invariants', function () {
   let previousMeta: typeof window.metaAttributesCache
   beforeEach(function () {
     previousMeta = window.metaAttributesCache
-    window.metaAttributesCache = new Map([
-      ['ol-ExposedSettings', { appName: 'Underleaf', underleaf: true }],
-      ['ol-navbar', { items: [] }],
-      ['ol-csrfToken', 'test-csrf'],
-    ])
+    window.metaAttributesCache = new Map() as typeof window.metaAttributesCache
+    window.metaAttributesCache.set('ol-ExposedSettings', {
+      appName: 'Underleaf',
+      underleaf: true,
+    })
+    window.metaAttributesCache.set('ol-navbar', { items: [] })
+    window.metaAttributesCache.set('ol-csrfToken', 'test-csrf')
     localStorage.clear()
   })
   afterEach(function () {

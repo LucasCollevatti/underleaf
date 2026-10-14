@@ -38,6 +38,12 @@ corepack yarn workspace @overleaf/web run type-check
 corepack yarn workspace @overleaf/web run webpack:production
 ```
 
+`type-check` is the reproducible Underleaf gate and includes the maintained
+Underleaf source, shared code it exercises, and Underleaf frontend tests. The
+broader upstream tree is available for diagnostics with
+`corepack yarn workspace @overleaf/web run type-check:legacy`; it references
+optional SaaS modules that are intentionally not part of this distribution.
+
 The product browser suite runs against a disposable Underleaf installation:
 
 ```sh

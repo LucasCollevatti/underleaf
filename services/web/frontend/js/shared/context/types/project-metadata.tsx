@@ -8,6 +8,7 @@ export type ProjectMember = {
   _id: UserId
   privileges: 'readOnly' | 'readAndWrite' | 'review'
   username: string
+  email?: string
   displayName?: string
   first_name: string
   last_name: string

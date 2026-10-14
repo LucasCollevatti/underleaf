@@ -18,7 +18,10 @@ import { saveProjectSettings } from '@/features/ide-settings/utils/api'
 import { useModalsContext } from '@/features/ide-react/context/modals-context'
 import { WritefullAPI } from './types/writefull-instance'
 import { Cobranding } from '../../../../types/cobranding'
-import { SymbolWithCharacter } from '../../../../modules/symbol-palette/frontend/js/data/symbols'
+type SymbolWithCharacter = {
+  character: string
+  [key: string]: unknown
+}
 
 type UpgradeTrackChangesModal = {
   show: boolean

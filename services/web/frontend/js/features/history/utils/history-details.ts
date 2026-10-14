@@ -9,7 +9,7 @@ export const formatUserName = (user: Partial<User>) => {
     .join(' ')
     .trim()
   if (name === '') {
-    name = user.username
+    name = user.username ?? ''
   }
   if (name == null || name === '') {
     return '?'

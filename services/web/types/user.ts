@@ -1,5 +1,6 @@
-import { SharingPermissions } from '../modules/sharing-permissions/app/src/types'
 import { Brand } from './helpers/brand'
+
+type SharingPermissions = Record<string, unknown>
 
 export type RefProviders = {
   mendeley?: boolean
@@ -44,6 +45,7 @@ export type User = {
   id: UserId
   isAdmin?: boolean
   username: string
+  email?: string
   role?: 'admin' | 'user'
   status?: 'active' | 'disabled'
   displayName?: string

@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "frontend/js/features/underleaf-*/**/*.*",
+    "frontend/js/features/underleaf/**/*.*",
+    "frontend/js/features/share-project-modal/components/underleaf-share-modal-content.tsx",
+    "frontend/js/pages/underleaf-*.tsx",
+    "frontend/js/shared/components/underleaf/**/*.*",
+    "types/underleaf-*.ts",
+    "types/**/*.d.ts",
+    "types/window.ts",
+    "test/frontend/features/underleaf-*/**/*.*",
+    "test/frontend/shared/components/underleaf/**/*.*"
+  ]
+}

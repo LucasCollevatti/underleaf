@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-14",
+  "reviewer": "Underleaf maintainers",
+  "scope": "Direct packages highlighted by the current dependency inventory and material distributed by the web build.",
+  "packages": [
+    {
+      "name": "@overleaf/dictionaries",
+      "version": "0.0.3",
+      "package": "@overleaf/dictionaries@0.0.3",
+      "license": "AGPL-3.0-only",
+      "inventoryLicense": "AGPL-3.0-only",
+      "distribution": "browser-assets",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE",
+      "evidence": [
+        "services/web/package.json",
+        "services/web/webpack.config.js",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/overleaf/dictionaries"
+      ],
+      "decision": "Distributed dictionary assets remain under AGPL-3.0-only. Preserve the package license, attribution and Corresponding Source with public releases."
+    },
+    {
+      "name": "@overleaf/logger",
+      "version": "3.1.1",
+      "license": "AGPL-3.0-only",
+      "distribution": "server-runtime",
+      "status": "approved",
+      "licenseFile": "libraries/logger/LICENSE.txt",
+      "evidence": [
+        "libraries/logger/package.json",
+        "libraries/logger/LICENSE.txt",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/overleaf/overleaf/tree/main/libraries/logger"
+      ],
+      "decision": "This workspace library is part of the AGPL-covered server source and retains its package license and source path."
+    },
+    {
+      "name": "chai-as-promised",
+      "version": "7.1.2",
+      "license": "WTFPL",
+      "distribution": "test-only",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE.txt",
+      "evidence": [
+        "services/web/package.json",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/domenic/chai-as-promised"
+      ],
+      "decision": "Used only by test harnesses. It is excluded from the production dependency focus; the source inventory still records its license."
+    },
+    {
+      "name": "dompurify",
+      "version": "3.4.12",
+      "license": "(MPL-2.0 OR Apache-2.0)",
+      "distribution": "browser-bundle",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE and LICENSE-MPL",
+      "evidence": [
+        "services/web/package.json",
+        "services/web/frontend/js/shared/components/labs/labs-description.tsx",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/cure53/DOMPurify"
+      ],
+      "decision": "Use the Apache-2.0 option for the browser bundle and retain the upstream copyright and license notice in the source and third-party notices."
+    },
+    {
+      "name": "pyodide",
+      "version": "0.29.3",
+      "package": "pyodide@0.29.3",
+      "license": "MPL-2.0",
+      "inventoryLicense": "MPL-2.0",
+      "distribution": "browser-assets",
+      "status": "approved",
+      "licenseFile": "package README and upstream license",
+      "evidence": [
+        "services/web/package.json",
+        "services/web/webpack.config.js",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/pyodide/pyodide"
+      ],
+      "decision": "The unmodified Pyodide runtime is copied to public browser assets. Preserve the MPL-2.0 notice and provide the corresponding source for the distributed revision."
+    },
+    {
+      "name": "sinon-chai",
+      "version": "3.7.0",
+      "license": "(BSD-2-Clause OR WTFPL)",
+      "distribution": "test-only",
+      "status": "approved",
+      "licenseFile": "package archive LICENSE.txt",
+      "evidence": [
+        "services/web/package.json",
+        "artifacts/third-party-licenses.csv",
+        "https://github.com/domenic/sinon-chai"
+      ],
+      "decision": "Used only by test assertions and excluded from the production dependency focus; the dual license remains recorded in the source inventory."
+    }
+  ],
+  "distributedComponents": [
+    {
+      "name": "@overleaf/dictionaries",
+      "version": "0.0.3",
+      "license": "AGPL-3.0-only",
+      "output": "services/web/public/js/dictionaries/0.0.3",
+      "source": "services/web/webpack.config.js",
+      "notice": "Package LICENSE and Corresponding Source are retained."
+    },
+    {
+      "name": "pyodide",
+      "version": "0.29.3",
+      "license": "MPL-2.0",
+      "output": "services/web/public/js/libs/pyodide",
+      "source": "services/web/webpack.config.js",
+      "notice": "MPL-2.0 notice and source reference are retained."
+    },
+    {
+      "name": "dompurify",
+      "version": "3.4.12",
+      "package": "dompurify@3.4.12",
+      "license": "Apache-2.0 (selected from MPL-2.0 OR Apache-2.0)",
+      "inventoryLicense": "(MPL-2.0 OR Apache-2.0)",
+      "output": "web JavaScript bundle",
+      "source": "services/web/frontend/js/shared/components/labs/labs-description.tsx",
+      "notice": "Upstream copyright and Apache-2.0 notice are retained."
+    },
+    {
+      "name": "mathjax",
+      "version": "4.1.2",
+      "package": "mathjax@4.1.2",
+      "license": "Apache-2.0",
+      "inventoryLicense": "Apache-2.0",
+      "output": "services/web/public/js/libs/mathjax-4.1.2",
+      "source": "services/web/webpack.config.js",
+      "notice": "Package LICENSE is retained in the Yarn package archive."
+    },
+    {
+      "name": "pdfjs-dist",
+      "version": "5.1.91",
+      "package": "pdfjs-dist@5.1.91",
+      "license": "Apache-2.0",
+      "inventoryLicense": "Apache-2.0",
+      "output": "services/web/public/js/pdfjs-dist and related PDF assets",
+      "source": "services/web/webpack.config.js",
+      "notice": "Package and asset-specific license files are retained in the Yarn package archive."
+    },
+    {
+      "name": "highlight.js",
+      "version": "11.11.1",
+      "package": "highlight.js@11.11.1",
+      "license": "BSD-3-Clause",
+      "inventoryLicense": "BSD-3-Clause",
+      "output": "web JavaScript bundle and services/web/public/js/libs/highlight.js",
+      "source": "services/web/frontend/js/highlight.js and services/web/webpack.config.js",
+      "notice": "Package LICENSE is retained in the Yarn package archive."
+    },
+    {
+      "name": "web fonts",
+      "version": "repository assets",
+      "license": "OFL-1.1; Apache-2.0 for Material Symbols",
+      "output": "services/web/public/fonts",
+      "source": "services/web/frontend/fonts",
+      "notice": "OFL.txt, LICENSE.txt and LICENSE.md files remain beside the font sources."
+    },
+    {
+      "name": "CodeMirror/Ace editor themes",
+      "version": "repository assets",
+      "license": "Per-theme upstream licenses",
+      "output": "web editor theme bundle",
+      "source": "services/web/frontend/js/features/source-editor/themes/cm6/*-license.txt",
+      "notice": "Each theme's original license and attribution file is retained."
+    }
+  ]
+}
