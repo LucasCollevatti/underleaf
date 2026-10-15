@@ -12,7 +12,10 @@ Supported baseline:
 
 ARM64 and macOS are not supported deployment targets in this release. Node.js,
 Corepack and Make are maintainer/test dependencies; the normal runtime only
-requires Docker and Compose.
+requires Docker and Compose. The documented 8 GB available RAM and 30 GB free
+disk are starting requirements, not performance guarantees for heavy or
+concurrent builds. The compiler has separate default CPU and memory limits,
+and image caches require additional disk space.
 
 Prepare the configuration:
 
@@ -53,6 +56,19 @@ claim that direct public-Internet deployment is hardened; use a trusted LAN or
 VPN unless the complete perimeter is maintained by the operator. See
 [`INSTALLATION.md`](INSTALLATION.md) for the complete DNS and first-admin
 procedure.
+
+For Windows PowerShell, use the helper with the production Compose files
+selected for the current shell:
+
+```powershell
+$env:UNDERLEAF_COMPOSE_FILES = '-f compose.yaml -f infra/compose/compose.production.yaml'
+.\scripts\underleaf.ps1 config
+.\scripts\underleaf.ps1 up
+```
+
+Set the domain and site URL in `.env` first. Retain that environment setting
+for subsequent commands against the production overlay; see
+[INSTALLATION.md](INSTALLATION.md).
 
 ## Services and persistence
 
@@ -152,6 +168,11 @@ reinstall TeX Live, and does not recreate MongoDB, Redis, or named volumes.
 
 ## Compiler image
 
+For the complete-versus-minimal rationale, image size trade-offs, external
+tool limitations, version pinning and diagnostics, see [TEXLIVE.md](TEXLIVE.md).
+The compiler copies `/usr/local/texlive` from the source image, not the entire
+source operating system.
+
 The application image and the LaTeX compiler image are built separately. The
 compiler image imports the complete official TeX Live distribution selected by
 `UNDERLEAF_TEXLIVE_IMAGE` (default source tag: `texlive/texlive:latest`). The
@@ -232,7 +253,7 @@ E2E suite does not validate an upgrade of existing data.
 There is no supported automatic multi-version migration path in this beta.
 Upgrade one controlled revision at a time only after reading its migration
 notes, preserving a full backup and validating restore/compilation in an
-isolated copy.
+isolated copy. See [UPGRADING.md](UPGRADING.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 The installation state, user identities and authenticated theme preferences
 are persisted in MongoDB. Include them in backup/restore and container

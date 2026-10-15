@@ -95,6 +95,11 @@ quando o lockfile ou a imagem base mudar.
 
 ## Resultado do audit do snapshot
 
+**Registro histórico:** os números a seguir são da importação de 2 de outubro
+de 2026 e **não representam o estado mais recente da `main`**. Consulte
+[SECURITY-AUDIT.md](SECURITY-AUDIT.md) para os achados atuais, as mitigações
+e as exceções documentadas antes de disponibilizar uma instalação.
+
 Em 2026-10-02, `corepack yarn npm audit --all` encontrou 22 avisos de alta
 severidade, 29 moderados, 4 baixos e 6 entradas de dependências depreciadas.
 Os itens vêm principalmente do snapshot importado e incluem versões antigas de

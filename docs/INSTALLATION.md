@@ -1,5 +1,7 @@
 # Instalação do Underleaf no PC
 
+Este guia usa Docker Compose e os helpers oficiais, sem exigir instalação de TeX Live, Node.js, Yarn ou Make no host. Para entender o compilador e o custo da imagem completa, consulte [TEXLIVE.md](TEXLIVE.md).
+
 ## Requisitos
 
 - Host x86_64/amd64; ARM64 e macOS não são plataformas suportadas nesta
@@ -20,6 +22,8 @@ bash ./scripts/underleaf.sh up
 ```
 
 ## Windows
+
+Use os comandos PowerShell do helper para todas as operações; `make` não é necessário no Windows.
 
 Instale o Docker Desktop com Linux containers e, de preferência, a integração
 com WSL2. No PowerShell, a instalação local é:
@@ -42,9 +46,11 @@ Abra <http://localhost:8080>. Uma instalação nova abre `/welcome`: avance em
 O Welcome e o Login usam a mesma sidebar e o seletor de tema. Não há credenciais
 padrão nem cadastro público de contas adicionais.
 
-O stack local usa a porta 8080 e preserva os dados
-em volumes Docker nomeados. `make down` para os containers sem apagar esses
-volumes.
+O stack local usa a porta 8080 e preserva os dados em volumes
+Docker nomeados. Para parar sem apagá-los, execute
+`bash ./scripts/underleaf.sh down` no Linux ou `.\scripts\underleaf.ps1 down`
+no Windows. O primeiro `up` também cria a imagem com TeX Live completo;
+a transferência inicial pode ser grande. Consulte [TEXLIVE.md](TEXLIVE.md).
 
 ### Acesso na rede local
 
@@ -108,6 +114,20 @@ COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" \
   make up
 ```
 
+No Windows PowerShell, o mesmo overlay é selecionado pela variável
+`UNDERLEAF_COMPOSE_FILES`, sem precisar instalar `make`:
+
+```powershell
+$env:UNDERLEAF_COMPOSE_FILES = '-f compose.yaml -f infra/compose/compose.production.yaml'
+.\scripts\underleaf.ps1 config
+.\scripts\underleaf.ps1 build
+.\scripts\underleaf.ps1 up
+```
+
+Defina antes `UNDERLEAF_SITE_DOMAIN` e `UNDERLEAF_SITE_URL` no `.env`.
+Mantenha a variável `UNDERLEAF_COMPOSE_FILES` nas sessões posteriores quando
+operar esse deployment.
+
 O Caddy pode solicitar e renovar certificados ACME quando DNS e portas públicas
 estiverem corretamente configurados, e grava seu estado nos volumes
 `underleaf_proxy_data` e
@@ -167,6 +187,7 @@ Consulte [`DEPLOYMENT.md`](DEPLOYMENT.md), [`BACKUP.md`](BACKUP.md),
 expor a instalação à Internet.
 
 Para desenvolvimento e execução da cobertura em uma instalação descartável,
-consulte [`DEVELOPMENT.md`](DEVELOPMENT.md). Instalação inicial e upgrade de
-dados existentes são procedimentos distintos; preserve um backup completo
-antes de atualizar a instalação.
+consulte [`DEVELOPMENT.md`](DEVELOPMENT.md). Instalação inicial e upgrade de dados existentes são procedimentos distintos;
+preserve um backup completo e siga [UPGRADING.md](UPGRADING.md) antes de atualizar.
+Se houver falhas, consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+

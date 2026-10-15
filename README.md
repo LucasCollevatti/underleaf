@@ -1,92 +1,91 @@
 # Underleaf
 
-Underleaf é um editor colaborativo e self-hosted para projetos LaTeX. O
-objetivo é oferecer uma instalação simples para laboratórios, universidades,
-equipes de engenharia e servidores pessoais.
+**Underleaf** é um editor colaborativo e self-hosted de documentos LaTeX, derivado do [Overleaf Community Edition](https://github.com/overleaf/overleaf). Foi adaptado para instalações controladas pelo operador, com contas locais e compilação LaTeX isolada.
 
-O código inicial foi importado de um snapshot do Overleaf Community Edition e
-está sendo adaptado gradualmente para uma base independente. A origem, o SHA
-importado e as obrigações legais estão registrados em
-[`docs/ORIGIN.md`](docs/ORIGIN.md).
+**Estado:** beta em desenvolvimento ativo. O código usa **AGPL-3.0** e preserva a origem e as atribuições do Overleaf.
 
-## Início rápido
+## Funcionalidades
 
-Requisitos: Docker com Compose v2 e pelo menos 8 GB de RAM disponíveis durante
-o primeiro build. Os helpers geram o segredo persistente localmente.
+- Editor LaTeX no navegador, múltiplos arquivos, preview PDF e compilação com **TeX Live completo**.
+- Engines pdfLaTeX, XeLaTeX e LuaLaTeX; bibliografias com BibTeX/Biber.
+- Projetos, histórico, colaboração, compartilhamento e permissões por usuário.
+- Administração de contas por **username**, sem cadastro público, e temas System/Light/Dark.
+- Backups e persistência de dados por volumes Docker nomeados.
+
+O Underleaf remove fluxos comerciais/SaaS do produto original. Confira a [arquitetura](docs/ARCHITECTURE.md) e a [origem do projeto](docs/ORIGIN.md).
+
+## Requisitos
+
+| Item | Requisito |
+| --- | --- |
+| Plataforma | Linux `x86_64/amd64` ou Windows com Docker Desktop em modo Linux containers (preferencialmente WSL2) |
+| Docker | Docker Engine/Desktop com Compose v2 |
+| Memória | Pelo menos **8 GB disponíveis durante o primeiro build** |
+| Disco | Pelo menos **30 GB livres**, além do armazenamento para projetos e backups |
+| Ferramentas no host | Git e Docker; não é necessário instalar TeX Live, Node.js, Yarn ou Make |
+
+**ARM64 e macOS não são plataformas oficialmente suportadas nesta versão.** Os valores de RAM/disco são requisitos iniciais, não uma garantia para compilação concorrente ou projetos pesados. O TeX Live completo aumenta significativamente o download e o espaço ocupado pelas imagens.
+
+## Instalação rápida com Docker
+
+**Linux:**
 
 ```bash
+git clone https://github.com/LucasCollevatti/underleaf.git
+cd underleaf
 bash ./scripts/underleaf.sh up
 ```
 
-No Windows, instale o Docker Desktop configurado para Linux containers e rode
-o helper equivalente pelo PowerShell:
+**Windows (PowerShell):**
+
+Instale Docker Desktop com Linux containers e, preferencialmente, WSL2.
 
 ```powershell
+git clone https://github.com/LucasCollevatti/underleaf.git
+Set-Location underleaf
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 up
 ```
 
-O helper também oferece `health`, `logs`, `down`, `create-admin` e `test`.
-Não é necessário instalar TeX Live, Node ou `make` no host: essas dependências
-ficam dentro dos containers.
+Os helpers criam `.env` com um segredo de sessão persistente, constroem as imagens necessárias e iniciam a stack. O primeiro build pode transferir imagens grandes.
 
-Acesse <http://localhost:8080>. Em uma instalação nova, conclua o Welcome para
-criar o primeiro administrador e entrar automaticamente em Projects.
-Instalações já configuradas continuam usando `/login`. A CLI de criação de
-administrador fica disponível para recuperação ou automação.
-Para parar os containers, use `make down`.
-Em Settings, usuários alteram o nome de exibição, a senha e a aparência
-System/Light/Dark. O username é administrado pelo responsável pela instalação.
-Projects usa o mesmo dashboard desde o primeiro projeto, com estado vazio,
-criação/importação, filtros e lixeira. `/admin` reúne estatísticas da instalação;
-`/admin/users` oferece busca, tabela somente para leitura e modais para criar,
-editar, redefinir senha, ativar/desativar e excluir contas. A exclusão exige
-digitar `DELETE` e escolher explicitamente excluir todos os projetos da conta.
-Para preservá-los, cancele e transfira sua propriedade antes de excluir o usuário.
-No editor, Share Project busca contas existentes por username e concede acesso
-direto como editor ou viewer, sem convites por email nem limites de plano.
-Volumes nomeados preservam projetos, histórico, cache, banco e saídas entre
-reinicializações.
+Abra **http://localhost:8080** e crie o primeiro administrador no `/welcome`. Não existem credenciais padrão. As demais contas são criadas por administradores em `/admin/users`.
 
-Operações úteis:
+> **Por que TeX Live completo?** O compilador executa em um container separado e importa a árvore `/usr/local/texlive` de `texlive/texlive:latest` (ou da imagem configurada). Isso evita grande parte dos problemas com pacotes LaTeX ausentes, ao custo de uma imagem maior. Veja [TeX Live completo](docs/TEXLIVE.md).
 
-```bash
-make health
-make backup
-make restore BACKUP=/path/to/backup
-```
+## Operação diária
 
-A instalação de produção usa o overlay em
-`infra/compose/compose.production.yaml`; a configuração e as limitações estão
-em [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
-O passo a passo completo para instalar no PC está em
-[`docs/INSTALLATION.md`](docs/INSTALLATION.md), incluindo HTTPS com Caddy.
+| Ação | Linux | Windows (PowerShell, na raiz do repo) |
+| --- | --- | --- |
+| Iniciar e atualizar containers | `bash ./scripts/underleaf.sh up` | `.\scripts\underleaf.ps1 up` |
+| Verificar saúde | `bash ./scripts/underleaf.sh health` | `.\scripts\underleaf.ps1 health` |
+| Ver logs | `bash ./scripts/underleaf.sh logs` | `.\scripts\underleaf.ps1 logs` |
+| Parar sem apagar volumes | `bash ./scripts/underleaf.sh down` | `.\scripts\underleaf.ps1 down` |
+| Criar backup | `bash ./scripts/underleaf.sh backup` | `.\scripts\underleaf.ps1 backup` |
+| Rebuild do compilador TeX | `bash ./scripts/underleaf.sh build-compiler` | `.\scripts\underleaf.ps1 build-compiler` |
 
-## Estrutura atual
+A configuração local expõe **HTTP na porta 8080** para uso em LAN confiável ou VPN. Não encaminhe essa porta diretamente para a Internet. Há um overlay opcional com Caddy/HTTPS, mas o projeto **não afirma estar endurecido para exposição pública direta**.
 
-- `compose.yaml`: stack local do Underleaf;
-- `server-ce/`: runtime importado usado pela distribuição atual;
-- `services/` e `libraries/`: código de aplicação e pacotes compartilhados;
-- `infra/`: Compose, proxy e configuração operacional;
-- `scripts/`, `tests/` e `docs/`: automação, validação e documentação do sistema atual.
+## Serviços Docker
 
-A identidade de produto e os assets visíveis são do Underleaf. Nomes internos
-herdados, histórico Git, copyrights e atribuições de origem permanecem quando
-necessários para compatibilidade e cumprimento da licença; os detalhes estão em
-[`docs/ORIGIN.md`](docs/ORIGIN.md).
+| Serviço | Responsabilidade |
+| --- | --- |
+| `app` | Interface web, autenticação e serviços internos |
+| `compiler` | CLSI e TeX Live completo em container isolado |
+| `mongo` | Usuários, projetos e metadados |
+| `redis` | Sessões, filas e colaboração em tempo real |
 
-## Desenvolvimento
+O compilador não publica portas no host, não recebe segredos do `app` e não participa da rede interna do MongoDB/Redis. Projetos, histórico e dados persistem em volumes Docker; `down` não os apaga.
 
-Leia [`AGENTS.md`](AGENTS.md) antes de alterar o projeto.
-[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) documenta o ambiente, as
-invariantes de identidade/shell/temas e as suites unitária, frontend, acceptance
-e E2E. A jornada E2E requer uma instalação descartável vazia e cria contas e
-projetos reais; o documento registra quais validações ainda não foram executadas.
-Para consultar o estado do stack:
+## Documentação
 
-```bash
-docker compose ps
-docker compose logs -f app
-```
+- [Instalação passo a passo](docs/INSTALLATION.md) — Linux, Windows, primeiro administrador, LAN e HTTPS.
+- [TeX Live completo](docs/TEXLIVE.md) — escolha da distribuição, engines, imagens, recursos e diagnósticos.
+- [Deployment Docker](docs/DEPLOYMENT.md) — Compose, redes, rebuilds e configuração avançada.
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — problemas de build, portas, containers e compilação.
+- [Atualizações](docs/UPGRADING.md) — backup, atualização controlada e rollback.
+- [Backup](docs/BACKUP.md), [persistência](docs/PERSISTENCE.md) e [observabilidade](docs/OBSERVABILITY.md).
+- [Segurança](docs/SECURITY.md), [desenvolvimento](docs/DEVELOPMENT.md) e [contribuição](CONTRIBUTING.md).
 
-Informações sobre a licença e os avisos de terceiros estão em
-[`LICENSE`](LICENSE) e [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+## Licença e créditos
+
+Distribuído sob [AGPL-3.0](LICENSE). O snapshot de origem e suas modificações estão documentados em [ORIGIN.md](docs/ORIGIN.md), e as licenças de componentes em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Problemas podem ser relatados por issues com logs sanitizados; vulnerabilidades devem seguir a [política de divulgação privada](.github/SECURITY.md). Nunca publique arquivos `.env`, credenciais, backups ou conteúdo de documentos.
