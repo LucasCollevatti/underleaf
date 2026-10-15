@@ -1,30 +1,27 @@
-# Matriz de release do Underleaf 1.0
+# Underleaf 1.0 release matrix
 
-Esta matriz consolida as capacidades já validadas nos milestones M0–M22 e
-aponta a evidência que deve ser repetida antes de publicar uma instalação.
+This matrix summarizes functionality validated across milestones M0–M22 and identifies evidence to repeat before publishing a deployment.
 
-Esta matriz é um checklist de release, não uma declaração de que todos os
-testes já passaram. Cada item deve ser executado em uma instalação descartável
-ou em um ambiente controlado e registrado com commit, imagem e resultado.
+**This is a release checklist, not proof that every test has passed.** Execute each check against a disposable installation or controlled environment and record its commit, container image, and outcome.
 
-| Capacidade | Evidência principal |
+| Capability | Primary evidence |
 | --- | --- |
-| Usuários por username e senha, sem cadastro público | `scripts/create-admin.sh`; as rotas de cadastro e reset são bloqueadas quando `settings.underleaf` está ativo. |
-| Papéis, contas desabilitadas e administração | `/admin/users` e `services/web/app/views/underleaf/admin-users.pug`. |
-| Projetos e operações de arquivos | `tests/underleaf-project-dashboard-smoke.mjs` e `tests/underleaf-editor-smoke.mjs`. |
-| Editor multi-arquivo, upload, imagens e BibTeX | `tests/underleaf-editor-smoke.mjs`. |
-| Preview, logs, erros e SyncTeX | `tests/underleaf-editor-smoke.mjs` e `tests/underleaf-compiler-smoke.sh`. |
-| Colaboração em tempo real | `services/real-time/test/acceptance/underleaf-collaboration-smoke.mjs`. |
-| Engines e pacotes TeX suportados | `tests/underleaf-compiler-smoke.sh`. |
-| Compartilhamento owner/editor/viewer | `tests/underleaf-sharing-smoke.mjs`. |
-| Histórico, atribuição e restore | `services/real-time/test/acceptance/underleaf-history-smoke.mjs`. |
-| Persistência, healthcheck, backup e restore | `tests/underleaf-persistence-smoke.sh`, `make health`, `make backup` e `make restore`. |
-| HTTPS e WebSocket | `infra/proxy/Caddyfile`, overlay de produção e `docs/INSTALLATION.md`. |
-| Segurança da topologia | `tests/underleaf-security-smoke.sh` e `docs/SECURITY.md`. |
+| Username/password accounts without public registration | `scripts/create-admin.sh`; registration and reset routes are disabled when `settings.underleaf` is active |
+| Roles, disabled accounts, and administration | `/admin/users` and `services/web/app/views/underleaf/admin-users.pug` |
+| Projects and file operations | `tests/underleaf-project-dashboard-smoke.mjs` and `tests/underleaf-editor-smoke.mjs` |
+| Multi-file editing, upload, images, and BibTeX | `tests/underleaf-editor-smoke.mjs` |
+| Preview, logs, errors, and SyncTeX | `tests/underleaf-editor-smoke.mjs` and `tests/underleaf-compiler-smoke.sh` |
+| Real-time collaboration | `services/real-time/test/acceptance/underleaf-collaboration-smoke.mjs` |
+| Supported TeX engines and packages | `tests/underleaf-compiler-smoke.sh` |
+| Owner/editor/viewer sharing | `tests/underleaf-sharing-smoke.mjs` |
+| History, attribution, and restoration | `services/real-time/test/acceptance/underleaf-history-smoke.mjs` |
+| Persistence, health, backup, and restore | `tests/underleaf-persistence-smoke.sh`, `make health`, `make backup`, and `make restore` |
+| HTTPS and WebSockets | `infra/proxy/Caddyfile`, production overlay, and `docs/INSTALLATION.md` |
+| Network and compiler isolation | `tests/underleaf-security-smoke.sh` and `docs/SECURITY.md` |
 
-## Gate de publicação
+## Publication gate
 
-Em uma instalação descartável, execute:
+In a disposable installation:
 
 ```bash
 make config
@@ -36,6 +33,4 @@ tests/underleaf-security-smoke.sh
 corepack yarn npm audit --all --recursive --severity moderate --json
 ```
 
-Depois repita os smoke tests de dashboard, editor, compartilhamento,
-colaboração, compilação, histórico, backup e restore documentados nos arquivos
-acima. Não publique `.env`, backups ou logs em um repositório público.
+Repeat the dashboard, editor, sharing, collaboration, compiler, history, backup, and restore smoke tests documented above. **Never commit or publish `.env`, backups, or logs containing sensitive information.**

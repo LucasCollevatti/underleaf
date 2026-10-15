@@ -1,14 +1,9 @@
 # Scripts
 
-Scripts operacionais do Underleaf devem ser adicionados aqui. Os scripts
-importados permanecem próximos aos serviços até que cada migração possa ser
-validada sem alterar o comportamento.
+Add Underleaf operational scripts to this directory. Imported helper scripts remain close to their original services until each migration can be validated without changing behavior.
 
-`underleaf-health.sh` imprime o estado dos serviços e métricas operacionais em
-uma linha JSON sem dados sensíveis.
+`underleaf-health.sh` prints service health and operational metrics as one JSON line without sensitive data.
 
-`underleaf-backup.sh` e `underleaf-backup.ps1` criam um manifest, um archive do
-MongoDB e um archive dos dados da aplicação fora do checkout por padrão.
-`underleaf-restore.sh` e `underleaf-restore.ps1` validam o manifest, os hashes,
-os archives e a conectividade antes de substituir o MongoDB e os dados da
-aplicação após um `--yes`/`-Yes` explícito.
+`underleaf-backup.sh` and `underleaf-backup.ps1` create a manifest, a MongoDB archive, and an application-data archive, outside the checkout by default.
+
+`underleaf-restore.sh` and `underleaf-restore.ps1` validate the manifest, hashes, archives, and connectivity before replacing MongoDB and application data. Restoration requires explicit `--yes` or `-Yes` confirmation.

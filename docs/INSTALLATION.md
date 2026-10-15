@@ -1,19 +1,16 @@
-# Instalação do Underleaf no PC
+# Installing Underleaf on your computer
 
-Este guia usa Docker Compose e os helpers oficiais, sem exigir instalação de TeX Live, Node.js, Yarn ou Make no host. Para entender o compilador e o custo da imagem completa, consulte [TEXLIVE.md](TEXLIVE.md).
+This guide uses Docker Compose and the supplied platform helpers. You do **not** need to install TeX Live, Node.js, Yarn, or Make on the host. For the compiler design and image-size trade-offs, see [Full TeX Live](TEXLIVE.md).
 
-## Requisitos
+## Requirements
 
-- Host x86_64/amd64; ARM64 e macOS não são plataformas suportadas nesta
-  release;
-- Docker Desktop ou Docker Engine com Compose v2;
-- Git;
-- pelo menos 8 GB de RAM disponíveis durante o build;
-- pelo menos 30 GB livres para imagens, cache e volumes, além do espaço dos
-  projetos e backups;
-- uma rede local confiável ou VPN entre os usuários e o host.
+- An `x86_64/amd64` host; ARM64 and macOS are not supported targets in this release.
+- Docker Desktop or Docker Engine with Compose v2, and Git.
+- At least **8 GB of available RAM during the build**.
+- At least **30 GB of free disk space** for images, caches, and volumes, plus storage for projects and backups.
+- A trusted local network or VPN between users and the host.
 
-## Instalação local simples
+## Basic local installation
 
 ```bash
 git clone https://github.com/LucasCollevatti/underleaf.git underleaf
@@ -23,10 +20,7 @@ bash ./scripts/underleaf.sh up
 
 ## Windows
 
-Use os comandos PowerShell do helper para todas as operações; `make` não é necessário no Windows.
-
-Instale o Docker Desktop com Linux containers e, de preferência, a integração
-com WSL2. No PowerShell, a instalação local é:
+Install Docker Desktop in Linux containers mode, preferably with WSL2 integration. Use the PowerShell helper for all operations; Make is not required.
 
 ```powershell
 git clone https://github.com/LucasCollevatti/underleaf.git underleaf
@@ -34,67 +28,36 @@ Set-Location underleaf
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 up
 ```
 
-Para a operação diária, use `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 health`
-e substitua `health` por `logs` ou `down`.
-O script também expõe `create-admin` e `test`. Não é necessário instalar TeX
-Live, Node ou `make` no Windows; o Docker Desktop executa o runtime Linux do
-Underleaf dentro dos containers. Backup e restore também estão disponíveis no
-script PowerShell.
+Daily commands use the same script with `health`, `logs`, or `down`. It also supports `create-admin`, `test`, `backup`, and `restore`. Docker Desktop runs the Linux-based Underleaf runtime inside containers.
 
-Abra <http://localhost:8080>. Uma instalação nova abre `/welcome`: avance em
-**Começar**, crie o administrador e aguarde o login automático em `/project`.
-O Welcome e o Login usam a mesma sidebar e o seletor de tema. Não há credenciais
-padrão nem cadastro público de contas adicionais.
+Open <http://localhost:8080>. A fresh installation starts at `/welcome`: select **Set up Underleaf**, create the administrator, and allow the automatic login to `/project`. Login and Welcome share the same sidebar and theme selector. There are no default credentials and no public registration of additional accounts.
 
-O stack local usa a porta 8080 e preserva os dados em volumes
-Docker nomeados. Para parar sem apagá-los, execute
-`bash ./scripts/underleaf.sh down` no Linux ou `.\scripts\underleaf.ps1 down`
-no Windows. O primeiro `up` também cria a imagem com TeX Live completo;
-a transferência inicial pode ser grande. Consulte [TEXLIVE.md](TEXLIVE.md).
+The local stack publishes port 8080 and keeps data in named Docker volumes. Stop without deleting these volumes using `bash ./scripts/underleaf.sh down` on Linux or `.\scripts\underleaf.ps1 down` on Windows. Initial startup also builds the full TeX Live compiler image, so the first download may be large; see [TEXLIVE.md](TEXLIVE.md).
 
-### Acesso na rede local
+### Access from a local network
 
-O stack local publica HTTP na porta 8080 e não criptografa o tráfego. Para
-acesso de outros dispositivos, defina no `.env` o endereço LAN do host:
+The local stack uses unencrypted HTTP on port 8080. For other devices on the trusted LAN, set the host's reachable address in `.env`:
 
 ```dotenv
 UNDERLEAF_SITE_URL=http://192.168.1.50:8080
 UNDERLEAF_HTTP_PORT=8080
 ```
 
-Troque o endereço pelo IP real do servidor e libere a porta somente no firewall
-da rede confiável. Não encaminhe essa porta para a Internet; use uma VPN ou
-um proxy HTTPS administrado pelo operador quando o acesso sair da LAN. O
-projeto não promete hardening para exposição direta à Internet.
+Replace the sample IP with the actual server address and allow the port only through the trusted network firewall. **Do not forward this HTTP port to the Internet.** Use a VPN or operator-managed HTTPS proxy when access crosses untrusted networks. Direct Internet hardening is not guaranteed.
 
-A inicialização e a conta do primeiro administrador são gravadas juntas no
-MongoDB. O replica set do Compose é necessário para essa transação. Se o
-processo falhar, repita o acesso ao Welcome; após a confirmação, ele não aceita
-outro bootstrap. Instalações existentes com usuários são reconhecidas como
-inicializadas. Excluir contas não reabre o Welcome.
+Installation initialization and first-administrator creation are committed together in MongoDB. The Compose replica set is required for this transaction. If setup fails, retry Welcome; after initialization, additional bootstrap requests are rejected. Existing installations with users are recognized as initialized. Deleting accounts never reopens Welcome.
 
-## Contas e aparência
+## Accounts and appearance
 
-Login e compartilhamento usam exclusivamente **username**. Não cadastre email
-nem endereço sintético para identificar contas. Em `/admin/users`, um
-administrador cria contas, altera username e nome de exibição, redefine senhas
-e administra papéis e status. Uma pessoa que perdeu a senha solicita a
-redefinição ao administrador; não há recuperação por email.
+Login and sharing use **username**, not email addresses or synthetic email identifiers. At `/admin/users`, administrators provision accounts, change usernames and display names, reset passwords, and manage roles and account status. Forgotten passwords are reset by an administrator; email-based recovery is unavailable.
 
-Em Settings, cada usuário altera nome de exibição, senha e aparência.
-System acompanha o tema do sistema operacional; Light e Dark fixam a aparência.
-A preferência da conta persiste entre navegação, logout/login e reinicializações.
-Visitantes podem escolher o tema na sidebar de Welcome e Login, com preferência
-local no navegador.
+In Settings, users can change their display name, password, and appearance. System follows the operating-system theme; Light and Dark set fixed appearances. Account preferences persist across navigation, logout/login, and restarts. Guests can select a local browser theme from the Welcome and Login sidebar.
 
-`/status` no navegador é uma página administrativa com estado do processo web
-e flags de acesso. Para a saúde dos serviços, use `make health`, conforme
-[`OBSERVABILITY.md`](OBSERVABILITY.md).
+HTML `/status` is an administrative page with web-process state and site/editor access flags. For actual service health, use `make health` or the platform health helper as documented in [Observability](OBSERVABILITY.md).
 
-## Instalação atrás de HTTPS com Caddy (opcional)
+## Optional HTTPS deployment with Caddy
 
-Use um domínio que a máquina consiga resolver e aponte os registros DNS para o
-host antes de subir o proxy. Edite `.env` com valores equivalentes a:
+Before starting the proxy, configure a domain that resolves to the host and set appropriate DNS records. Set values in `.env` such as:
 
 ```dotenv
 UNDERLEAF_SITE_DOMAIN=underleaf.example.com
@@ -103,7 +66,7 @@ UNDERLEAF_PROXY_HTTP_PORT=80
 UNDERLEAF_PROXY_HTTPS_PORT=443
 ```
 
-Valide e suba o overlay de produção:
+Validate and start the production Compose overlay on Linux:
 
 ```bash
 COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" \
@@ -114,8 +77,7 @@ COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" \
   make up
 ```
 
-No Windows PowerShell, o mesmo overlay é selecionado pela variável
-`UNDERLEAF_COMPOSE_FILES`, sem precisar instalar `make`:
+On Windows PowerShell, choose the same overlay with `UNDERLEAF_COMPOSE_FILES`, without installing Make:
 
 ```powershell
 $env:UNDERLEAF_COMPOSE_FILES = '-f compose.yaml -f infra/compose/compose.production.yaml'
@@ -124,70 +86,48 @@ $env:UNDERLEAF_COMPOSE_FILES = '-f compose.yaml -f infra/compose/compose.product
 .\scripts\underleaf.ps1 up
 ```
 
-Defina antes `UNDERLEAF_SITE_DOMAIN` e `UNDERLEAF_SITE_URL` no `.env`.
-Mantenha a variável `UNDERLEAF_COMPOSE_FILES` nas sessões posteriores quando
-operar esse deployment.
+Set `UNDERLEAF_SITE_DOMAIN` and `UNDERLEAF_SITE_URL` in `.env` before running these commands. Keep `UNDERLEAF_COMPOSE_FILES` set in later sessions when operating this deployment.
 
-O Caddy pode solicitar e renovar certificados ACME quando DNS e portas públicas
-estiverem corretamente configurados, e grava seu estado nos volumes
-`underleaf_proxy_data` e
-`underleaf_proxy_config`. Para testes com `localhost`, o Caddy usa um
-certificado local e o navegador pode mostrar um aviso; não use esse modo como
-certificado público.
+Caddy can obtain and renew ACME certificates when DNS and public ports are correctly configured. Certificate state persists in `underleaf_proxy_data` and `underleaf_proxy_config`. Localhost testing uses a local certificate and may trigger browser warnings; it is not a publicly trusted certificate.
 
-O overlay não transforma uma instalação em um serviço público seguro: firewall,
-DNS, atualização do host, VPN/HTTPS, controle de acesso e revisão de exposição
-continuam sendo responsabilidade do operador. Para a maioria das instalações
-domésticas ou de laboratório, prefira a LAN confiável ou uma VPN.
+**The production overlay does not make a deployment automatically safe for the public Internet.** Firewall, host updates, DNS, VPN/HTTPS, access control, and exposure review remain the operator's responsibility. Prefer a trusted LAN or VPN for home and laboratory installations.
 
-Abra o domínio configurado e conclua o Welcome. Em uma instalação existente,
-o bootstrap permanece fechado e o acesso continua por `/login`.
+Open the configured domain and complete Welcome. Existing installations continue to use `/login`.
 
-A CLI fica disponível para automação ou recuperação quando não existe nenhum
-administrador. Use os mesmos arquivos Compose:
+For automation or recovery when no administrator exists, use the CLI with the same Compose files:
 
 ```bash
 UNDERLEAF_COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" \
   ./scripts/create-admin.sh
 ```
 
-A CLI recusa a criação se já existir administrador, inclusive desabilitado.
-Ela não reabre o Welcome. Senhas são informadas pelo terminal (entrada oculta)
-ou pelo stdin na automação, nunca por argumentos de processo.
+The CLI refuses to create another administrator if one already exists, including disabled administrators. It does not reopen Welcome. Passwords come from hidden terminal input or stdin, never process arguments.
 
-## Operação diária
+## Daily operations
 
 ```bash
 make health
 make logs
-make backup # padrão: $HOME/underleaf-backups/underleaf-<UTC>
-# ou: BACKUP_DIR=/srv/backups/underleaf-$(date +%F) make backup
+make backup # default: $HOME/underleaf-backups/underleaf-<UTC>
+# alternatively: BACKUP_DIR=/srv/backups/underleaf-$(date +%F) make backup
 make down
 ```
 
-Para restaurar, confirme o caminho e execute explicitamente:
+To restore a specific backup:
 
 ```bash
 make restore BACKUP=/srv/backups/underleaf-2026-10-02
 ```
 
-No PowerShell:
+In PowerShell:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 backup
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 restore -Backup C:\caminho\underleaf-2026-10-02 -Yes
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 restore -Backup C:\backups\underleaf-2026-10-02 -Yes
 ```
 
-O backup nunca sobrescreve um destino existente. O restore valida os quatro
-arquivos, os hashes, os archives e a conectividade antes de parar o app; ele
-exige `--yes` ou `-Yes` porque substitui o MongoDB e os dados persistentes.
+Backup never overwrites an existing destination. Restore validates its manifest, hashes, archives, and connectivity before stopping the app; it requires `--yes` or `-Yes` because it replaces MongoDB and persistent data.
 
-Consulte [`DEPLOYMENT.md`](DEPLOYMENT.md), [`BACKUP.md`](BACKUP.md),
-[`PERSISTENCE.md`](PERSISTENCE.md) e [`SECURITY.md`](SECURITY.md) antes de
-expor a instalação à Internet.
+Read [Deployment](DEPLOYMENT.md), [Backup](BACKUP.md), [Persistence](PERSISTENCE.md), and [Security](SECURITY.md) before exposing an installation to untrusted networks.
 
-Para desenvolvimento e execução da cobertura em uma instalação descartável,
-consulte [`DEVELOPMENT.md`](DEVELOPMENT.md). Instalação inicial e upgrade de dados existentes são procedimentos distintos;
-preserve um backup completo e siga [UPGRADING.md](UPGRADING.md) antes de atualizar.
-Se houver falhas, consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
-
+For development and test environments see [DEVELOPMENT.md](DEVELOPMENT.md). Initial installation and upgrading existing data are different procedures: take a complete backup and follow [UPGRADING.md](UPGRADING.md) before updating. For failures, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

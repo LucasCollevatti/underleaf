@@ -1,10 +1,5 @@
-# Sobre o Underleaf
+# About Underleaf
 
-Underleaf é um projeto self-hosted para edição colaborativa de documentos
-LaTeX. O produto é mantido como uma base independente, com foco em controle
-local de dados e evolução incremental da arquitetura.
+Underleaf is a self-hosted collaborative LaTeX editing project. It is maintained as an independent codebase focused on local data control and incremental architectural improvements.
 
-O primeiro snapshot veio do Overleaf Community Edition. Essa origem não
-representa a identidade do produto: o nome, a interface e a documentação
-ativa do Underleaf usam a marca Underleaf. A atribuição de código, a licença
-AGPLv3 e os avisos de terceiros permanecem preservados.
+The initial snapshot came from Overleaf Community Edition. That origin does not define the product's identity: the name, interface, and active documentation use the Underleaf brand. Original source attribution, the AGPLv3 license, and third-party notices remain preserved.

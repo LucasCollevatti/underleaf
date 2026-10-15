@@ -1,14 +1,11 @@
-# Compose
+# Compose overlays
 
-O stack local canônico permanece em [`../../compose.yaml`](../../compose.yaml).
-Os arquivos deste diretório são overlays explícitos:
+The canonical local stack is defined at [`../../compose.yaml`](../../compose.yaml). Files in this directory are explicit overlays:
 
-- `compose.development.yaml`: desliga restart automático e ativa logs `debug`;
-- `compose.production.yaml`: aplica restart policies, limites de CPU/memória,
-  `init`, rotação de logs, cookies seguros e adiciona o Caddy como única porta
-  pública, mantendo o compiler como serviço sob demanda.
+- `compose.development.yaml`: disables automatic restarts and enables `debug` logging.
+- `compose.production.yaml`: configures restart policies, CPU/memory limits, `init`, log rotation, secure cookies, and Caddy as the only public entry point, while retaining the dedicated compiler service.
 
-## Desenvolvimento
+## Development
 
 ```bash
 make dev
@@ -18,7 +15,7 @@ make test
 make down
 ```
 
-Para aplicar o overlay de desenvolvimento manualmente:
+To apply the development overlay manually:
 
 ```bash
 docker compose -f compose.yaml \
@@ -26,16 +23,16 @@ docker compose -f compose.yaml \
   --env-file .env up -d
 ```
 
-## Produção
+## Production overlay
 
-Valide primeiro as variáveis obrigatórias e o merge dos arquivos:
+First validate required variables and the merged configuration:
 
 ```bash
 COMPOSE_FILES="-f compose.yaml -f infra/compose/compose.production.yaml" \
   make config
 ```
 
-Suba a instalação com:
+Start the deployment:
 
 ```bash
 docker compose -f compose.yaml \
@@ -43,9 +40,4 @@ docker compose -f compose.yaml \
   --env-file .env up -d
 ```
 
-O Caddy publica somente 80 e 443 e encaminha também WebSocket para o app.
-MongoDB e Redis não publicam portas; ambos compartilham apenas a rede interna
-`underleaf_app_backend` com o app. Os dados ficam em volumes Docker nomeados e
-as políticas de restart e limites do production overlay não alteram o produto
-em planos comerciais. A revisão de segurança está em
-[`../../docs/SECURITY.md`](../../docs/SECURITY.md).
+Caddy publishes ports 80 and 443 and also forwards WebSockets to the app. MongoDB and Redis publish no host ports and share only the internal `underleaf_app_backend` network with the application. Data is stored in named Docker volumes. Production restart policies and limits are operational safeguards, not subscription or commercial feature tiers. See [Security](../../docs/SECURITY.md) and [Installation](../../docs/INSTALLATION.md) for deployment restrictions.

@@ -1,40 +1,25 @@
-# Observabilidade do Underleaf
+# Underleaf observability
 
-O comando operacional abaixo retorna uma linha JSON sem credenciais, conteúdo
-de documentos ou tokens:
+The operational command below outputs a single JSON line without credentials, document contents, or tokens:
 
 ```bash
 make health
 ```
 
-O relatório verifica:
+The report checks:
 
-- app web, MongoDB e Redis pelos endpoints/healthchecks internos;
-- project-history, real-time e CLSI dentro do container da aplicação;
-- estado do serviço `compiler`, que faz parte do stack padrão e é necessário
-  para compilações;
-- bytes disponíveis no volume de dados da aplicação;
-- quantidade de projetos aguardando flush no project-history, quando o endpoint
-  responder.
+- web app, MongoDB, and Redis through internal endpoints and healthchecks;
+- project-history, real-time, and CLSI within the application container;
+- the dedicated `compiler` service, required by the standard stack for compilation;
+- available bytes in the application data volume;
+- project-history's pending-flush project count, when that endpoint responds.
 
-O `compiler` deve aparecer como `healthy`. Se estiver ausente, iniciando,
-parado ou sem healthcheck saudável, o relatório fica `degraded` e o comando
-termina com código diferente de zero. Não existe um fluxo de compilação
-integrado alternativo no app: o serviço dedicado é uma dependência obrigatória.
+The `compiler` must report `healthy`. When it is missing, starting, stopped, or unhealthy, overall status becomes `degraded` and the command exits nonzero. The web app has no embedded fallback compiler; the dedicated service is mandatory.
 
-`scripts/underleaf-health.ps1` emite os mesmos campos JSON e a mesma convenção
-de código de saída que `make health`. Ambos executam probes internos de
-endpoint, banco/Redis e compiler; não imprimem segredos nem exigem o Docker
-socket dentro do compiler.
+`scripts/underleaf-health.ps1` produces the same JSON fields and exit-code behavior as `make health`. Both probe internal endpoints, databases/Redis, and the compiler without printing secrets or requiring a Docker socket inside the compiler.
 
 ## Logs
 
-Os serviços usam logs Bunyan estruturados com timestamp, nível e nome do
-serviço. O middleware HTTP adiciona um `requestId` gerado pelo serviço ou
-valida um `X-Request-Id` recebido (`A-Za-z0-9._-`, até 128 caracteres). IDs de
-usuário e projeto só aparecem nos pontos em que o logger já precisa deles para
-diagnóstico.
+Services use structured Bunyan logs including timestamp, severity, and service name. HTTP middleware adds a service-generated `requestId`, or validates the provided `X-Request-Id` (`A-Za-z0-9._-`, up to 128 characters). User and project IDs appear only in existing diagnostic contexts that require them.
 
-Senhas, hashes, secrets, cookies de sessão, tokens e conteúdo de documentos
-não devem ser passados a chamadas de logger. O serializer de requests mantém
-somente método, URL, IP, headers operacionais e IDs de rota necessários.
+Never log passwords, password hashes, secrets, session cookies, tokens, or document contents. The request serializer retains only the HTTP method, URL, IP, operational headers, and routing identifiers necessary for diagnostics.

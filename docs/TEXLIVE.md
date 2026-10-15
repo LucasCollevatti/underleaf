@@ -1,62 +1,62 @@
-# Por que o Underleaf usa o TeX Live completo?
+# Why Underleaf uses full TeX Live
 
-O Underleaf utiliza a **distribuição TeX Live completa oferecida pela imagem de origem configurada**, em um container `compiler` separado da aplicação web. Isso prioriza compatibilidade com documentos LaTeX reais sem exigir a instalação manual de coleções de pacotes no host.
+Underleaf uses the **full TeX Live distribution supplied by its configured source image** inside a dedicated `compiler` container, separate from the web application. This prioritizes compatibility with real LaTeX documents without manually installing package collections on the host.
 
-## Benefícios e contrapartidas
+## Benefits and trade-offs
 
-Documentos diferentes dependem de classes, estilos, fontes, bibliografias e idiomas distintos. Instalações mínimas podem falhar com mensagens como `File ... .sty not found`. A distribuição completa reduz esse problema e oferece pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX e Biber.
+Documents depend on different classes, styles, fonts, bibliographies, and languages. Minimal installations may fail with errors such as `File ... .sty not found`. Full TeX Live reduces that risk and provides pdfLaTeX, XeLaTeX, LuaLaTeX, latexmk, BibTeX, and Biber.
 
-A contrapartida é **um download inicial maior**, mais uso de disco e um build mais pesado. Ainda assim, a distribuição completa **não garante** a presença de todos os programas externos ou fontes do sistema usados por projetos especiais.
+The trade-off is **a larger first download**, greater disk consumption, and a heavier initial build. Even a full TeX Live distribution **does not guarantee** that every external executable or operating-system font required by a special project is present.
 
-## O que acontece no Docker?
+## How it works in Docker
 
-O [Dockerfile do compilador](../server-ce/Dockerfile-compiler) usa um build multi-stage:
+The [compiler Dockerfile](../server-ce/Dockerfile-compiler) uses a multi-stage build:
 
-1. Seleciona a imagem `UNDERLEAF_TEXLIVE_IMAGE` (padrão: `texlive/texlive:latest`).
-2. Copia `/usr/local/texlive` da imagem de origem para a imagem do compilador.
-3. Instala as dependências de produção do CLSI e configura seu runtime.
-4. Verifica a presença de `pdflatex`, `xelatex`, `lualatex`, `latexmk`, `bibtex`, `biber`, `makeindex` e arquivos TeX de exemplo.
-5. Executa o CLSI como usuário não privilegiado, com limites definidos no [Compose](../compose.yaml).
+1. Selects `UNDERLEAF_TEXLIVE_IMAGE` (default: `texlive/texlive:latest`).
+2. Copies `/usr/local/texlive` from that image into the compiler image.
+3. Installs CLSI's production dependencies and configures its runtime.
+4. Checks for `pdflatex`, `xelatex`, `lualatex`, `latexmk`, `bibtex`, `biber`, `makeindex`, and representative TeX files.
+5. Runs CLSI as an unprivileged user with the limits defined in [Compose](../compose.yaml).
 
-Não existe uma allowlist local do `tlmgr` escolhendo um subconjunto arbitrário de pacotes. O Dockerfile também **não copia todo o sistema operacional** da imagem do TeX Live: só a árvore indicada. Executáveis externos precisam ser considerados separadamente.
+There is no local `tlmgr` allowlist that selects an arbitrary subset of packages. The Dockerfile also **does not copy the entire source image's operating system**, only the specified TeX Live directory. Handle external executable dependencies separately.
 
-**Não instale TeX Live no computador para usar o Underleaf.** O `up` padrão já constrói as imagens necessárias:
+**Do not install TeX Live on your computer just to run Underleaf.** The standard `up` command builds the required images:
 
 ```bash
 bash ./scripts/underleaf.sh up
 ```
 
-No Windows PowerShell:
+On Windows PowerShell:
 
 ```powershell
 .\scripts\underleaf.ps1 up
 ```
 
-## Como atualizar ou reconstruir o compilador
+## Rebuilding or updating the compiler
 
-Para reconstruir apenas a imagem do compilador:
+To rebuild only the compiler image:
 
 | Linux | Windows (PowerShell) |
 | --- | --- |
 | `bash ./scripts/underleaf.sh build-compiler` | `.\scripts\underleaf.ps1 build-compiler` |
 
-Após o build, atualize/inicie os containers com o helper `up`. O comando `up` atual usa `--build`, portanto também pode revalidar outros estágios de imagem. Para reconstruir **somente a aplicação web** sem reinstalar TeX Live, consulte `make web` em [DEPLOYMENT.md](DEPLOYMENT.md).
+After building, start/update the containers using `up`. The current `up` implementation uses `--build` and may therefore recheck other image build stages. To rebuild **only the web application** without reinstalling TeX Live, see `make web` in [DEPLOYMENT.md](DEPLOYMENT.md).
 
-O runtime não instala pacotes TeX automaticamente após o build. Para mudar a distribuição, escolha uma nova imagem de origem, reconstrua e teste os documentos afetados.
+The running compiler does not automatically install TeX packages after its image is built. To change the distribution, select a reviewed source image, rebuild, and test affected documents.
 
-## Versão e reprodutibilidade
+## Versioning and reproducibility
 
-O [`.env.example`](../.env.example) define:
+The [`.env.example`](../.env.example) contains:
 
 ```dotenv
 UNDERLEAF_TEXLIVE_IMAGE=texlive/texlive:latest
 ```
 
-`latest` significa a imagem resolvida no momento do build, **não necessariamente a mais recente instalada no container em execução**. Também não atualiza TeX Live em tempo real.
+The `latest` tag is resolved at build time; it **does not necessarily identify the newest TeX Live installed in the currently running container**, nor does it update a running container automatically.
 
-Para instalações reproduzíveis, use uma referência de imagem verificada e imutável (por exemplo, um digest `sha256` publicado pelo fornecedor) no `.env` e registre a revisão Git correspondente. A página administrativa mostra a versão do TeX Live detectada no runtime.
+For reproducible deployments, set `UNDERLEAF_TEXLIVE_IMAGE` in `.env` to a verified immutable image reference (for example, a vendor-published `sha256` digest) and record the corresponding Underleaf Git revision. The administration page displays the TeX Live version detected at runtime.
 
-Verifique a versão do container em execução:
+Check engines in the running container:
 
 ```bash
 docker compose --env-file .env exec compiler pdflatex --version
@@ -64,31 +64,31 @@ docker compose --env-file .env exec compiler xelatex --version
 docker compose --env-file .env exec compiler lualatex --version
 ```
 
-Consulte se um arquivo `.sty` está presente:
+Check whether a `.sty` file exists:
 
 ```bash
 docker compose --env-file .env exec compiler kpsewhich tcolorbox.sty
 ```
 
-Esses comandos são apenas de consulta.
+These checks do not change the deployment.
 
-## Recursos e isolamento
+## Resources and isolation
 
-| Variável no `.env` | Padrão | Finalidade |
+| `.env` variable | Default | Purpose |
 | --- | --- | --- |
-| `UNDERLEAF_TEXLIVE_IMAGE` | `texlive/texlive:latest` | Imagem de origem |
-| `UNDERLEAF_COMPILE_CPUS` | `4` | Limite de CPUs |
-| `UNDERLEAF_COMPILE_MEMORY` | `8G` | Limite de memória |
-| `UNDERLEAF_COMPILE_TIMEOUT` | `3600` | Timeout em segundos |
-| `UNDERLEAF_MAX_PROJECT_SIZE` | `0` | Sem limite de produto, mas sujeito aos limites de infraestrutura |
+| `UNDERLEAF_TEXLIVE_IMAGE` | `texlive/texlive:latest` | TeX Live source image |
+| `UNDERLEAF_COMPILE_CPUS` | `4` | Compiler CPU limit |
+| `UNDERLEAF_COMPILE_MEMORY` | `8G` | Container memory limit |
+| `UNDERLEAF_COMPILE_TIMEOUT` | `3600` | Compilation timeout in seconds |
+| `UNDERLEAF_MAX_PROJECT_SIZE` | `0` | No product-level cap; infrastructure limits still apply |
 
-O limite de memória **não reserva** 8 GB continuamente. Para compilações pesadas ou concorrentes, monitore o consumo real e aumente a capacidade conforme necessário. O requisito de 30 GB livres é um ponto de partida, não um valor garantido para todos os caches, imagens, projetos e backups.
+An 8 GB memory limit **does not reserve** 8 GB at all times. Monitor real usage before sizing for large or concurrent compilations. The 30 GB free disk recommendation is a starting point, not a guarantee for all caches, images, projects, and backups.
 
-Por segurança, o `compiler` não publica uma porta no host, tem filesystem raiz somente leitura, executa sem capabilities extras e não recebe segredos nem Docker socket do `app`. Ele não participa da rede MongoDB/Redis.
+For security, `compiler` publishes no host ports, uses a read-only root filesystem, drops capabilities, and receives neither the `app` secrets nor the Docker socket. It does not join the MongoDB/Redis network.
 
-## Diagnóstico
+## Diagnostics
 
-Se um PDF falhar, leia primeiro os erros LaTeX no editor. Em seguida:
+If a PDF fails to compile, first inspect the document's LaTeX errors in the editor. Then:
 
 ```bash
 docker compose --env-file .env ps compiler
@@ -96,4 +96,4 @@ docker compose --env-file .env logs --tail=200 compiler
 docker compose --env-file .env exec compiler kpsewhich brazilian.ldf
 ```
 
-Um pacote LaTeX ausente, uma ferramenta externa faltando, um erro do documento, falta de memória e timeout têm causas diferentes. Veja [Troubleshooting](TROUBLESHOOTING.md) antes de alterar o container ou apagar qualquer volume.
+A missing LaTeX package, unavailable external tool, document syntax error, out-of-memory condition, and timeout require different remedies. See [Troubleshooting](TROUBLESHOOTING.md) before modifying the compiler or deleting any volume.

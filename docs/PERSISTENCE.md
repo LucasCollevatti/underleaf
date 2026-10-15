@@ -1,59 +1,40 @@
-# Persistência do Underleaf
+# Underleaf persistence
 
-O Compose canônico usa volumes nomeados com nomes estáveis. `make down` apenas
-remove os containers e as redes; não remove volumes. A remoção de dados deve
-ser uma operação explícita e precedida por backup.
+The canonical Compose stack uses stable, explicitly named Docker volumes. `make down` removes containers and networks **without deleting volumes**. Data deletion must be deliberate and preceded by a backup.
 
-## Mapa de dados
+## Data map
 
-| Dado | Serviço | Volume | Caminho no container | Responsabilidade |
+| Data | Service | Volume | Container path | Purpose |
 | --- | --- | --- | --- | --- |
-| Metadados, usuários e projetos | `mongo` | `underleaf_mongo_data` | `/data/db` | Fonte de verdade do banco MongoDB. |
-| Sessões, filas e presença temporária | `redis` | `underleaf_redis_data` | `/data` | Estado operacional do Redis; não substitui o MongoDB nem o histórico. |
-| Dados gerais do app | `app` | `underleaf_app_data` | `/var/lib/overleaf` | Dados persistentes que não têm um volume filho dedicado. |
-| Histórico de revisões | `app` | `underleaf_app_history` | `/var/lib/overleaf/data/history` | Filas, snapshots e dados locais usados pelo histórico de projetos. |
-| Cache da aplicação | `app` | `underleaf_app_cache` | `/var/lib/overleaf/data/cache` | Cache derivado; não é fonte de verdade e pode ser limpo conforme a política operacional. |
-| Templates | `app` | `underleaf_app_templates` | `/var/lib/overleaf/data/template_files` | Arquivos de template usados pela aplicação. |
-| Área de trabalho do compilador | `compiler` | `underleaf_compiler_work` | `/var/lib/underleaf/compiler` | Compiles, cache e artefatos de saída derivados. O app monta este volume somente para leitura para servir resultados; não contém a fonte canônica do projeto. |
-| Estado e certificados do proxy | `proxy` | `underleaf_proxy_data` | `/data` | Certificados ACME, autoridade local e estado operacional do Caddy. |
-| Configuração persistida do proxy | `proxy` | `underleaf_proxy_config` | `/config` | Configuração automática persistida pelo Caddy; não substitui o Caddyfile versionado. |
+| Users, projects, and metadata | `mongo` | `underleaf_mongo_data` | `/data/db` | Source of truth for MongoDB data |
+| Temporary sessions, queues, and presence | `redis` | `underleaf_redis_data` | `/data` | Operational state; not a substitute for MongoDB or history |
+| General application data | `app` | `underleaf_app_data` | `/var/lib/overleaf` | Persistent files without a dedicated child volume |
+| Revision history | `app` | `underleaf_app_history` | `/var/lib/overleaf/data/history` | Queues, snapshots, and local project-history data |
+| Application cache | `app` | `underleaf_app_cache` | `/var/lib/overleaf/data/cache` | Derived cache, not the source of truth |
+| Templates | `app` | `underleaf_app_templates` | `/var/lib/overleaf/data/template_files` | Application template files |
+| Compiler working data | `compiler` | `underleaf_compiler_work` | `/var/lib/underleaf/compiler` | Derived compilations, cache, and outputs; read-only in the app |
+| Proxy state and certificates | `proxy` | `underleaf_proxy_data` | `/data` | ACME certificates, local CA, and Caddy state |
+| Proxy configuration state | `proxy` | `underleaf_proxy_config` | `/config` | Persistent Caddy state; not the version-controlled Caddyfile |
 
-Os volumes `app_history`, `app_cache` e `app_templates` são montados como
-subvolumes de `app_data`: o volume filho prevalece no subcaminho correspondente
-sem esconder o restante dos dados gerais da aplicação. O compilador não grava
-em `app_data`; todo o trabalho de LaTeX fica em `compiler_work`. Não altere
-esses caminhos para bind mounts sem atualizar o backup e o restore.
+The `app_history`, `app_cache`, and `app_templates` volumes mount at child paths of `app_data`. Each child mount takes precedence at its path without hiding unrelated general application data. The compiler never writes to `app_data`; LaTeX work stays in `compiler_work`. Do not switch these to bind mounts without updating backup and restore procedures.
 
-Instalações atualizadas a partir da topologia anterior podem manter os volumes
-Docker órfãos `underleaf_app_compiles` e `underleaf_app_output`. Eles não são
-mais montados nem necessários para o runtime atual. Preserve-os durante a
-janela de rollback e remova-os apenas depois de validar compilação e restore.
+Upgraded installations may retain orphaned `underleaf_app_compiles` and `underleaf_app_output` volumes from an earlier topology. They are no longer mounted or needed by the current runtime. Preserve them through the rollback window and remove them only after validating compilation and restoration.
 
-## Permissões e retenção
+## Permissions and retention
 
-- O processo do compilador roda como `www-data`; o volume
-  `underleaf_compiler_work` deve permitir escrita apenas para esse usuário.
-- O app precisa escrever nos volumes `app_*`; o host não deve expor esses
-  diretórios diretamente sem preservar proprietário e modo dos arquivos.
-- MongoDB e Redis devem permanecer sem portas publicadas no host em produção.
-- `underleaf_proxy_data` e `underleaf_proxy_config` devem ser preservados para
-  evitar perda de certificados e estado do Caddy.
-- O backup deve incluir MongoDB, os dados persistentes do app, `app_history`,
-  `app_templates` e o manifest. `app_cache` e `compiler_work` são derivados e
-  são recriados; `data/compiles` e `data/output` legados também são excluídos
-  do backup.
-- Reter backups em armazenamento separado dos volumes ativos, com pelo menos
-  uma cópia protegida contra exclusão acidental. A duração exata é uma decisão
-  operacional; o restore deve ser testado antes de reduzir a retenção.
+- The compiler runs as `www-data`; restrict write access to `underleaf_compiler_work` accordingly.
+- The app writes to `app_*` volumes. Preserve file ownership and permissions when accessing them from the host.
+- Never publish MongoDB or Redis host ports in production.
+- Preserve `underleaf_proxy_data` and `underleaf_proxy_config` so certificates and Caddy state survive recreation.
+- Back up MongoDB, persistent app data, `app_history`, `app_templates`, and the manifest. `app_cache` and `compiler_work` are derived and recreated; legacy `data/compiles` and `data/output` are excluded too.
+- Keep backups separate from active volumes, with at least one copy protected against accidental deletion. Set retention policies operationally and test restoration before shortening retention.
 
-## Verificação de recriação
+## Container recreation verification
 
-O teste abaixo escreve um marcador temporário no volume de histórico, recria o
-container `app` e confirma que o marcador continua disponível:
+The following smoke test writes a temporary marker to the history volume, recreates the `app` container, and verifies the marker remains:
 
 ```bash
 ./tests/underleaf-persistence-smoke.sh
 ```
 
-O teste remove apenas o marcador criado por ele. Ele não usa `docker compose
-down --volumes`.
+The test removes only its marker and does not run `docker compose down --volumes`.

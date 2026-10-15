@@ -1,32 +1,32 @@
 # Underleaf
 
-**Underleaf** é um editor colaborativo e self-hosted de documentos LaTeX, derivado do [Overleaf Community Edition](https://github.com/overleaf/overleaf). Foi adaptado para instalações controladas pelo operador, com contas locais e compilação LaTeX isolada.
+**Underleaf** is a collaborative, self-hosted LaTeX editor derived from [Overleaf Community Edition](https://github.com/overleaf/overleaf). It is designed for operator-managed installations with local user accounts and an isolated LaTeX compilation service.
 
-**Estado:** beta em desenvolvimento ativo. O código usa **AGPL-3.0** e preserva a origem e as atribuições do Overleaf.
+**Status:** active beta development. The source is licensed under **AGPL-3.0** and preserves Overleaf provenance and attribution.
 
-## Funcionalidades
+## Features
 
-- Editor LaTeX no navegador, múltiplos arquivos, preview PDF e compilação com **TeX Live completo**.
-- Engines pdfLaTeX, XeLaTeX e LuaLaTeX; bibliografias com BibTeX/Biber.
-- Projetos, histórico, colaboração, compartilhamento e permissões por usuário.
-- Administração de contas por **username**, sem cadastro público, e temas System/Light/Dark.
-- Backups e persistência de dados por volumes Docker nomeados.
+- Browser-based LaTeX editor, multiple files, PDF preview, and **full TeX Live** compilation.
+- pdfLaTeX, XeLaTeX, and LuaLaTeX engines; BibTeX/Biber bibliographies.
+- Projects, history, real-time collaboration, sharing, and per-user permissions.
+- **Username-based** account administration, without public registration, and System/Light/Dark themes.
+- Backup and persistent storage through named Docker volumes.
 
-O Underleaf remove fluxos comerciais/SaaS do produto original. Confira a [arquitetura](docs/ARCHITECTURE.md) e a [origem do projeto](docs/ORIGIN.md).
+Underleaf removes the original product's commercial/SaaS workflows. See the [architecture](docs/ARCHITECTURE.md) and [project origin](docs/ORIGIN.md).
 
-## Requisitos
+## Requirements
 
-| Item | Requisito |
+| Item | Requirement |
 | --- | --- |
-| Plataforma | Linux `x86_64/amd64` ou Windows com Docker Desktop em modo Linux containers (preferencialmente WSL2) |
-| Docker | Docker Engine/Desktop com Compose v2 |
-| Memória | Pelo menos **8 GB disponíveis durante o primeiro build** |
-| Disco | Pelo menos **30 GB livres**, além do armazenamento para projetos e backups |
-| Ferramentas no host | Git e Docker; não é necessário instalar TeX Live, Node.js, Yarn ou Make |
+| Platform | Linux `x86_64/amd64` or Windows with Docker Desktop in Linux containers mode (preferably WSL2) |
+| Docker | Docker Engine/Desktop with Compose v2 |
+| Memory | At least **8 GB available during the initial build** |
+| Disk | At least **30 GB free**, plus space for projects and backups |
+| Host tools | Git and Docker; TeX Live, Node.js, Yarn, and Make are **not required** on the host |
 
-**ARM64 e macOS não são plataformas oficialmente suportadas nesta versão.** Os valores de RAM/disco são requisitos iniciais, não uma garantia para compilação concorrente ou projetos pesados. O TeX Live completo aumenta significativamente o download e o espaço ocupado pelas imagens.
+**ARM64 and macOS are not officially supported in this release.** Memory and disk figures are starting requirements, not guarantees for heavy projects or concurrent compilation. Full TeX Live significantly increases initial image downloads and disk use.
 
-## Instalação rápida com Docker
+## Quick start with Docker
 
 **Linux:**
 
@@ -38,7 +38,7 @@ bash ./scripts/underleaf.sh up
 
 **Windows (PowerShell):**
 
-Instale Docker Desktop com Linux containers e, preferencialmente, WSL2.
+Install Docker Desktop with Linux containers enabled and, preferably, WSL2 integration.
 
 ```powershell
 git clone https://github.com/LucasCollevatti/underleaf.git
@@ -46,46 +46,46 @@ Set-Location underleaf
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 up
 ```
 
-Os helpers criam `.env` com um segredo de sessão persistente, constroem as imagens necessárias e iniciam a stack. O primeiro build pode transferir imagens grandes.
+The helpers create `.env` with a persistent session secret, build the required images, and start the stack. The initial build may download large images.
 
-Abra **http://localhost:8080** e crie o primeiro administrador no `/welcome`. Não existem credenciais padrão. As demais contas são criadas por administradores em `/admin/users`.
+Open **http://localhost:8080** and create the first administrator through `/welcome`. There are no default credentials. Administrators provision additional accounts at `/admin/users`.
 
-> **Por que TeX Live completo?** O compilador executa em um container separado e importa a árvore `/usr/local/texlive` de `texlive/texlive:latest` (ou da imagem configurada). Isso evita grande parte dos problemas com pacotes LaTeX ausentes, ao custo de uma imagem maior. Veja [TeX Live completo](docs/TEXLIVE.md).
+> **Why full TeX Live?** The compiler runs in a separate container and imports `/usr/local/texlive` from `texlive/texlive:latest` (or the configured source image). This avoids many missing LaTeX package errors, at the cost of a larger image. Read [Full TeX Live](docs/TEXLIVE.md).
 
-## Operação diária
+## Daily operations
 
-| Ação | Linux | Windows (PowerShell, na raiz do repo) |
+| Action | Linux | Windows (PowerShell, from repository root) |
 | --- | --- | --- |
-| Iniciar e atualizar containers | `bash ./scripts/underleaf.sh up` | `.\scripts\underleaf.ps1 up` |
-| Verificar saúde | `bash ./scripts/underleaf.sh health` | `.\scripts\underleaf.ps1 health` |
-| Ver logs | `bash ./scripts/underleaf.sh logs` | `.\scripts\underleaf.ps1 logs` |
-| Parar sem apagar volumes | `bash ./scripts/underleaf.sh down` | `.\scripts\underleaf.ps1 down` |
-| Criar backup | `bash ./scripts/underleaf.sh backup` | `.\scripts\underleaf.ps1 backup` |
-| Rebuild do compilador TeX | `bash ./scripts/underleaf.sh build-compiler` | `.\scripts\underleaf.ps1 build-compiler` |
+| Start or refresh containers | `bash ./scripts/underleaf.sh up` | `.\scripts\underleaf.ps1 up` |
+| Check health | `bash ./scripts/underleaf.sh health` | `.\scripts\underleaf.ps1 health` |
+| Follow logs | `bash ./scripts/underleaf.sh logs` | `.\scripts\underleaf.ps1 logs` |
+| Stop without deleting volumes | `bash ./scripts/underleaf.sh down` | `.\scripts\underleaf.ps1 down` |
+| Create a backup | `bash ./scripts/underleaf.sh backup` | `.\scripts\underleaf.ps1 backup` |
+| Rebuild the TeX compiler image | `bash ./scripts/underleaf.sh build-compiler` | `.\scripts\underleaf.ps1 build-compiler` |
 
-A configuração local expõe **HTTP na porta 8080** para uso em LAN confiável ou VPN. Não encaminhe essa porta diretamente para a Internet. Há um overlay opcional com Caddy/HTTPS, mas o projeto **não afirma estar endurecido para exposição pública direta**.
+The local setup exposes **HTTP on port 8080** for a trusted LAN or VPN. Do not forward that port directly to the Internet. An optional Caddy/HTTPS overlay exists, but **the project does not claim production hardening for direct public-Internet exposure**.
 
-## Serviços Docker
+## Docker services
 
-| Serviço | Responsabilidade |
+| Service | Responsibility |
 | --- | --- |
-| `app` | Interface web, autenticação e serviços internos |
-| `compiler` | CLSI e TeX Live completo em container isolado |
-| `mongo` | Usuários, projetos e metadados |
-| `redis` | Sessões, filas e colaboração em tempo real |
+| `app` | Web UI, authentication, and internal application services |
+| `compiler` | CLSI and full TeX Live in an isolated container |
+| `mongo` | Users, projects, and metadata |
+| `redis` | Sessions, queues, and real-time collaboration |
 
-O compilador não publica portas no host, não recebe segredos do `app` e não participa da rede interna do MongoDB/Redis. Projetos, histórico e dados persistem em volumes Docker; `down` não os apaga.
+The compiler does not publish host ports, receive the app's secrets, or join the MongoDB/Redis backend network. Projects, history, and other data live in named volumes; `down` preserves them.
 
-## Documentação
+## Documentation
 
-- [Instalação passo a passo](docs/INSTALLATION.md) — Linux, Windows, primeiro administrador, LAN e HTTPS.
-- [TeX Live completo](docs/TEXLIVE.md) — escolha da distribuição, engines, imagens, recursos e diagnósticos.
-- [Deployment Docker](docs/DEPLOYMENT.md) — Compose, redes, rebuilds e configuração avançada.
-- [Troubleshooting](docs/TROUBLESHOOTING.md) — problemas de build, portas, containers e compilação.
-- [Atualizações](docs/UPGRADING.md) — backup, atualização controlada e rollback.
-- [Backup](docs/BACKUP.md), [persistência](docs/PERSISTENCE.md) e [observabilidade](docs/OBSERVABILITY.md).
-- [Segurança](docs/SECURITY.md), [desenvolvimento](docs/DEVELOPMENT.md) e [contribuição](CONTRIBUTING.md).
+- [Installation guide](docs/INSTALLATION.md) — Linux, Windows, first administrator, LAN, and HTTPS.
+- [Full TeX Live](docs/TEXLIVE.md) — distribution choice, engines, images, resources, and diagnostics.
+- [Docker deployment](docs/DEPLOYMENT.md) — Compose, networks, rebuilds, and advanced configuration.
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — build, port, container, and compilation failures.
+- [Upgrading](docs/UPGRADING.md) — backups, controlled updates, and rollback.
+- [Backup](docs/BACKUP.md), [persistence](docs/PERSISTENCE.md), and [observability](docs/OBSERVABILITY.md).
+- [Security](docs/SECURITY.md), [development](docs/DEVELOPMENT.md), and [contributing](CONTRIBUTING.md).
 
-## Licença e créditos
+## License and credits
 
-Distribuído sob [AGPL-3.0](LICENSE). O snapshot de origem e suas modificações estão documentados em [ORIGIN.md](docs/ORIGIN.md), e as licenças de componentes em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Problemas podem ser relatados por issues com logs sanitizados; vulnerabilidades devem seguir a [política de divulgação privada](.github/SECURITY.md). Nunca publique arquivos `.env`, credenciais, backups ou conteúdo de documentos.
+Underleaf is distributed under [AGPL-3.0](LICENSE). The imported snapshot and subsequent modifications are documented in [ORIGIN.md](docs/ORIGIN.md), with dependency notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Report defects in issues using sanitized logs; report vulnerabilities through the [private disclosure policy](.github/SECURITY.md). Never publish `.env` files, credentials, backups, or document contents.

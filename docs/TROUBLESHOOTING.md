@@ -1,8 +1,8 @@
-# Troubleshooting do Underleaf
+# Underleaf troubleshooting
 
-Diagnóstico da instalação Docker suportada: Linux amd64 ou Windows com Docker Desktop em Linux containers. Execute os comandos na raiz do repositório.
+This guide covers the supported Docker deployment: Linux amd64 or Windows with Docker Desktop running Linux containers. Run commands from the repository root.
 
-## Diagnóstico inicial
+## Initial diagnosis
 
 ```bash
 docker info
@@ -11,40 +11,40 @@ docker compose --env-file .env ps --all
 docker compose --env-file .env logs --tail=200 app compiler mongo redis
 ```
 
-Os helpers oferecem os comandos equivalentes:
+The platform helpers offer equivalent operations:
 
-| Operação | Linux | Windows PowerShell |
+| Operation | Linux | Windows PowerShell |
 | --- | --- | --- |
-| Saúde | `bash ./scripts/underleaf.sh health` | `.\scripts\underleaf.ps1 health` |
-| Validar Compose | `bash ./scripts/underleaf.sh config` | `.\scripts\underleaf.ps1 config` |
-| Logs do app | `bash ./scripts/underleaf.sh logs` | `.\scripts\underleaf.ps1 logs` |
+| Health | `bash ./scripts/underleaf.sh health` | `.\scripts\underleaf.ps1 health` |
+| Validate Compose | `bash ./scripts/underleaf.sh config` | `.\scripts\underleaf.ps1 config` |
+| Application logs | `bash ./scripts/underleaf.sh logs` | `.\scripts\underleaf.ps1 logs` |
 
-Quando uma instalação falhar, identifique o serviço e a etapa exata antes de reconstruir imagens ou alterar volumes.
+Identify the failing service and build/startup stage before rebuilding images or changing volumes.
 
-## Primeiro build lento, erro de download ou pouco disco
+## Slow initial build, failed downloads, or insufficient disk space
 
-O TeX Live completo torna a imagem do compilador grande e pode consumir espaço adicional com camadas e cache de build. Confirme o espaço do Docker:
+Full TeX Live increases the compiler image size and can consume additional space for layers and build caches. Inspect Docker disk consumption:
 
 ```bash
 docker system df
 ```
 
-No Windows, confira os recursos disponíveis para Docker Desktop/WSL2. **Não execute `docker compose down --volumes` ou `docker volume prune` como tentativa de limpeza**: os volumes contêm dados permanentes de usuários, projetos e histórico.
+On Windows, check resources available to Docker Desktop and WSL2. **Do not run `docker compose down --volumes` or `docker volume prune` as cleanup shortcuts:** volumes contain permanent user data, projects, and history.
 
-## Acesso pela porta 8080
+## Access through port 8080
 
-O modo local serve HTTP em `UNDERLEAF_HTTP_PORT` (padrão `8080`). Se a porta estiver ocupada, ajuste no `.env`:
+Local mode serves HTTP on `UNDERLEAF_HTTP_PORT` (default `8080`). If the port is already occupied, update `.env`:
 
 ```dotenv
 UNDERLEAF_HTTP_PORT=8081
 UNDERLEAF_SITE_URL=http://localhost:8081
 ```
 
-Reinicie usando `up`. Para acesso por outro dispositivo da LAN, use o IP/hostname do servidor em `UNDERLEAF_SITE_URL`; `localhost` no computador cliente se refere ao próprio cliente. Restrinja a porta no firewall e não encaminhe HTTP diretamente à Internet.
+Restart with `up`. For access from another LAN device, use the server's reachable IP/hostname in `UNDERLEAF_SITE_URL`; `localhost` on a client refers to that client. Restrict access by firewall and never forward local HTTP directly to the Internet.
 
-## Containers unhealthy
+## Unhealthy containers
 
-O `app` depende de MongoDB, Redis e compiler saudáveis. Inspecione os serviços individualmente:
+`app` depends on healthy MongoDB, Redis, and compiler services. Inspect each service separately:
 
 ```bash
 docker compose --env-file .env logs --tail=200 mongo
@@ -53,11 +53,11 @@ docker compose --env-file .env logs --tail=200 compiler
 docker compose --env-file .env logs --tail=200 app
 ```
 
-MongoDB usa um **replica set**, necessário para criar o primeiro administrador em uma transação. Não apague volumes do banco para tentar corrigir um erro de inicialização.
+MongoDB uses a **replica set**, required to create the first administrator transactionally. Do not delete database volumes as a first attempt to fix startup problems.
 
-## Erro de compilação LaTeX
+## LaTeX compilation errors
 
-Leia primeiro o log do documento no editor. Para verificar o compilador:
+First read the document's compilation log in the editor. To inspect the compiler:
 
 ```bash
 docker compose --env-file .env ps compiler
@@ -66,27 +66,27 @@ docker compose --env-file .env exec compiler pdflatex --version
 docker compose --env-file .env exec compiler kpsewhich tcolorbox.sty
 ```
 
-O TeX Live completo reduz problemas com pacotes ausentes, mas não inclui necessariamente programas externos ou fontes adicionais. Confira [TEXLIVE.md](TEXLIVE.md) para a diferença entre erro do documento e problema de imagem/recursos.
+Full TeX Live reduces missing-package errors but does not necessarily include external programs or additional system fonts. See [Full TeX Live](TEXLIVE.md) to distinguish document errors from image and resource problems.
 
-## Primeiro administrador ou login
+## First administrator and login
 
-Em uma instalação nova, acesse `/welcome` antes de disponibilizar o endereço a outras pessoas; o primeiro usuário que conclui o fluxo vira administrador. Não existem credenciais padrão. Instalações inicializadas não reabrem `/welcome` após a exclusão de contas.
+On a new installation, complete `/welcome` before sharing the address: the first person completing setup becomes an administrator. There are no default credentials. Initialized installations do not reopen `/welcome` after accounts are deleted.
 
-Se houver falha no bootstrap, examine os logs `app`/`mongo` e o estado do replica set. `create-admin` é um fallback específico para automação/recuperação, **não** um reset genérico de senhas de contas existentes.
+For bootstrap failures, inspect `app`/`mongo` logs and replica-set health. `create-admin` is a specific automation/recovery fallback, **not** a general-purpose password reset for existing accounts.
 
-## HTTPS e Caddy
+## HTTPS and Caddy
 
-A instalação com proxy usa `infra/compose/compose.production.yaml` e requer domínio/DNS configurados. No Windows PowerShell, selecione o overlay antes de invocar os helpers:
+HTTPS uses `infra/compose/compose.production.yaml` and requires correctly configured DNS/domain settings. On Windows PowerShell, select the overlay before running helpers:
 
 ```powershell
 $env:UNDERLEAF_COMPOSE_FILES = '-f compose.yaml -f infra/compose/compose.production.yaml'
 .\scripts\underleaf.ps1 config
 ```
 
-Consulte [instalação com Caddy](INSTALLATION.md#instalação-atrás-de-https-com-caddy-opcional). HTTPS não dispensa firewall, atualizações e controle de acesso.
+See [HTTPS installation](INSTALLATION.md#optional-https-deployment-with-caddy). HTTPS does not replace firewalls, updates, or access control.
 
-## Volumes, backup e coleta de logs
+## Volumes, backups, and logs
 
-`down` não remove volumes. Faça backup antes de qualquer intervenção destrutiva. Restore substitui o banco MongoDB e dados persistentes; use somente com um backup verificado e compatível.
+`down` does not delete volumes. Create a backup before destructive maintenance. Restore replaces MongoDB and persistent application data; use only verified, compatible backups.
 
-Veja [BACKUP.md](BACKUP.md), [PERSISTENCE.md](PERSISTENCE.md) e [UPGRADING.md](UPGRADING.md). Em issues, informe revisão Git, sistema operacional, versão Docker, comandos usados e reprodução mínima; remova senhas, cookies, IPs sensíveis e conteúdo de documentos. Vulnerabilidades devem ser comunicadas [em privado](../.github/SECURITY.md).
+See [Backup](BACKUP.md), [Persistence](PERSISTENCE.md), and [Upgrading](UPGRADING.md). For issues, provide the Git revision, OS, Docker version, commands used, and a minimal reproduction. Remove passwords, cookies, sensitive IPs, and document contents. Report vulnerabilities [privately](../.github/SECURITY.md).

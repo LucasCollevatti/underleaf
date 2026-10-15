@@ -1,5 +1,3 @@
-# Infra
+# Infrastructure
 
-Documentação e configuração da infraestrutura do Underleaf. O Compose
-executável continua na raiz em `compose.yaml` para preservar o fluxo padrão;
-novos manifests e adaptações de infraestrutura devem ser organizados aqui.
+Underleaf infrastructure documentation and configuration live here. The executable Compose entry point remains at repository-root [`compose.yaml`](../compose.yaml) to preserve the standard workflow. New manifests and infrastructure adaptations should be organized under `infra/`.

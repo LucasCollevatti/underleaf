@@ -1,83 +1,59 @@
-# Backup e restore do Underleaf
+# Underleaf backup and restore
 
-O backup do Underleaf é um diretório versionado por manifest, não um arquivo
-solto. Ele contém:
+An Underleaf backup is a **manifest-versioned directory**, not a single archive. It contains:
 
-- `manifest.json`: formato, data UTC, revisão Git e conteúdo;
-- `mongo.archive.gz`: dump BSON comprimido do banco `sharelatex`;
-- `app-data.tar.gz`: conteúdo persistente de `/var/lib/overleaf/data`, incluindo
-  histórico e templates, mas excluindo `cache`, `compiles` e `output` derivados;
-- `checksums.sha256`: hashes SHA-256 dos dois arquivos de dados.
+- `manifest.json`: format, UTC timestamp, Git revision, and file inventory;
+- `mongo.archive.gz`: compressed BSON dump of the `sharelatex` database;
+- `app-data.tar.gz`: persistent `/var/lib/overleaf/data` content, including history and templates, excluding derived `cache`, `compiles`, and `output`;
+- `checksums.sha256`: SHA-256 checksums for the two data archives.
 
-O Redis não é restaurado: sessões, presença e filas são estado operacional
-temporário. O cache do app e `underleaf_compiler_work` também são derivados e
-não fazem parte do backup. MongoDB e os dados persistentes da aplicação são as
-fontes necessárias para recuperar usuários, projetos, metadata e histórico.
+Redis is not restored: sessions, presence, and queues are temporary operational state. App cache and `underleaf_compiler_work` are also derived and excluded. MongoDB and persistent application data are sufficient to recover users, projects, metadata, and history.
 
-## Criar um backup
+## Create a backup
 
-Com o stack ativo e o arquivo `.env` configurado:
+With the stack running and `.env` configured:
 
 ```bash
 make backup
 ```
 
-Sem `BACKUP_DIR`, o resultado fica em
-`$HOME/underleaf-backups/underleaf-<UTC_TIMESTAMP>`, fora do checkout. O
-backup é montado em um diretório temporário protegido e só recebe o nome final
-quando os dois archives, hashes e manifest estão completos.
+Unless `BACKUP_DIR` is set, output goes to `$HOME/underleaf-backups/underleaf-<UTC_TIMESTAMP>`, outside the checkout. The backup is staged in a protected temporary directory and given its final name only after archives, checksums, and manifest are complete.
 
-Para escolher o diretório:
+To select a destination:
 
 ```bash
 BACKUP_DIR=/srv/backups/underleaf-2026-10-02 make backup
 ```
 
-O comando falha se o diretório de destino já contiver arquivos. Armazene o
-resultado fora dos volumes ativos e restrinja o acesso ao dump, pois ele pode
-conter dados de projetos e usuários.
-Os hashes confirmam integridade contra corrupção acidental; não autenticam a
-origem do backup. Use apenas diretórios e arquivos de backup confiáveis.
+The command fails if the destination already contains files. Store backups outside live volumes, with restricted access: dumps can contain project and user data. Hashes detect accidental corruption but **do not authenticate backup origin**; use trusted backup files and directories only.
 
-## Restaurar um backup
+## Restore a backup
 
-O restore é deliberadamente explícito porque substitui o banco `sharelatex` e
-os dados persistentes da aplicação:
+Restore is intentionally explicit because it replaces the `sharelatex` database and persistent application data:
 
 ```bash
 make restore BACKUP=/srv/backups/underleaf-2026-10-02
 ```
 
-O target passa `--yes` ao script depois de receber o caminho definido pelo
-operador. Ele para o app, verifica o manifest e os hashes, restaura o MongoDB,
-recoloca os dados persistentes nos volumes nomeados e sobe o app novamente. O
-histórico é restaurado junto com os dados da aplicação; cache, compiles e output
-derivados são descartados e recriados pelo runtime quando necessários. O Redis
-volta vazio e reconstrói filas e sessões.
+The Make target passes `--yes` after receiving the operator-supplied path. The script stops the app, validates the manifest and hashes, restores MongoDB and named-volume data, and starts the app again. Project history is restored alongside application data; derived caches, compilations, and outputs are discarded and recreated as needed. Redis starts with empty ephemeral state.
 
-O formato atual é `1`. O restore continua aceitando backups antigos desse
-formato; se eles contiverem `data/compiles`, `data/output` ou `data/cache`, esses
-artefatos derivados são descartados após a extração. Backups são compatíveis
-com instalações que usam o mesmo schema do MongoDB e os mesmos caminhos
-persistentes. Antes de atualizar uma versão estrutural, crie um backup e execute
-um restore de ensaio em uma cópia isolada.
+The current format version is `1`. Restore continues to accept older backups in this format. If they contain `data/compiles`, `data/output`, or `data/cache`, those derived artifacts are dropped after extraction. Backups are compatible with installations using the same MongoDB schema and persistent paths. Before a structural upgrade, take a backup and rehearse restoration in an isolated copy.
 
-No Windows, use os comandos nativos do PowerShell:
+On Windows, use native PowerShell commands:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 backup
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\underleaf.ps1 restore -Backup C:\backups\underleaf-2026-10-02 -Yes
 ```
 
-## Teste de round-trip
+## Round-trip test
 
-O procedimento de validação combina os smoke tests existentes:
+The verification procedure combines existing smoke tests:
 
-1. criar usuário, projeto, editar e compilar com os testes de dashboard/editor;
-2. executar `make backup BACKUP_DIR=...`;
-3. confirmar `manifest.json`, hashes e os dois arquivos de dados;
-4. restaurar com `make restore BACKUP=...` em uma instalação descartável;
-5. repetir login, leitura do histórico e uma nova compilação.
+1. Create a user and project, edit, and compile using dashboard/editor tests.
+2. Run `make backup BACKUP_DIR=...`.
+3. Confirm `manifest.json`, checksums, and both data archives.
+4. Restore with `make restore BACKUP=...` in a disposable installation.
+5. Repeat login, history access, and compilation.
 
-Não execute o passo 4 em uma instalação com dados importantes sem preservar o
-backup original e confirmar o destino.
+Never perform step 4 on an installation with important data without preserving the original backup and confirming the restore destination.

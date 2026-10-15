@@ -1,76 +1,68 @@
 # Tests
 
-Destino para testes de integração do Underleaf. Os testes importados continuam
-em seus domínios (`services/*/test` e `libraries/*/test`) para preservar o
-runner e as configurações existentes.
+This directory contains Underleaf integration and operational smoke tests. Imported tests remain in their service and library domains (`services/*/test` and `libraries/*/test`) to preserve their runners and configuration.
 
-O smoke test do dashboard pode ser executado contra uma instalação em execução:
+The dashboard smoke test runs against an existing installation:
 
 ```bash
 UNDERLEAF_BASE_URL=http://localhost:18080 \
 UNDERLEAF_USERNAME=m7admin \
-UNDERLEAF_PASSWORD='sua-senha' \
+UNDERLEAF_PASSWORD='your-password' \
 node tests/underleaf-project-dashboard-smoke.mjs
 ```
 
-O smoke test do editor valida a página do IDE, a árvore de entidades, a
-compilação e os artefatos PDF, log e SyncTeX:
+The editor smoke test checks the IDE page, entity tree, compilation, and PDF, log, and SyncTeX artifacts:
 
 ```bash
 UNDERLEAF_BASE_URL=http://localhost:18080 \
 UNDERLEAF_USERNAME=m7admin \
-UNDERLEAF_PASSWORD='sua-senha' \
+UNDERLEAF_PASSWORD='your-password' \
 node tests/underleaf-editor-smoke.mjs
 ```
 
-O smoke test de compartilhamento valida busca autenticada por username,
-permissões editor/viewer, remoção e erros de usuário inexistente:
+The sharing smoke test verifies authenticated username search, editor/viewer permissions, revocation, and errors for nonexistent accounts:
 
 ```bash
 UNDERLEAF_BASE_URL=http://localhost:18080 \
 UNDERLEAF_USERNAME=m7admin \
-UNDERLEAF_PASSWORD='sua-senha' \
-UNDERLEAF_TARGET_USERNAME=outro-usuario \
+UNDERLEAF_PASSWORD='your-password' \
+UNDERLEAF_TARGET_USERNAME=another-user \
 node tests/underleaf-sharing-smoke.mjs
 ```
 
-O smoke test de colaboração executa dentro do container web porque usa o
-`socket.io-client` do serviço real-time. Ele valida edição concorrente,
-ordenação, presença, reconexão e recuperação do documento:
+The collaboration smoke test runs inside the web container because it uses the real-time service's `socket.io-client`. It checks concurrent edits, ordering, presence, reconnection, and document recovery:
 
 ```bash
 docker exec -w /overleaf/services/real-time \
   -e UNDERLEAF_WEB_URL=http://127.0.0.1:4000 \
   -e UNDERLEAF_REALTIME_URL=http://127.0.0.1:3026 \
   -e UNDERLEAF_USERNAME=m7admin \
-  -e UNDERLEAF_PASSWORD='sua-senha' \
-  -e UNDERLEAF_TARGET_USERNAME=outro-usuario \
+  -e UNDERLEAF_PASSWORD='your-password' \
+  -e UNDERLEAF_TARGET_USERNAME=another-user \
   underleaf-app node test/acceptance/underleaf-collaboration-smoke.mjs
 ```
 
-O smoke test de histórico também executa dentro do container web. Ele cria
-uma revisão, verifica timestamp e usuário responsável, restaura a versão
-inicial e confirma que a restauração cria uma nova revisão:
+The history smoke test also runs inside the web container. It creates a revision, checks its timestamp and author, restores the initial version, and confirms that the restoration produces a new revision:
 
 ```bash
 docker exec -w /overleaf/services/real-time \
   -e UNDERLEAF_WEB_URL=http://127.0.0.1:4000 \
   -e UNDERLEAF_REALTIME_URL=http://127.0.0.1:3026 \
   -e UNDERLEAF_USERNAME=m7admin \
-  -e UNDERLEAF_PASSWORD='sua-senha' \
+  -e UNDERLEAF_PASSWORD='your-password' \
   underleaf-app node test/acceptance/underleaf-history-smoke.mjs
 ```
 
-O smoke test de persistência recria o container da aplicação e confirma que o
-volume de histórico mantém seus dados:
+The persistence smoke test recreates the application container and checks that its history volume retains data:
 
 ```bash
 ./tests/underleaf-persistence-smoke.sh
 ```
 
-O smoke test de segurança valida a topologia do Compose de produção, as portas
-publicadas e o isolamento do compiler:
+The security smoke test validates production Compose networking, published ports, and compiler isolation:
 
 ```bash
 ./tests/underleaf-security-smoke.sh
 ```
+
+**Never put real passwords in checked-in scripts or issue reports.** Execute authenticated tests only against a designated test environment and sanitize logs before sharing them.
