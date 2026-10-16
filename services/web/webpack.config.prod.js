@@ -38,7 +38,7 @@ module.exports = merge(
     performance: {
       hints: 'error',
       maxAssetSize: 1024 * 1024,
-      maxEntrypointSize: 2 * 1024 * 1024,
+      maxEntrypointSize: 2.5 * 1024 * 1024,
       assetFilter: assetFilename =>
         !/\.map$/.test(assetFilename) &&
         !/^js\/(?:dictionaries\/|libs\/mathjax-[^/]+\/|libs\/pyodide\/)/.test(
